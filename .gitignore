@@ -63,3 +63,6 @@ fastlane/test_output
 
 # Superpowers brainstorm sessions
 .superpowers/
+
+# Git worktrees
+.worktrees/
