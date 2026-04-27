@@ -10,8 +10,8 @@ final class NotificationManagerTests: XCTestCase {
     var center: UNUserNotificationCenter!
 
     override func setUp() async throws {
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        container = try ModelContainer(for: Pet.self, FeedingEvent.self, configurations: [config])
+        let config = ModelConfiguration(allowsSave: false)
+        container = try ModelContainer(for: Pet.self, FeedingEvent.self, configurations: config)
         context = container.mainContext
         center = UNUserNotificationCenter.current()
         center.removeAllPendingNotificationRequests()

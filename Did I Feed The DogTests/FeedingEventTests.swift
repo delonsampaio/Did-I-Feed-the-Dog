@@ -8,8 +8,8 @@ final class FeedingEventTests: XCTestCase {
     var context: ModelContext!
 
     override func setUp() async throws {
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        container = try ModelContainer(for: Pet.self, FeedingEvent.self, configurations: [config])
+        let config = ModelConfiguration(allowsSave: false)
+        container = try ModelContainer(for: Pet.self, FeedingEvent.self, configurations: config)
         context = container.mainContext
     }
 
