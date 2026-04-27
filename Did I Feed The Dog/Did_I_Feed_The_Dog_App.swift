@@ -1,23 +1,20 @@
-//
-//  Did_I_Feed_The_Dog_App.swift
-//  Did I Feed The Dog?
-//
-//  Created by Delon Sampaio on 4/27/26.
-//
-
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 @main
 struct Did_I_Feed_The_Dog_App: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
+    let sharedModelContainer: ModelContainer = {
+        let schema = Schema([Pet.self, FeedingEvent.self])
+        let config = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false,
+            cloudKitContainerIdentifier: "iCloud.com.delon.DidIFeedTheDog"
+        )
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            let container = try ModelContainer(for: schema, configurations: [config])
+            container.mainContext.autosaveEnabled = true
+            return container
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
@@ -28,5 +25,8 @@ struct Did_I_Feed_The_Dog_App: App {
             ContentView()
         }
         .modelContainer(sharedModelContainer)
+        .task {
+            await NotificationManager.shared.requestAuthorization()
+        }
     }
 }
