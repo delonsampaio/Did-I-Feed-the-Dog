@@ -11,9 +11,9 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		148945852F9FC3210031F35C /* Did I Feed The Dog? */ = {
+		148945852F9FC3210031F35C /* Did I Feed The Dog */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Did I Feed The Dog?";
+			path = "Did I Feed The Dog";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +32,7 @@
 		1489457A2F9FC3200031F35C = {
 			isa = PBXGroup;
 			children = (
-				148945852F9FC3210031F35C /* Did I Feed The Dog? */,
+				148945852F9FC3210031F35C /* Did I Feed The Dog */,
 				148945842F9FC3210031F35C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -61,7 +61,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				148945852F9FC3210031F35C /* Did I Feed The Dog? */,
+				148945852F9FC3210031F35C /* Did I Feed The Dog */,
 			);
 			name = "Did I Feed The Dog?";
 			packageProductDependencies = (
