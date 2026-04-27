@@ -122,6 +122,7 @@ struct LogFeedingSheet: View {
     }
 
     private func logFeeding() {
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         let event = FeedingEvent(mealType: resolvedMealLabel, pet: pet)
         modelContext.insert(event)
         pet.decrementStock()
