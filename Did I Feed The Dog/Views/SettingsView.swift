@@ -1,8 +1,10 @@
 import SwiftUI
 import SwiftData
+import StoreKit
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.requestReview) private var requestReview
     @Query(sort: \Pet.name) private var pets: [Pet]
 
     @AppStorage("lowStockUIWarning")    private var lowStockUIWarning = true
@@ -19,6 +21,7 @@ struct SettingsView: View {
             foodStockSection
             notificationsSection
             safetySection
+            supportSection
             aboutSection
         }
         .navigationTitle("Settings")
@@ -85,8 +88,47 @@ struct SettingsView: View {
     private var safetySection: some View {
         Section {
             NavigationLink(destination: SafetyGuideView()) {
-                Label("Toxic Foods Guide", systemImage: "exclamationmark.triangle.fill")
-                    .foregroundStyle(.red)
+                HStack(spacing: 14) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(Color.red)
+                            .frame(width: 36, height: 36)
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(.white)
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Toxic Foods Guide")
+                            .font(.body)
+                            .foregroundStyle(.primary)
+                        Text("23 foods to keep away from your dog")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+        } header: {
+            Text("Safety Guide")
+        } footer: {
+            Text("Your two-for-one: a feeding tracker and a pet safety reference — all in one app.")
+        }
+    }
+
+    private var supportSection: some View {
+        Section("Support") {
+            Button {
+                requestReview()
+            } label: {
+                Label("Rate the App", systemImage: "star.fill")
+                    .foregroundStyle(.orange)
+            }
+
+            ShareLink(
+                item: URL(string: "https://apps.apple.com/app/id0")!,
+                message: Text("Track your dog's feedings and keep them safe with Did I Feed the Dog?")
+            ) {
+                Label("Invite Family Member", systemImage: "person.badge.plus")
             }
         }
     }
