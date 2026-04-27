@@ -23,6 +23,7 @@ final class Pet {
         let years = components.year ?? 0
         let months = components.month ?? 0
         switch (years, months) {
+        case (0, 0):  return "Less than a month"
         case (0, _):  return "\(months) month\(months == 1 ? "" : "s")"
         case (_, 0):  return "\(years) year\(years == 1 ? "" : "s")"
         default:      return "\(years) year\(years == 1 ? "" : "s"), \(months) month\(months == 1 ? "" : "s")"

@@ -39,6 +39,12 @@ final class PetTests: XCTestCase {
         XCTAssertEqual(pet.ageString, "2 years")
     }
 
+    func testAgeStringLessThanAMonth() throws {
+        let birthday = Date(timeIntervalSinceNow: -(3 * 24 * 3600)) // 3 days ago
+        let pet = Pet(name: "Max", birthday: birthday)
+        XCTAssertEqual(pet.ageString, "Less than a month")
+    }
+
     func testIsFeedingOverdueWhenNeverFed() throws {
         let pet = Pet(name: "Max", birthday: .now)
         context.insert(pet)
