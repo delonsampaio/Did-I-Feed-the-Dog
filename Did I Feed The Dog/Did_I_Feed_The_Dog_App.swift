@@ -1,16 +1,11 @@
 import SwiftUI
 import SwiftData
-import UserNotifications
 
 @main
 struct Did_I_Feed_The_Dog_App: App {
     let sharedModelContainer: ModelContainer = {
         let schema = Schema([Pet.self, FeedingEvent.self])
-        let config = ModelConfiguration(
-            schema: schema,
-            isStoredInMemoryOnly: false,
-            cloudKitContainerIdentifier: "iCloud.com.delon.DidIFeedTheDog"
-        )
+        let config = ModelConfiguration(schema: schema, allowsSave: true)
         do {
             let container = try ModelContainer(for: schema, configurations: [config])
             container.mainContext.autosaveEnabled = true
@@ -23,10 +18,10 @@ struct Did_I_Feed_The_Dog_App: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .task {
+                    await NotificationManager.shared.requestAuthorization()
+                }
         }
         .modelContainer(sharedModelContainer)
-        .task {
-            await NotificationManager.shared.requestAuthorization()
-        }
     }
 }
