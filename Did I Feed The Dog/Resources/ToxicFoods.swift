@@ -1,6 +1,6 @@
 import Foundation
 
-enum DangerLevel {
+enum DangerLevel: Equatable {
     case emergency
     case warning
 
