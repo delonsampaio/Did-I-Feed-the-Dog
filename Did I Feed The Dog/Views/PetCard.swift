@@ -10,7 +10,6 @@ struct PetCard: View {
     let pet: Pet
     @State private var showFeedSheet = false
     @State private var showEditSheet = false
-    @State private var navigateToDetail = false
 
     private var recentEvents: [FeedingEvent] {
         pet.feedingEvents
@@ -45,7 +44,7 @@ struct PetCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Button { navigateToDetail = true } label: { headerRow }
+            NavigationLink(value: pet) { headerRow }
                 .buttonStyle(.plain)
 
             if isLowStock {
@@ -56,7 +55,7 @@ struct PetCard: View {
             statsRow
 
             if !recentEvents.isEmpty {
-                Button { navigateToDetail = true } label: { miniHistory }
+                NavigationLink(value: pet) { miniHistory }
                     .buttonStyle(.plain)
             }
 
@@ -65,9 +64,6 @@ struct PetCard: View {
         .background(Color(.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: .black.opacity(0.07), radius: 8, x: 0, y: 2)
-        .navigationDestination(isPresented: $navigateToDetail) {
-            PetDetailView(pet: pet)
-        }
         .sheet(isPresented: $showFeedSheet) {
             LogFeedingSheet(pet: pet)
         }
