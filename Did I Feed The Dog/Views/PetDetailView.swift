@@ -8,7 +8,7 @@ struct PetDetailView: View {
     @State private var editingEvent: FeedingEvent?
 
     private var groupedEvents: [(date: Date, events: [FeedingEvent])] {
-        let sorted = pet.feedingEvents.sorted { $0.timestamp > $1.timestamp }
+        let sorted = (pet.feedingEvents ?? []).sorted { $0.timestamp > $1.timestamp }
         let grouped = Dictionary(grouping: sorted) {
             Calendar.current.startOfDay(for: $0.timestamp)
         }

@@ -9,7 +9,7 @@ final class Pet {
     var photoData: Data?
     var foodStockCount: Int = 0
     var feedingScheduleTimesRaw: String = ""
-    @Relationship(deleteRule: .cascade) var feedingEvents: [FeedingEvent] = []
+    @Relationship(deleteRule: .cascade) var feedingEvents: [FeedingEvent]?
 
     var feedingScheduleTimes: [Int] {
         get { feedingScheduleTimesRaw.split(separator: ",").compactMap { Int($0) } }
@@ -39,7 +39,7 @@ final class Pet {
     }
 
     var lastFeedingEvent: FeedingEvent? {
-        feedingEvents.max(by: { $0.timestamp < $1.timestamp })
+        (feedingEvents ?? []).max(by: { $0.timestamp < $1.timestamp })
     }
 
     var isFeedingOverdue: Bool {
@@ -49,7 +49,7 @@ final class Pet {
 
     var todaysFeedingCount: Int {
         let startOfDay = Calendar.current.startOfDay(for: .now)
-        return feedingEvents.filter { $0.timestamp >= startOfDay }.count
+        return (feedingEvents ?? []).filter { $0.timestamp >= startOfDay }.count
     }
 
     func decrementStock() {

@@ -41,7 +41,7 @@ struct Provider: TimelineProvider {
         let pets = (try? context.fetch(FetchDescriptor<Pet>())) ?? []
         return pets
             .map { pet in
-                let lastDate = pet.feedingEvents
+                let lastDate = (pet.feedingEvents ?? [])
                     .max(by: { $0.timestamp < $1.timestamp })?.timestamp
                 return PetSnapshot(id: pet.id, name: pet.name ?? "Unknown",
                                    photoData: pet.photoData, lastFedDate: lastDate)
