@@ -14,7 +14,7 @@ struct FoodStockStatusIntent: AppIntent {
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
         let stockModeRaw = UserDefaults.standard.string(forKey: "stockMode") ?? ""
-        let stockMode = StockMode(rawValue: stockModeRaw) ?? .individual
+        let stockMode = StockMode(rawValue: stockModeRaw) ?? .none
 
         switch stockMode {
         case .none:
