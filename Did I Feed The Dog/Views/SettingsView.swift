@@ -11,6 +11,8 @@ struct SettingsView: View {
     @AppStorage("lowStockPushEnabled")  private var lowStockPushEnabled = true
     @AppStorage("birthdayPushEnabled")  private var birthdayPushEnabled = true
     @AppStorage("lowStockThreshold")    private var lowStockThreshold = 5
+    @AppStorage("stockMode")            private var stockMode: StockMode = .individual
+    @AppStorage("sharedFoodStock")      private var sharedFoodStock = 0
 
     @State private var editingPet: Pet?
     @State private var showAddPet = false
@@ -58,15 +60,29 @@ struct SettingsView: View {
     }
 
     private var foodStockSection: some View {
-        Section("Food Stock Override") {
-            ForEach(pets) { pet in
+        Section("Food Stock") {
+            Picker("Tracking Mode", selection: $stockMode) {
+                ForEach(StockMode.allCases, id: \.self) { mode in
+                    Text(mode.label).tag(mode)
+                }
+            }
+
+            if stockMode == .individual {
+                ForEach(pets) { pet in
+                    HStack {
+                        Text(pet.name)
+                        Spacer()
+                        Stepper("\(pet.foodStockCount) portions", value: Binding(
+                            get: { pet.foodStockCount },
+                            set: { pet.foodStockCount = max(0, $0) }
+                        ), in: 0...999)
+                    }
+                }
+            } else if stockMode == .shared {
                 HStack {
-                    Text(pet.name)
+                    Text("Shared Pool")
                     Spacer()
-                    Stepper("\(pet.foodStockCount) portions", value: Binding(
-                        get: { pet.foodStockCount },
-                        set: { pet.foodStockCount = max(0, $0) }
-                    ), in: 0...999)
+                    Stepper("\(sharedFoodStock) portions", value: $sharedFoodStock, in: 0...9999)
                 }
             }
         }
