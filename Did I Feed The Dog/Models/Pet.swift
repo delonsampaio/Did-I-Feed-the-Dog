@@ -13,7 +13,7 @@ final class Pet {
 
     var feedingScheduleTimes: [Int] {
         get { feedingScheduleTimesRaw.split(separator: ",").compactMap { Int($0) } }
-        nonmutating set { feedingScheduleTimesRaw = newValue.map(String.init).joined(separator: ",") }
+        set { feedingScheduleTimesRaw = newValue.map(String.init).joined(separator: ",") }
     }
 
     init(name: String? = nil, birthday: Date? = nil, photoData: Data? = nil, foodStockCount: Int = 0) {
