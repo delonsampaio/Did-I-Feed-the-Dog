@@ -11,5 +11,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView(deepLinkPetId: .constant(nil))
-        .modelContainer(for: [Pet.self, FeedingEvent.self], allowsSave: false)
+        .modelContainer(for: [Pet.self, FeedingEvent.self], inMemory: true)
 }
