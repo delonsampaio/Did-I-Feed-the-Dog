@@ -111,8 +111,10 @@ struct PetDetailView: View {
         case "Evening":   return "🌙"
         case "Breakfast": return "🍳"
         case "Lunch":     return "🥗"
+        case "Afternoon": return "☀️"
         case "Dinner":    return "🍽️"
         case "Snack":     return "🦴"
+        case "Treat":     return "🎉"
         default:          return "✏️"
         }
     }

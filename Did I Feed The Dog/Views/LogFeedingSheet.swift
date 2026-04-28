@@ -50,7 +50,7 @@ struct LogFeedingSheet: View {
                     .padding(.horizontal, 24)
                     .padding(.bottom)
             }
-            .navigationTitle("Log Meal — \(pet.name ?? "Unknown")")
+            .navigationTitle(pet.name ?? "Unknown")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -142,19 +142,22 @@ struct LogFeedingSheet: View {
         let event = FeedingEvent(mealType: resolvedMealLabel, notes: notes.trimmingCharacters(in: .whitespacesAndNewlines), pet: pet)
         modelContext.insert(event)
 
-        switch stockMode {
-        case .individual:
-            pet.decrementStock()
-            if lowStockPushEnabled && pet.foodStockCount <= lowStockThreshold {
-                NotificationManager.shared.scheduleLowStockNotification(for: pet)
+        let shouldDecrementStock = showCustomField || selectedMealType.decrementsStock
+        if shouldDecrementStock {
+            switch stockMode {
+            case .individual:
+                pet.decrementStock()
+                if lowStockPushEnabled && pet.foodStockCount <= lowStockThreshold {
+                    NotificationManager.shared.scheduleLowStockNotification(for: pet)
+                }
+            case .shared:
+                sharedFoodStock = max(0, sharedFoodStock - 1)
+                if lowStockPushEnabled && sharedFoodStock <= lowStockThreshold {
+                    NotificationManager.shared.scheduleLowStockNotification(for: pet, stockCount: sharedFoodStock)
+                }
+            case .none:
+                break
             }
-        case .shared:
-            sharedFoodStock = max(0, sharedFoodStock - 1)
-            if lowStockPushEnabled && sharedFoodStock <= lowStockThreshold {
-                NotificationManager.shared.scheduleLowStockNotification(for: pet, stockCount: sharedFoodStock)
-            }
-        case .none:
-            break
         }
 
         WidgetCenter.shared.reloadAllTimelines()
