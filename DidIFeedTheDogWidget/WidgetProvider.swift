@@ -2,7 +2,6 @@
 import WidgetKit
 import SwiftData
 
-@MainActor
 struct Provider: TimelineProvider {
 
     func placeholder(in context: Context) -> WidgetEntry {
@@ -15,15 +14,16 @@ struct Provider: TimelineProvider {
     }
 
     func getSnapshot(in context: Context, completion: @escaping (WidgetEntry) -> Void) {
-        completion(WidgetEntry(date: .now, pets: fetchPetSnapshots()))
+        completion(WidgetEntry(date: .now, pets: Self.fetchPetSnapshots()))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<WidgetEntry>) -> Void) {
-        let entry = WidgetEntry(date: .now, pets: fetchPetSnapshots())
+        let entry = WidgetEntry(date: .now, pets: Self.fetchPetSnapshots())
         let next  = Date().addingTimeInterval(3600)
         completion(Timeline(entries: [entry], policy: .after(next)))
     }
 
+    // A fresh ModelContext per call avoids any main-actor requirement.
     private static let sharedContainer: ModelContainer? = {
         let schema = Schema([Pet.self, FeedingEvent.self])
         let config = ModelConfiguration(
@@ -35,11 +35,10 @@ struct Provider: TimelineProvider {
         return try? ModelContainer(for: schema, configurations: config)
     }()
 
-    private func fetchPetSnapshots() -> [PetSnapshot] {
-        guard let container = Self.sharedContainer,
-              let pets = try? container.mainContext.fetch(FetchDescriptor<Pet>())
-        else { return [] }
-
+    private static func fetchPetSnapshots() -> [PetSnapshot] {
+        guard let container = sharedContainer else { return [] }
+        let context = ModelContext(container)
+        let pets = (try? context.fetch(FetchDescriptor<Pet>())) ?? []
         return pets
             .map { pet in
                 let lastDate = pet.feedingEvents
