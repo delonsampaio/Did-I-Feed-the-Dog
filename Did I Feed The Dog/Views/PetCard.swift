@@ -76,7 +76,7 @@ struct PetCard: View {
         HStack(spacing: 14) {
             petAvatar
             VStack(alignment: .leading, spacing: 2) {
-                Text(pet.name)
+                Text(pet.name ?? "Unknown")
                     .font(.title3).fontWeight(.bold)
                 Text(pet.ageString)
                     .font(.caption).foregroundStyle(.secondary)
@@ -189,7 +189,7 @@ struct PetCard: View {
                 .textCase(.uppercase).foregroundStyle(.secondary)
             ForEach(recentEvents) { event in
                 HStack {
-                    Text(emojiForMeal(event.mealType) + " " + event.mealType)
+                    Text(emojiForMeal(event.mealType ?? "") + " " + (event.mealType ?? "Feeding"))
                         .font(.subheadline)
                     Spacer()
                     Text(RelativeDateTimeFormatter().localizedString(for: event.timestamp, relativeTo: .now))

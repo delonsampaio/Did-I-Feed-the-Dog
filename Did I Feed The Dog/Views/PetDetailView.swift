@@ -43,7 +43,7 @@ struct PetDetailView: View {
                 ContentUnavailableView(
                     "No Feedings Yet",
                     systemImage: "fork.knife",
-                    description: Text("Tap Log Feeding on \(pet.name)'s card to get started.")
+                    description: Text("Tap Log Feeding on \(pet.name ?? "Unknown")'s card to get started.")
                 )
                 .listRowBackground(Color.clear)
             } else {
@@ -62,7 +62,7 @@ struct PetDetailView: View {
                 }
             }
         }
-        .navigationTitle(pet.name)
+        .navigationTitle(pet.name ?? "Unknown")
         .navigationBarTitleDisplayMode(.large)
         .toolbar { EditButton() }
         .sheet(item: $editingEvent) { event in
@@ -72,10 +72,10 @@ struct PetDetailView: View {
 
     private func eventRow(_ event: FeedingEvent) -> some View {
         HStack(spacing: 12) {
-            Text(emojiForMeal(event.mealType))
+            Text(emojiForMeal(event.mealType ?? ""))
                 .font(.title3)
             VStack(alignment: .leading, spacing: 2) {
-                Text(event.mealType)
+                Text(event.mealType ?? "Feeding")
                     .font(.subheadline).fontWeight(.medium)
                 Text(Self.timeFormatter.string(from: event.timestamp))
                     .font(.caption).foregroundStyle(.secondary)
@@ -127,7 +127,7 @@ private struct EditNoteSheet: View {
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 16) {
-                Text(event.mealType)
+                Text(event.mealType ?? "Feeding")
                     .font(.headline)
                     .padding(.horizontal)
                 TextField("Note (optional)", text: $noteText, axis: .vertical)

@@ -50,7 +50,7 @@ struct LogFeedingSheet: View {
                     .padding(.horizontal, 24)
                     .padding(.bottom)
             }
-            .navigationTitle("Log Feeding — \(pet.name)")
+            .navigationTitle("Log Feeding — \(pet.name ?? "Unknown")")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
