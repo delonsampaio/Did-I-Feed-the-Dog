@@ -33,7 +33,8 @@ struct Provider: TimelineProvider {
         let config = ModelConfiguration(
             schema: schema,
             allowsSave: false,
-            groupContainer: .identifier("group.com.delon.DidIFeedTheDog")
+            groupContainer: .identifier("group.com.delon.DidIFeedTheDog"),
+            cloudKitDatabase: .none
         )
         return try? ModelContainer(for: schema, configurations: config)
     }()
