@@ -23,6 +23,18 @@ struct DashboardView: View {
         NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 16) {
+                    if reminderMode == .allDogs, let info = nextMealLabel(from: allDogsReminderTimes) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "clock.fill")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            Text("Next meal for all dogs · \(info.value) \(info.unit)")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 4)
+                    }
                     ForEach(pets) { pet in
                         PetCard(pet: pet)
                     }
