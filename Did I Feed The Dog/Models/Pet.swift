@@ -3,20 +3,20 @@ import SwiftData
 
 @Model
 final class Pet {
-    var id: UUID
-    var name: String
-    var birthday: Date
+    var id: UUID = UUID()
+    var name: String?
+    var birthday: Date?
     var photoData: Data?
-    var foodStockCount: Int
+    var foodStockCount: Int = 0
     var feedingScheduleTimesRaw: String = ""
     @Relationship(deleteRule: .cascade) var feedingEvents: [FeedingEvent] = []
 
     var feedingScheduleTimes: [Int] {
         get { feedingScheduleTimesRaw.split(separator: ",").compactMap { Int($0) } }
-        set { feedingScheduleTimesRaw = newValue.map(String.init).joined(separator: ",") }
+        nonmutating set { feedingScheduleTimesRaw = newValue.map(String.init).joined(separator: ",") }
     }
 
-    init(name: String, birthday: Date, photoData: Data? = nil, foodStockCount: Int = 0) {
+    init(name: String? = nil, birthday: Date? = nil, photoData: Data? = nil, foodStockCount: Int = 0) {
         self.id = UUID()
         self.name = name
         self.birthday = birthday
@@ -26,6 +26,7 @@ final class Pet {
     }
 
     var ageString: String {
+        guard let birthday else { return "Age unknown" }
         let components = Calendar.current.dateComponents([.year, .month], from: birthday, to: .now)
         let years = components.year ?? 0
         let months = components.month ?? 0
