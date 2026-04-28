@@ -93,6 +93,48 @@ final class NotificationManager {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
     }
 
+    func suppressNextUpcomingReminder(reminderMode: ReminderMode, for pet: Pet, allDogsReminderTimes: [Int]) {
+        let now = Calendar.current.dateComponents([.hour, .minute], from: .now)
+        let currentMinutes = (now.hour ?? 0) * 60 + (now.minute ?? 0)
+
+        switch reminderMode {
+        case .none:
+            break
+        case .allDogs:
+            guard let index = allDogsReminderTimes
+                .enumerated()
+                .filter({ $0.element > currentMinutes })
+                .min(by: { $0.element < $1.element })?.offset else { break }
+            UNUserNotificationCenter.current()
+                .removePendingNotificationRequests(withIdentifiers: ["feeding-all-\(index)"])
+            UserDefaults.standard.set(true, forKey: "needsReminderReschedule")
+        case .perDog:
+            let times = pet.feedingScheduleTimes
+            guard let index = times
+                .enumerated()
+                .filter({ $0.element > currentMinutes })
+                .min(by: { $0.element < $1.element })?.offset else { break }
+            UNUserNotificationCenter.current()
+                .removePendingNotificationRequests(withIdentifiers: ["feeding-\(pet.id.uuidString)-\(index)"])
+            UserDefaults.standard.set(true, forKey: "needsReminderReschedule")
+        }
+    }
+
+    func rescheduleIfNeeded(reminderMode: ReminderMode, allDogsReminderTimes: [Int], pets: [Pet]) {
+        guard UserDefaults.standard.bool(forKey: "needsReminderReschedule") else { return }
+        UserDefaults.standard.set(false, forKey: "needsReminderReschedule")
+        switch reminderMode {
+        case .none:
+            break
+        case .allDogs:
+            scheduleAllDogsReminders(times: allDogsReminderTimes, petNames: pets.map(\.name))
+        case .perDog:
+            for pet in pets {
+                schedulePerDogReminders(for: pet, times: pet.feedingScheduleTimes)
+            }
+        }
+    }
+
     func removeAllFeedingReminders(petIds: [UUID]) {
         removeAllDogsReminders()
         for id in petIds {

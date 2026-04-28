@@ -7,9 +7,16 @@ struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Pet.name) private var pets: [Pet]
 
+    @AppStorage("reminderMode")            private var reminderMode: ReminderMode = .none
+    @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
+
     @State private var showAddPet = false
     @State private var showSettings = false
     @State private var deepLinkFeedingPet: Pet? = nil
+
+    private var allDogsReminderTimes: [Int] {
+        allDogsReminderTimesRaw.split(separator: ",").compactMap { Int($0) }
+    }
 
     var body: some View {
         NavigationStack {
@@ -54,6 +61,13 @@ struct DashboardView: View {
             guard let id = newId else { return }
             deepLinkFeedingPet = pets.first { $0.id == id }
             deepLinkPetId = nil
+        }
+        .onAppear {
+            NotificationManager.shared.rescheduleIfNeeded(
+                reminderMode: reminderMode,
+                allDogsReminderTimes: allDogsReminderTimes,
+                pets: pets
+            )
         }
     }
 }

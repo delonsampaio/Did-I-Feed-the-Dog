@@ -5,10 +5,16 @@ import WidgetKit
 struct LogFeedingSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("lowStockPushEnabled") private var lowStockPushEnabled = true
-    @AppStorage("lowStockThreshold")  private var lowStockThreshold = 5
-    @AppStorage("stockMode")          private var stockMode: StockMode = .individual
-    @AppStorage("sharedFoodStock")    private var sharedFoodStock = 0
+    @AppStorage("lowStockPushEnabled")     private var lowStockPushEnabled = true
+    @AppStorage("lowStockThreshold")       private var lowStockThreshold = 5
+    @AppStorage("stockMode")               private var stockMode: StockMode = .individual
+    @AppStorage("sharedFoodStock")         private var sharedFoodStock = 0
+    @AppStorage("reminderMode")            private var reminderMode: ReminderMode = .none
+    @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
+
+    private var allDogsReminderTimes: [Int] {
+        allDogsReminderTimesRaw.split(separator: ",").compactMap { Int($0) }
+    }
 
     let pet: Pet
     @State private var selectedMealType: MealType = .morning
@@ -151,6 +157,11 @@ struct LogFeedingSheet: View {
         }
 
         WidgetCenter.shared.reloadAllTimelines()
+        NotificationManager.shared.suppressNextUpcomingReminder(
+            reminderMode: reminderMode,
+            for: pet,
+            allDogsReminderTimes: allDogsReminderTimes
+        )
         dismiss()
     }
 }

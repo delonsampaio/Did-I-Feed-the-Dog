@@ -65,7 +65,7 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "Can I edit a note after saving?",
-                answer: "Not currently. To correct a note, swipe to delete the entry and log it again with the right note."
+                answer: "Yes. Tap any row in the feeding history to open the Edit Note sheet. The existing note is pre-filled -- update it and tap Save."
             )
         }
     }
@@ -90,7 +90,7 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "Will reminders stop firing if I already fed my dog?",
-                answer: "No — the reminders fire daily at the set times regardless. They act as a prompt to open the app and check, not an automatic tracker. Log the feeding to clear the overdue status."
+                answer: "Yes. When you log a feeding, the next scheduled reminder for that dog is automatically cancelled. Any later reminders that day still fire as normal. Reminders are fully restored the next time you open the app."
             )
         }
     }
