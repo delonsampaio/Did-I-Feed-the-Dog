@@ -5,7 +5,9 @@ struct HelpView: View {
         List {
             gettingStartedSection
             feedingStatusSection
+            notesSection
             foodStockSection
+            feedingRemindersSection
             widgetSection
             notificationsSection
         }
@@ -47,6 +49,48 @@ struct HelpView: View {
             FAQRow(
                 question: "Can I delete a feeding entry?",
                 answer: "Yes. Tap a dog's card header to open their history, then swipe left on any entry and tap Delete."
+            )
+        }
+    }
+
+    private var notesSection: some View {
+        Section("Feeding Notes") {
+            FAQRow(
+                question: "Can I add a note when logging a feeding?",
+                answer: "Yes. The Log Feeding sheet has an optional notes field below the meal picker. Use it for anything useful — gave medication, only ate half, used a different food, etc."
+            )
+            FAQRow(
+                question: "Where do I see the notes I added?",
+                answer: "Notes appear in italic under the meal type in the feeding history. Tap a dog's card header to open their history."
+            )
+            FAQRow(
+                question: "Can I edit a note after saving?",
+                answer: "Not currently. To correct a note, swipe to delete the entry and log it again with the right note."
+            )
+        }
+    }
+
+    private var feedingRemindersSection: some View {
+        Section("Feeding Reminders") {
+            FAQRow(
+                question: "How do I set up feeding reminders?",
+                answer: "Go to Settings -> Feeding Reminders. Choose a schedule mode: Off, All Dogs, or Per Dog. Then add one or more daily reminder times."
+            )
+            FAQRow(
+                question: "What is All Dogs mode?",
+                answer: "One set of reminder times applies to every dog. You get a single notification at each time reminding you to feed all your dogs."
+            )
+            FAQRow(
+                question: "What is Per Dog mode?",
+                answer: "Each dog has their own reminder schedule. Tap the dog's name in Settings -> Feeding Reminders (or tap the dog's name in Settings -> Dogs) to set their individual times."
+            )
+            FAQRow(
+                question: "How many reminder times can I set?",
+                answer: "Up to 3 daily reminder times per schedule. Most households need a morning and evening reminder, but a midday one is available too."
+            )
+            FAQRow(
+                question: "Will reminders stop firing if I already fed my dog?",
+                answer: "No — the reminders fire daily at the set times regardless. They act as a prompt to open the app and check, not an automatic tracker. Log the feeding to clear the overdue status."
             )
         }
     }
