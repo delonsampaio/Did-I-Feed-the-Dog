@@ -6,7 +6,6 @@ struct DogFoodShortcuts: AppShortcutsProvider {
             intent: LogFeedingIntent(),
             phrases: [
                 "Log \(\.$pet)'s feeding in \(.applicationName)",
-                "Log \(\.$meal) feeding for \(\.$pet) in \(.applicationName)",
                 "Feed \(\.$pet) in \(.applicationName)"
             ],
             shortTitle: "Log Feeding",

@@ -20,6 +20,7 @@ struct UpdateFoodStockIntent: AppIntent {
         Summary("Add \(\.$portionsAdded) portions for \(\.$pet)")
     }
 
+    @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         guard portionsAdded > 0 else {
             return .result(dialog: "Please provide a number greater than zero.")

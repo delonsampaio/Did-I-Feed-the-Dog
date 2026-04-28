@@ -12,6 +12,7 @@ struct FeedingStatusIntent: AppIntent {
         Summary("Check feeding status for \(\.$pet)")
     }
 
+    @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         guard let context = IntentDataAccess.makeContext() else {
             return .result(dialog: "Could not access app data.")

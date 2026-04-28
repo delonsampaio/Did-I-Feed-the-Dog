@@ -23,6 +23,7 @@ struct PetEntity: AppEntity {
 }
 
 struct PetEntityQuery: EntityQuery, EntityStringQuery {
+    @MainActor
     func entities(for identifiers: [UUID]) async throws -> [PetEntity] {
         guard let context = IntentDataAccess.makeContext() else { return [] }
         return IntentDataAccess.fetchPets(in: context)
@@ -30,6 +31,7 @@ struct PetEntityQuery: EntityQuery, EntityStringQuery {
             .map { PetEntity(from: $0) }
     }
 
+    @MainActor
     func entities(matching string: String) async throws -> [PetEntity] {
         guard let context = IntentDataAccess.makeContext() else { return [] }
         return IntentDataAccess.fetchPets(in: context)
@@ -37,6 +39,7 @@ struct PetEntityQuery: EntityQuery, EntityStringQuery {
             .map { PetEntity(from: $0) }
     }
 
+    @MainActor
     func suggestedEntities() async throws -> [PetEntity] {
         guard let context = IntentDataAccess.makeContext() else { return [] }
         return IntentDataAccess.fetchPets(in: context).map { PetEntity(from: $0) }
