@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		1489468D2FA0252B0031F35C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1489457B2F9FC3200031F35C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 148945822F9FC3200031F35C;
+			remoteInfo = "Did I Feed The Dog?";
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		148945832F9FC3210031F35C /* Did I Feed The Dog?.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Did I Feed The Dog?.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		148946892FA0252B0031F35C /* Did I Feed The DogTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Did I Feed The DogTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -16,10 +27,22 @@
 			path = "Did I Feed The Dog";
 			sourceTree = "<group>";
 		};
+		1489468A2FA0252B0031F35C /* Did I Feed The DogTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Did I Feed The DogTests";
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		148945802F9FC3200031F35C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		148946862FA0252B0031F35C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				148945852F9FC3210031F35C /* Did I Feed The Dog */,
+				1489468A2FA0252B0031F35C /* Did I Feed The DogTests */,
 				148945842F9FC3210031F35C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				148945832F9FC3210031F35C /* Did I Feed The Dog?.app */,
+				148946892FA0252B0031F35C /* Did I Feed The DogTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +95,29 @@
 			productReference = 148945832F9FC3210031F35C /* Did I Feed The Dog?.app */;
 			productType = "com.apple.product-type.application";
 		};
+		148946882FA0252B0031F35C /* Did I Feed The DogTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 148946912FA0252B0031F35C /* Build configuration list for PBXNativeTarget "Did I Feed The DogTests" */;
+			buildPhases = (
+				148946852FA0252B0031F35C /* Sources */,
+				148946862FA0252B0031F35C /* Frameworks */,
+				148946872FA0252B0031F35C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1489468E2FA0252B0031F35C /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				1489468A2FA0252B0031F35C /* Did I Feed The DogTests */,
+			);
+			name = "Did I Feed The DogTests";
+			packageProductDependencies = (
+			);
+			productName = "Did I Feed The DogTests";
+			productReference = 148946892FA0252B0031F35C /* Did I Feed The DogTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -83,9 +131,13 @@
 					148945822F9FC3200031F35C = {
 						CreatedOnToolsVersion = 26.4.1;
 					};
+					148946882FA0252B0031F35C = {
+						CreatedOnToolsVersion = 26.4.1;
+						TestTargetID = 148945822F9FC3200031F35C;
+					};
 				};
 			};
-			buildConfigurationList = 1489457E2F9FC3200031F35C /* Build configuration list for PBXProject "Did I Feed The Dog?" */;
+			buildConfigurationList = 1489457E2F9FC3200031F35C /* Build configuration list for PBXProject "Did I Feed The Dog" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -100,12 +152,20 @@
 			projectRoot = "";
 			targets = (
 				148945822F9FC3200031F35C /* Did I Feed The Dog? */,
+				148946882FA0252B0031F35C /* Did I Feed The DogTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		148945812F9FC3200031F35C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		148946872FA0252B0031F35C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +182,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		148946852FA0252B0031F35C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1489468E2FA0252B0031F35C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 148945822F9FC3200031F35C /* Did I Feed The Dog? */;
+			targetProxy = 1489468D2FA0252B0031F35C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1489458E2F9FC3230031F35C /* Debug */ = {
@@ -308,10 +383,52 @@
 			};
 			name = Release;
 		};
+		1489468F2FA0252B0031F35C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4CD86DZ6WP;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.DelonSampaio.Did-I-Feed-The-DogTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Did I Feed The Dog?.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Did I Feed The Dog?";
+			};
+			name = Debug;
+		};
+		148946902FA0252B0031F35C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4CD86DZ6WP;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.DelonSampaio.Did-I-Feed-The-DogTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Did I Feed The Dog?.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Did I Feed The Dog?";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1489457E2F9FC3200031F35C /* Build configuration list for PBXProject "Did I Feed The Dog?" */ = {
+		1489457E2F9FC3200031F35C /* Build configuration list for PBXProject "Did I Feed The Dog" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1489458E2F9FC3230031F35C /* Debug */,
@@ -325,6 +442,15 @@
 			buildConfigurations = (
 				148945912F9FC3230031F35C /* Debug */,
 				148945922F9FC3230031F35C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		148946912FA0252B0031F35C /* Build configuration list for PBXNativeTarget "Did I Feed The DogTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1489468F2FA0252B0031F35C /* Debug */,
+				148946902FA0252B0031F35C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
