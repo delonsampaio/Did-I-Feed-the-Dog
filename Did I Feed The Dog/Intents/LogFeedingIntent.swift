@@ -16,6 +16,7 @@ struct LogFeedingIntent: AppIntent {
         Summary("Log \(\.$meal) feeding for \(\.$pet)")
     }
 
+    @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         guard let context = IntentDataAccess.makeContext() else {
             return .result(dialog: "Could not access app data.")

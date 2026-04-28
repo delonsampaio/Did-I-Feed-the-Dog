@@ -12,6 +12,7 @@ struct FoodStockStatusIntent: AppIntent {
         Summary("Check food stock for \(\.$pet)")
     }
 
+    @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         let stockModeRaw = UserDefaults.standard.string(forKey: "stockMode") ?? ""
         let stockMode = StockMode(rawValue: stockModeRaw) ?? .none

@@ -9,6 +9,8 @@ struct HelpView: View {
             foodStockSection
             feedingRemindersSection
             widgetSection
+            siriSection
+            icloudSection
             notificationsSection
         }
         .navigationTitle("Help & FAQ")
@@ -44,7 +46,7 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "How far back does the history go?",
-                answer: "All feeding events are stored indefinitely. The card shows the 3 most recent feedings. Tap the dog's name or photo to see the full history."
+                answer: "All feeding events are kept forever. The card shows the 3 most recent feedings. Tap the dog's name or photo to see the full history."
             )
             FAQRow(
                 question: "Can I delete a feeding entry?",
@@ -137,6 +139,44 @@ struct HelpView: View {
             FAQRow(
                 question: "What happens when I tap the widget?",
                 answer: "The small and medium widgets open the Log Feeding sheet for the tapped dog directly. The lock screen widgets open the app dashboard."
+            )
+        }
+    }
+
+    private var siriSection: some View {
+        Section("Siri & Shortcuts") {
+            FAQRow(
+                question: "How do I log a feeding with Siri?",
+                answer: "Say \"Log [dog's name]'s feeding in Did I Feed The Dog\". Siri will confirm the meal and log it instantly — no need to open the app."
+            )
+            FAQRow(
+                question: "How do I check if my dog has been fed?",
+                answer: "Say \"Did I feed [dog's name] in Did I Feed The Dog\". Siri will tell you when they were last fed and whether they're overdue."
+            )
+            FAQRow(
+                question: "How do I update food stock with Siri?",
+                answer: "Say \"Update [dog's name]'s food stock in Did I Feed The Dog\". Siri will ask how many portions you added and update the count."
+            )
+            FAQRow(
+                question: "Can I add these as shortcuts in the Shortcuts app?",
+                answer: "Yes. Open the Shortcuts app, tap the + button, and search for Did I Feed The Dog to see all available actions. You can also go to iPhone Settings -> Siri & Search -> Did I Feed The Dog to manage them."
+            )
+        }
+    }
+
+    private var icloudSection: some View {
+        Section("iCloud Sync") {
+            FAQRow(
+                question: "Does my data sync across devices?",
+                answer: "Yes. If everyone in your household is signed into the same iCloud account, feedings, food stock, and dog info stay in sync across all your iPhones automatically. Changes usually appear within about a minute."
+            )
+            FAQRow(
+                question: "What if two people log a feeding at the same time?",
+                answer: "Both feedings are saved. You may see two entries close together in the history — that's the accurate record of what happened."
+            )
+            FAQRow(
+                question: "Does the widget stay in sync too?",
+                answer: "Yes. The widget shows the same data as the app, so it reflects the most recent feeding logged by anyone in the household."
             )
         }
     }
