@@ -5,7 +5,7 @@ import SwiftData
 final class FeedingEvent {
     var timestamp: Date
     var mealType: String
-    var notes: String
+    var notes: String = ""
     var pet: Pet?
 
     init(timestamp: Date = .now, mealType: String, notes: String = "", pet: Pet) {
