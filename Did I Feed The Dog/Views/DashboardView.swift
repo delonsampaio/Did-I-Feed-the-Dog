@@ -1,3 +1,4 @@
+import AppIntents
 import SwiftUI
 import SwiftData
 
@@ -68,6 +69,7 @@ struct DashboardView: View {
                 allDogsReminderTimes: allDogsReminderTimes,
                 pets: pets
             )
+            DogFoodShortcuts.updateAppShortcutParameters()
         }
     }
 }
