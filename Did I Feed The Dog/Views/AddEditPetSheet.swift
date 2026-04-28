@@ -107,7 +107,7 @@ struct AddEditPetSheet: View {
                     }
                 }
             }
-            .navigationTitle(pet == nil ? "Add Dog" : "Edit \(pet!.name)")
+            .navigationTitle(pet == nil ? "Add Dog" : "Edit \(pet?.name ?? "Unknown")")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -124,8 +124,8 @@ struct AddEditPetSheet: View {
 
     private func prefillIfEditing() {
         guard let pet else { return }
-        name = pet.name
-        birthday = pet.birthday
+        name = pet.name ?? ""
+        birthday = pet.birthday ?? Date()
         foodStockCount = pet.foodStockCount
         photoData = pet.photoData
         feedingTimes = pet.feedingScheduleTimes.map { minutes in

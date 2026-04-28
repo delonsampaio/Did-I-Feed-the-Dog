@@ -45,7 +45,7 @@ struct SettingsView: View {
                     editingPet = pet
                 } label: {
                     HStack {
-                        Text(pet.name).foregroundStyle(.primary)
+                        Text(pet.name ?? "Unknown").foregroundStyle(.primary)
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.caption).foregroundStyle(.tertiary)
@@ -77,7 +77,7 @@ struct SettingsView: View {
                         set: { pet.foodStockCount = max(0, $0) }
                     ), in: 0...999) {
                         HStack {
-                            Text(pet.name)
+                            Text(pet.name ?? "Unknown")
                             Spacer()
                             Text("\(pet.foodStockCount) portions")
                                 .foregroundStyle(.secondary)
@@ -127,7 +127,7 @@ struct SettingsView: View {
         case .allDogs:
             NotificationManager.shared.removeAllFeedingReminders(petIds: pets.map(\.id))
             NotificationManager.shared.scheduleAllDogsReminders(
-                times: allDogsReminderTimes, petNames: pets.map(\.name)
+                times: allDogsReminderTimes, petNames: pets.map { $0.name ?? "Unknown" }
             )
         case .perDog:
             NotificationManager.shared.removeAllDogsReminders()
@@ -190,7 +190,7 @@ struct SettingsView: View {
                 ForEach(pets) { pet in
                     Button { editingPet = pet } label: {
                         HStack {
-                            Text(pet.name).foregroundStyle(.primary)
+                            Text(pet.name ?? "Unknown").foregroundStyle(.primary)
                             Spacer()
                             Text(scheduleLabel(for: pet))
                                 .font(.caption).foregroundStyle(.secondary)

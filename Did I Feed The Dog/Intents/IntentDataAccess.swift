@@ -8,7 +8,7 @@ enum IntentDataAccess {
             schema: schema,
             allowsSave: true,
             groupContainer: .identifier("group.com.delon.DidIFeedTheDog"),
-            cloudKitDatabase: .none
+            cloudKitDatabase: .automatic
         )
         return try? ModelContainer(for: schema, configurations: [config])
     }()

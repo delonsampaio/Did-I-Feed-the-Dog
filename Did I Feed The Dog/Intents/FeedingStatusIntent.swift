@@ -29,7 +29,7 @@ struct FeedingStatusIntent: AppIntent {
         let relativeTime = formatter.localizedString(for: lastEvent.timestamp, relativeTo: .now)
 
         if Calendar.current.isDateInToday(lastEvent.timestamp) {
-            return .result(dialog: "Yes — \(pet.name) was fed \(relativeTime) (\(lastEvent.mealType)).")
+            return .result(dialog: "Yes — \(pet.name) was fed \(relativeTime) (\(lastEvent.mealType ?? "a meal")).")
         } else {
             return .result(dialog: "\(pet.name) was last fed \(relativeTime). They may be overdue.")
         }

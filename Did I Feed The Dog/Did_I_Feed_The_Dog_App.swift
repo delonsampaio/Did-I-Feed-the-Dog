@@ -9,7 +9,7 @@ struct Did_I_Feed_The_Dog_App: App {
             schema: schema,
             allowsSave: true,
             groupContainer: .identifier("group.com.delon.DidIFeedTheDog"),
-            cloudKitDatabase: .none
+            cloudKitDatabase: .automatic
         )
         do {
             let container = try ModelContainer(for: schema, configurations: [config])
