@@ -101,7 +101,7 @@ struct SettingsView: View {
 
     private var allDogsReminderTimes: [Int] {
         get { allDogsReminderTimesRaw.split(separator: ",").compactMap { Int($0) } }
-        set { allDogsReminderTimesRaw = newValue.map(String.init).joined(separator: ",") }
+        nonmutating set { allDogsReminderTimesRaw = newValue.map(String.init).joined(separator: ",") }
     }
 
     private func minutesToDate(_ m: Int) -> Date {
