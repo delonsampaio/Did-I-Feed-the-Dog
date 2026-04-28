@@ -36,6 +36,7 @@ struct DashboardView: View {
                     }
                 }
             }
+            .navigationDestination(for: Pet.self) { pet in PetDetailView(pet: pet) }
             .sheet(isPresented: $showAddPet) { AddEditPetSheet() }
             .sheet(isPresented: $showSettings) { NavigationStack { SettingsView() } }
             .sheet(item: $deepLinkFeedingPet) { pet in LogFeedingSheet(pet: pet) }
