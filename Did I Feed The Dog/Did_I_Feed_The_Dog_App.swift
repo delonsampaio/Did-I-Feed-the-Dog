@@ -27,10 +27,10 @@ struct Did_I_Feed_The_Dog_App: App {
                 .task {
                     await NotificationManager.shared.requestAuthorization()
                 }
+                .onOpenURL { url in
+                    deepLinkPetId = parseDeepLink(url)
+                }
         }
         .modelContainer(sharedModelContainer)
-        .onOpenURL { url in
-            deepLinkPetId = parseDeepLink(url)
-        }
     }
 }
