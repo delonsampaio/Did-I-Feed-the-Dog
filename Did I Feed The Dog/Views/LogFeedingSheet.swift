@@ -50,7 +50,7 @@ struct LogFeedingSheet: View {
                     .padding(.horizontal, 24)
                     .padding(.bottom)
             }
-            .navigationTitle("Log Feeding — \(pet.name ?? "Unknown")")
+            .navigationTitle("Log Meal — \(pet.name ?? "Unknown")")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -117,7 +117,7 @@ struct LogFeedingSheet: View {
 
     private var confirmButton: some View {
         Button(action: logFeeding) {
-            Label("Log Feeding", systemImage: "checkmark.circle.fill")
+            Label("Log Meal", systemImage: "checkmark.circle.fill")
                 .font(.headline)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)

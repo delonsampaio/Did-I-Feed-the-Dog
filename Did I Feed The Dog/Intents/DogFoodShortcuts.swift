@@ -8,7 +8,7 @@ struct DogFoodShortcuts: AppShortcutsProvider {
                 "Log \(\.$pet)'s feeding in \(.applicationName)",
                 "Feed \(\.$pet) in \(.applicationName)"
             ],
-            shortTitle: "Log Feeding",
+            shortTitle: "Log Meal",
             systemImageName: "fork.knife"
         )
         AppShortcut(

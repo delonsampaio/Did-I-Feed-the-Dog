@@ -213,7 +213,7 @@ struct PetCard: View {
         Button {
             showFeedSheet = true
         } label: {
-            Label("Log Feeding", systemImage: "fork.knife")
+            Label("Log Meal", systemImage: "fork.knife")
                 .font(.headline)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)

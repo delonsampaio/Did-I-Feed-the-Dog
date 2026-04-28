@@ -25,7 +25,7 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "How do I log a feeding?",
-                answer: "Tap the green Log Feeding button on any dog's card. Choose the meal type (Morning, Evening, etc.) and confirm. The card updates immediately."
+                answer: "Tap the green Log Meal button on any dog's card. Choose the meal type (Morning, Evening, etc.) and confirm. The card updates immediately."
             )
             FAQRow(
                 question: "How do I edit a dog's info?",
@@ -59,7 +59,7 @@ struct HelpView: View {
         Section("Feeding Notes") {
             FAQRow(
                 question: "Can I add a note when logging a feeding?",
-                answer: "Yes. The Log Feeding sheet has an optional notes field below the meal picker. Use it for anything useful — gave medication, only ate half, used a different food, etc."
+                answer: "Yes. The Log Meal sheet has an optional notes field below the meal picker. Use it for anything useful — gave medication, only ate half, used a different food, etc."
             )
             FAQRow(
                 question: "Where do I see the notes I added?",
@@ -138,7 +138,7 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "What happens when I tap the widget?",
-                answer: "The small and medium widgets open the Log Feeding sheet for the tapped dog directly. The lock screen widgets open the app dashboard."
+                answer: "The small and medium widgets open the Log Meal sheet for the tapped dog directly. The lock screen widgets open the app dashboard."
             )
         }
     }
