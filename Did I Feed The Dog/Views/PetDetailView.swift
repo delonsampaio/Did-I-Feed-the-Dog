@@ -5,61 +5,89 @@ struct PetDetailView: View {
     @Environment(\.modelContext) private var modelContext
     let pet: Pet
 
-    private var sortedEvents: [FeedingEvent] {
-        pet.feedingEvents.sorted { $0.timestamp > $1.timestamp }
+    private var groupedEvents: [(date: Date, events: [FeedingEvent])] {
+        let sorted = pet.feedingEvents.sorted { $0.timestamp > $1.timestamp }
+        let grouped = Dictionary(grouping: sorted) {
+            Calendar.current.startOfDay(for: $0.timestamp)
+        }
+        return grouped
+            .sorted { $0.key > $1.key }
+            .map { (date: $0.key, events: $0.value) }
     }
 
-    private let timeFormatter: RelativeDateTimeFormatter = {
-        let f = RelativeDateTimeFormatter()
-        f.unitsStyle = .full
+    private static let timeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.timeStyle = .short
+        f.dateStyle = .none
         return f
     }()
 
-    private let dateFormatter: DateFormatter = {
+    private static let relativeFormatter: RelativeDateTimeFormatter = {
+        let f = RelativeDateTimeFormatter()
+        f.unitsStyle = .abbreviated
+        return f
+    }()
+
+    private static let sectionDateFormatter: DateFormatter = {
         let f = DateFormatter()
-        f.dateStyle = .medium
-        f.timeStyle = .short
+        f.dateStyle = .full
+        f.timeStyle = .none
         return f
     }()
 
     var body: some View {
         List {
-            if sortedEvents.isEmpty {
+            if groupedEvents.isEmpty {
                 ContentUnavailableView(
                     "No Feedings Yet",
                     systemImage: "fork.knife",
-                    description: Text("Tap 'Log Feeding' on \(pet.name)'s card to get started.")
+                    description: Text("Tap Log Feeding on \(pet.name)'s card to get started.")
                 )
                 .listRowBackground(Color.clear)
             } else {
-                ForEach(sortedEvents) { event in
-                    HStack {
-                        Text(emojiForMeal(event.mealType))
-                            .font(.title3)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(event.mealType)
-                                .font(.subheadline).fontWeight(.medium)
-                            Text(dateFormatter.string(from: event.timestamp))
-                                .font(.caption).foregroundStyle(.secondary)
+                ForEach(groupedEvents, id: \.date) { group in
+                    Section(header: Text(sectionTitle(for: group.date))) {
+                        ForEach(group.events) { event in
+                            eventRow(event)
                         }
-                        Spacer()
-                        Text(timeFormatter.localizedString(for: event.timestamp, relativeTo: .now))
-                            .font(.caption2).foregroundStyle(.tertiary)
+                        .onDelete { offsets in
+                            deleteEvents(group.events, at: offsets)
+                        }
                     }
                 }
-                .onDelete(perform: deleteEvents)
             }
         }
         .navigationTitle(pet.name)
         .navigationBarTitleDisplayMode(.large)
-        .toolbar {
-            EditButton()
+        .toolbar { EditButton() }
+    }
+
+    private func eventRow(_ event: FeedingEvent) -> some View {
+        HStack(spacing: 12) {
+            Text(emojiForMeal(event.mealType))
+                .font(.title3)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(event.mealType)
+                    .font(.subheadline).fontWeight(.medium)
+                Text(Self.timeFormatter.string(from: event.timestamp))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            Text(Self.relativeFormatter.localizedString(for: event.timestamp, relativeTo: .now))
+                .font(.caption2).foregroundStyle(.tertiary)
         }
     }
 
-    private func deleteEvents(at offsets: IndexSet) {
+    private func sectionTitle(for date: Date) -> String {
+        let calendar = Calendar.current
+        if calendar.isDateInToday(date)     { return "Today" }
+        if calendar.isDateInYesterday(date) { return "Yesterday" }
+        return Self.sectionDateFormatter.string(from: date)
+    }
+
+    private func deleteEvents(_ events: [FeedingEvent], at offsets: IndexSet) {
         for index in offsets {
-            modelContext.delete(sortedEvents[index])
+            modelContext.delete(events[index])
         }
     }
 
