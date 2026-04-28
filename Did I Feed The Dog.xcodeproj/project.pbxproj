@@ -58,8 +58,8 @@
 		1489474E2FA04F470031F35C /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		148947722FA04FA80031F35C /* DidIFeedTheDogTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DidIFeedTheDogTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1489477B2FA0504C0031F35C /* DidIFeedTheDogWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DidIFeedTheDogWidgetExtension.entitlements; sourceTree = "<group>"; };
-		1489477C2FA051BF0031F35C /* Did I Feed The Dog?.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Did I Feed The Dog?.entitlements"; sourceTree = "<group>"; };
 		1489477D2FA053580031F35C /* Did-I-Feed-The-Dog--Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Did-I-Feed-The-Dog--Info.plist"; sourceTree = "<group>"; };
+		148947812FA0603F0031F35C /* DidIFeedTheDog.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DidIFeedTheDog.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -142,13 +142,13 @@
 			isa = PBXGroup;
 			children = (
 				1489477D2FA053580031F35C /* Did-I-Feed-The-Dog--Info.plist */,
-				1489477C2FA051BF0031F35C /* Did I Feed The Dog?.entitlements */,
 				1489477B2FA0504C0031F35C /* DidIFeedTheDogWidgetExtension.entitlements */,
 				148945852F9FC3210031F35C /* Did I Feed The Dog */,
 				1489468A2FA0252B0031F35C /* Did I Feed The DogTests */,
 				148947502FA04F470031F35C /* DidIFeedTheDogWidget */,
 				1489474B2FA04F460031F35C /* Frameworks */,
 				148945842F9FC3210031F35C /* Products */,
+				148947812FA0603F0031F35C /* DidIFeedTheDog.entitlements */,
 			);
 			sourceTree = "<group>";
 		};
@@ -517,7 +517,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "Did I Feed The Dog?.entitlements";
+				CODE_SIGN_ENTITLEMENTS = DidIFeedTheDog.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4CD86DZ6WP;
@@ -552,7 +552,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "Did I Feed The Dog?.entitlements";
+				CODE_SIGN_ENTITLEMENTS = DidIFeedTheDog.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4CD86DZ6WP;
