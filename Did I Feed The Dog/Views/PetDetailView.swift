@@ -5,6 +5,8 @@ struct PetDetailView: View {
     @Environment(\.modelContext) private var modelContext
     let pet: Pet
 
+    @State private var editingEvent: FeedingEvent?
+
     private var groupedEvents: [(date: Date, events: [FeedingEvent])] {
         let sorted = pet.feedingEvents.sorted { $0.timestamp > $1.timestamp }
         let grouped = Dictionary(grouping: sorted) {
@@ -48,7 +50,10 @@ struct PetDetailView: View {
                 ForEach(groupedEvents, id: \.date) { group in
                     Section(header: Text(sectionTitle(for: group.date))) {
                         ForEach(group.events) { event in
-                            eventRow(event)
+                            Button { editingEvent = event } label: {
+                                eventRow(event)
+                            }
+                            .buttonStyle(.plain)
                         }
                         .onDelete { offsets in
                             deleteEvents(group.events, at: offsets)
@@ -60,6 +65,9 @@ struct PetDetailView: View {
         .navigationTitle(pet.name)
         .navigationBarTitleDisplayMode(.large)
         .toolbar { EditButton() }
+        .sheet(item: $editingEvent) { event in
+            EditNoteSheet(event: event)
+        }
     }
 
     private func eventRow(_ event: FeedingEvent) -> some View {
@@ -107,5 +115,43 @@ struct PetDetailView: View {
         case "Snack":     return "🦴"
         default:          return "✏️"
         }
+    }
+}
+
+private struct EditNoteSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let event: FeedingEvent
+
+    @State private var noteText = ""
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(event.mealType)
+                    .font(.headline)
+                    .padding(.horizontal)
+                TextField("Note (optional)", text: $noteText, axis: .vertical)
+                    .textFieldStyle(.roundedBorder)
+                    .lineLimit(3...6)
+                    .padding(.horizontal)
+                Spacer()
+            }
+            .padding(.top, 24)
+            .navigationTitle("Edit Note")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        event.notes = noteText.trimmingCharacters(in: .whitespacesAndNewlines)
+                        dismiss()
+                    }
+                }
+            }
+            .onAppear { noteText = event.notes }
+        }
+        .presentationDetents([.medium])
     }
 }
