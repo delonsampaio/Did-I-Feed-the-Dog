@@ -96,6 +96,12 @@ struct SettingsView: View {
                     }
                 }
             }
+
+            if stockMode != .none {
+                Text("Snack and Treat meals do not reduce the portion count.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 

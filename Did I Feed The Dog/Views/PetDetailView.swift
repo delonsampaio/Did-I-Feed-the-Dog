@@ -43,7 +43,7 @@ struct PetDetailView: View {
                 ContentUnavailableView(
                     "No Feedings Yet",
                     systemImage: "fork.knife",
-                    description: Text("Tap Log Feeding on \(pet.name ?? "Unknown")'s card to get started.")
+                    description: Text("Tap Log Meal on \(pet.name ?? "Unknown")'s card to get started.")
                 )
                 .listRowBackground(Color.clear)
             } else {
@@ -111,8 +111,10 @@ struct PetDetailView: View {
         case "Evening":   return "🌙"
         case "Breakfast": return "🍳"
         case "Lunch":     return "🥗"
+        case "Afternoon": return "☀️"
         case "Dinner":    return "🍽️"
         case "Snack":     return "🦴"
+        case "Treat":     return "🎉"
         default:          return "✏️"
         }
     }

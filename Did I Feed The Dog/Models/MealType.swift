@@ -1,7 +1,7 @@
 import Foundation
 
 enum MealType: Equatable {
-    case morning, evening, breakfast, lunch, dinner, snack, custom(String)
+    case morning, evening, breakfast, lunch, afternoon, dinner, snack, treat, custom(String)
 
     var label: String {
         switch self {
@@ -9,23 +9,35 @@ enum MealType: Equatable {
         case .evening:           return "Evening"
         case .breakfast:         return "Breakfast"
         case .lunch:             return "Lunch"
+        case .afternoon:         return "Afternoon"
         case .dinner:            return "Dinner"
         case .snack:             return "Snack"
+        case .treat:             return "Treat"
         case .custom(let text):  return text
         }
     }
 
     var emoji: String {
         switch self {
-        case .morning:   return "🌅"
-        case .evening:   return "🌙"
-        case .breakfast: return "🍳"
-        case .lunch:     return "🥗"
-        case .dinner:    return "🍽️"
-        case .snack:     return "🦴"
-        case .custom:    return "✏️"
+        case .morning:    return "🌅"
+        case .evening:    return "🌙"
+        case .breakfast:  return "🍳"
+        case .lunch:      return "🥗"
+        case .afternoon:  return "☀️"
+        case .dinner:     return "🍽️"
+        case .snack:      return "🦴"
+        case .treat:      return "🎉"
+        case .custom:     return "✏️"
         }
     }
 
-    static let presets: [MealType] = [.morning, .evening, .breakfast, .lunch, .dinner, .snack]
+    // Snack and Treat are supplementary — they don't count against the food bag stock
+    var decrementsStock: Bool {
+        switch self {
+        case .snack, .treat: return false
+        default:             return true
+        }
+    }
+
+    static let presets: [MealType] = [.morning, .evening, .breakfast, .lunch, .afternoon, .dinner, .snack, .treat]
 }

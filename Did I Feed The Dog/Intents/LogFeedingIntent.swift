@@ -3,7 +3,7 @@ import SwiftData
 import WidgetKit
 
 struct LogFeedingIntent: AppIntent {
-    static var title: LocalizedStringResource = "Log Feeding"
+    static var title: LocalizedStringResource = "Log Meal"
     static var description = IntentDescription("Log a meal for your dog")
 
     @Parameter(title: "Dog")
