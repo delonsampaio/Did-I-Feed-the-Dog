@@ -17,19 +17,19 @@ struct HelpView: View {
         Section("Getting Started") {
             FAQRow(
                 question: "How do I add a dog?",
-                answer: "Tap the + button on the dashboard, or go to Settings → Dogs → Add Dog. Enter your dog's name, birthday, and an optional photo."
+                answer: "Tap the + button on the dashboard, or go to Settings -> Dogs -> Add Dog. Enter your dog's name, birthday, and an optional photo."
             )
             FAQRow(
                 question: "How do I log a feeding?",
-                answer: "Tap the green "Log Feeding" button on any dog's card. Choose the meal type (Morning, Evening, etc.) and confirm. The card updates immediately."
+                answer: "Tap the green Log Feeding button on any dog's card. Choose the meal type (Morning, Evening, etc.) and confirm. The card updates immediately."
             )
             FAQRow(
                 question: "How do I edit a dog's info?",
-                answer: "Go to Settings → Dogs and tap the dog's name to open the edit sheet. You can update their name, birthday, photo, and food stock count."
+                answer: "Go to Settings -> Dogs and tap the dog's name to open the edit sheet. You can update their name, birthday, photo, and food stock count."
             )
             FAQRow(
                 question: "How do I delete a dog?",
-                answer: "In Settings → Dogs, swipe left on the dog's name and tap Delete. This also removes all of their feeding history."
+                answer: "In Settings -> Dogs, swipe left on the dog's name and tap Delete. This also removes all of their feeding history."
             )
         }
     }
@@ -37,8 +37,8 @@ struct HelpView: View {
     private var feedingStatusSection: some View {
         Section("Feeding Status") {
             FAQRow(
-                question: "What does "overdue" mean?",
-                answer: "A dog is marked overdue when their last recorded feeding was more than 12 hours ago. Their card shows a red "Last Fed" badge as a reminder."
+                question: "What does overdue mean?",
+                answer: "A dog is marked overdue when their last recorded feeding was more than 12 hours ago. Their card shows a red Last Fed badge as a reminder."
             )
             FAQRow(
                 question: "How far back does the history go?",
@@ -54,15 +54,15 @@ struct HelpView: View {
     private var foodStockSection: some View {
         Section("Food Stock") {
             FAQRow(
-                question: "What is "Per Dog" mode?",
-                answer: "Each dog has their own food count. Every time you log a feeding for a dog, their count decreases by one portion. Set each dog's starting count in Settings → Food Stock or by tapping the food stock cell on their card."
+                question: "What is Per Dog mode?",
+                answer: "Each dog has their own food count. Every time you log a feeding for a dog, their count decreases by one portion. Set each dog's starting count in Settings -> Food Stock or by tapping the food stock cell on their card."
             )
             FAQRow(
-                question: "What is "Shared Pool" mode?",
-                answer: "One bag of food shared across all dogs. The pool decreases by one portion each time any dog is fed. Set the starting count in Settings → Food Stock."
+                question: "What is Shared Pool mode?",
+                answer: "One bag of food shared across all dogs. The pool decreases by one portion each time any dog is fed. Set the starting count in Settings -> Food Stock."
             )
             FAQRow(
-                question: "What is "Not Tracked"?",
+                question: "What is Not Tracked?",
                 answer: "Food stock tracking is turned off. No counts are shown and nothing is decremented when you log a feeding."
             )
             FAQRow(
@@ -71,7 +71,7 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "What is the Low Stock Threshold?",
-                answer: "When a dog's stock drops to or below this number, a warning banner appears on their card and a push notification is sent (if enabled). You can adjust the threshold in Settings → Notifications."
+                answer: "When a dog's stock drops to or below this number, a warning banner appears on their card and a push notification is sent (if enabled). Adjust it in Settings -> Notifications."
             )
         }
     }
@@ -80,15 +80,15 @@ struct HelpView: View {
         Section("Widget") {
             FAQRow(
                 question: "How do I add the widget?",
-                answer: "Long-press the home screen until icons wiggle, tap the + button in the top-left corner, search for "Did I Feed The Dog", choose a size, and tap Add Widget."
+                answer: "Long-press the home screen until icons wiggle, tap the + button in the top-left corner, search for Did I Feed The Dog, choose a size, and tap Add Widget."
             )
             FAQRow(
                 question: "What do the widget sizes show?",
-                answer: "Small: your most overdue dog with their last-fed time. Medium: up to 3 dogs with fed/overdue status. Lock screen widgets show a quick summary count or the most overdue dog."
+                answer: "Small: your most overdue dog with their last-fed time. Medium: up to 3 dogs with fed/overdue status. Lock screen widgets show a quick count or the most overdue dog."
             )
             FAQRow(
                 question: "Why does the widget show old data?",
-                answer: "The widget refreshes automatically every hour. When you log a feeding in the app, the widget updates immediately — no need to wait."
+                answer: "The widget refreshes automatically every hour. When you log a feeding in the app, the widget updates immediately."
             )
             FAQRow(
                 question: "What happens when I tap the widget?",
@@ -109,11 +109,11 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "What is the Low Stock UI Warning?",
-                answer: "An orange banner that appears on the dog's card (inside the app) when their stock is low. This is separate from the push notification."
+                answer: "An orange banner that appears on the dog's card when stock is low. This is separate from the push notification."
             )
             FAQRow(
                 question: "I'm not receiving notifications. What should I check?",
-                answer: "Go to your iPhone's Settings → Notifications → Did I Feed The Dog and make sure notifications are allowed. Also confirm the toggles are on in the app's Settings → Notifications."
+                answer: "Go to iPhone Settings -> Notifications -> Did I Feed The Dog and make sure notifications are allowed. Also confirm the toggles are on in the app's Settings -> Notifications."
             )
         }
     }
