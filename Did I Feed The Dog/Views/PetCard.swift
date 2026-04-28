@@ -12,7 +12,7 @@ struct PetCard: View {
     @State private var showEditSheet = false
 
     private var recentEvents: [FeedingEvent] {
-        pet.feedingEvents
+        (pet.feedingEvents ?? [])
             .sorted { $0.timestamp > $1.timestamp }
             .prefix(3)
             .map { $0 }
