@@ -16,7 +16,7 @@ struct PetEntity: AppEntity {
 
     init(from pet: Pet) {
         self.id = pet.id
-        self.name = pet.name
+        self.name = pet.name ?? "Unknown"
         self.foodStockCount = pet.foodStockCount
         self.lastFedTimestamp = pet.lastFeedingEvent?.timestamp
     }
@@ -33,7 +33,7 @@ struct PetEntityQuery: EntityQuery, EntityStringQuery {
     func entities(matching string: String) async throws -> [PetEntity] {
         guard let context = IntentDataAccess.makeContext() else { return [] }
         return IntentDataAccess.fetchPets(in: context)
-            .filter { $0.name.localizedCaseInsensitiveContains(string) }
+            .filter { ($0.name ?? "").localizedCaseInsensitiveContains(string) }
             .map { PetEntity(from: $0) }
     }
 
