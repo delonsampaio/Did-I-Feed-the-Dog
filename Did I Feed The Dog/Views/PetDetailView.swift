@@ -1,9 +1,13 @@
 import SwiftUI
 import SwiftData
+import WidgetKit
 
 struct PetDetailView: View {
     @Environment(\.modelContext) private var modelContext
     let pet: Pet
+
+    @AppStorage("stockMode")       private var stockMode: StockMode = .individual
+    @AppStorage("sharedFoodStock") private var sharedFoodStock = 0
 
     @State private var editingEvent: FeedingEvent?
 
@@ -54,6 +58,21 @@ struct PetDetailView: View {
                                 eventRow(event)
                             }
                             .buttonStyle(.plain)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button(role: .destructive) {
+                                    deleteEvent(event, restoreStock: false)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                                if stockMode != .none && eventDecrementsStock(event) {
+                                    Button {
+                                        deleteEvent(event, restoreStock: true)
+                                    } label: {
+                                        Label("Delete & Restore Portion", systemImage: "arrow.uturn.backward")
+                                    }
+                                    .tint(.blue)
+                                }
+                            }
                         }
                         .onDelete { offsets in
                             deleteEvents(group.events, at: offsets)
@@ -99,10 +118,28 @@ struct PetDetailView: View {
         return Self.sectionDateFormatter.string(from: date)
     }
 
+    private func eventDecrementsStock(_ event: FeedingEvent) -> Bool {
+        let nonStockMeals: Set<String> = ["Snack", "Treat"]
+        return !nonStockMeals.contains(event.mealType ?? "")
+    }
+
+    private func deleteEvent(_ event: FeedingEvent, restoreStock: Bool) {
+        if restoreStock {
+            switch stockMode {
+            case .individual: pet.foodStockCount += 1
+            case .shared:     sharedFoodStock += 1
+            case .none:       break
+            }
+        }
+        modelContext.delete(event)
+        WidgetCenter.shared.reloadAllTimelines()
+    }
+
     private func deleteEvents(_ events: [FeedingEvent], at offsets: IndexSet) {
         for index in offsets {
             modelContext.delete(events[index])
         }
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private func emojiForMeal(_ mealType: String) -> String {
