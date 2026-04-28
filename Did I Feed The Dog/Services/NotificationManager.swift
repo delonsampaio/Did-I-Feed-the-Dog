@@ -7,7 +7,7 @@ final class NotificationManager {
 
     func requestAuthorization() async {
         _ = try? await UNUserNotificationCenter.current().requestAuthorization(
-            options: [.alert, .sound, .badge, .provisional]
+            options: [.alert, .sound, .badge]
         )
     }
 
