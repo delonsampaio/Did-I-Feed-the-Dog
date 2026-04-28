@@ -6,6 +6,7 @@ struct PetCard: View {
     @AppStorage("lowStockThreshold") private var lowStockThreshold = 5
     @AppStorage("stockMode")         private var stockMode: StockMode = .individual
     @AppStorage("sharedFoodStock")   private var sharedFoodStock = 0
+    @AppStorage("reminderMode")      private var reminderMode: ReminderMode = .none
 
     let pet: Pet
     @State private var showFeedSheet = false
