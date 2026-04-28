@@ -69,20 +69,28 @@ struct SettingsView: View {
 
             if stockMode == .individual {
                 ForEach(pets) { pet in
-                    HStack {
-                        Text(pet.name)
-                        Spacer()
-                        Stepper("\(pet.foodStockCount) portions", value: Binding(
-                            get: { pet.foodStockCount },
-                            set: { pet.foodStockCount = max(0, $0) }
-                        ), in: 0...999)
+                    Stepper(value: Binding(
+                        get: { pet.foodStockCount },
+                        set: { pet.foodStockCount = max(0, $0) }
+                    ), in: 0...999) {
+                        HStack {
+                            Text(pet.name)
+                            Spacer()
+                            Text("\(pet.foodStockCount) portions")
+                                .foregroundStyle(.secondary)
+                                .monospacedDigit()
+                        }
                     }
                 }
             } else if stockMode == .shared {
-                HStack {
-                    Text("Shared Pool")
-                    Spacer()
-                    Stepper("\(sharedFoodStock) portions", value: $sharedFoodStock, in: 0...9999)
+                Stepper(value: $sharedFoodStock, in: 0...9999) {
+                    HStack {
+                        Text("Shared Pool")
+                        Spacer()
+                        Text("\(sharedFoodStock) portions")
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
                 }
             }
         }
@@ -93,10 +101,14 @@ struct SettingsView: View {
             Toggle("Low Stock UI Warning", isOn: $lowStockUIWarning)
             Toggle("Low Stock Push Alert", isOn: $lowStockPushEnabled)
             Toggle("Birthday Push Alert", isOn: $birthdayPushEnabled)
-            HStack {
-                Text("Low Stock Threshold")
-                Spacer()
-                Stepper("\(lowStockThreshold) portions", value: $lowStockThreshold, in: 1...50)
+            Stepper(value: $lowStockThreshold, in: 1...50) {
+                HStack {
+                    Text("Low Stock Threshold")
+                    Spacer()
+                    Text("\(lowStockThreshold) portions")
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
             }
         }
     }
