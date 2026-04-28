@@ -101,15 +101,19 @@ struct HelpView: View {
         Section("Food Stock") {
             FAQRow(
                 question: "What is Per Dog mode?",
-                answer: "Each dog has their own food count. Every time you log a feeding for a dog, their count decreases by one portion. Set each dog's starting count in Settings -> Food Stock or by tapping the food stock cell on their card."
+                answer: "Each dog has their own food count. Every time you log a meal for a dog, their count decreases by one portion. Snack and Treat meals are the exception — they don't reduce the count. Set each dog's starting count in Settings -> Food Stock or by tapping the food stock cell on their card."
             )
             FAQRow(
                 question: "What is Shared Pool mode?",
-                answer: "One bag of food shared across all dogs. The pool decreases by one portion each time any dog is fed. Set the starting count in Settings -> Food Stock."
+                answer: "One bag of food shared across all dogs. The pool decreases by one portion each time any dog is fed a meal. Snack and Treat logs do not reduce the shared count. Set the starting count in Settings -> Food Stock."
             )
             FAQRow(
                 question: "What is Not Tracked?",
-                answer: "Food stock tracking is turned off. No counts are shown and nothing is decremented when you log a feeding."
+                answer: "Food stock tracking is turned off. No counts are shown and nothing is decremented when you log a meal."
+            )
+            FAQRow(
+                question: "Do Snack or Treat meals count against the food stock?",
+                answer: "No. Snack and Treat are logged in the history for reference but do not reduce the portion count. All other meal types (Morning, Evening, Breakfast, Lunch, Afternoon, Dinner, and Custom) do reduce the count by one."
             )
             FAQRow(
                 question: "How do I restock?",

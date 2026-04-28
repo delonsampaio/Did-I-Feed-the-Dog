@@ -53,7 +53,10 @@ struct AddEditPetSheet: View {
                 }
 
                 if stockMode == .individual {
-                    Section("Food Stock") {
+                    Section(
+                        header: Text("Food Stock"),
+                        footer: Text("Snack and Treat meals do not reduce the portion count.")
+                    ) {
                         Stepper(value: $foodStockCount, in: 0...999) {
                             HStack {
                                 Text("Portions")
