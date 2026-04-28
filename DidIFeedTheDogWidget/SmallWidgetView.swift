@@ -7,9 +7,13 @@ struct SmallWidgetView: View {
 
     private let deepLinkBase = "didfeedthedog://log?petId="
 
+    private func deepLinkURL(for petId: UUID) -> URL {
+        URL(string: deepLinkBase + petId.uuidString)!
+    }
+
     var body: some View {
         if let pet = entry.mostOverdue {
-            Link(destination: URL(string: deepLinkBase + pet.id.uuidString)!) {
+            Link(destination: deepLinkURL(for: pet.id)) {
                 filledView(pet: pet)
             }
         } else {
@@ -90,10 +94,14 @@ struct SmallWidgetView: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
+    private static let relativeFormatter: RelativeDateTimeFormatter = {
+        let f = RelativeDateTimeFormatter()
+        f.unitsStyle = .abbreviated
+        return f
+    }()
+
     private func relativeTime(_ date: Date?) -> String {
         guard let date else { return "Never" }
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: date, relativeTo: .now)
+        return Self.relativeFormatter.localizedString(for: date, relativeTo: .now)
     }
 }
