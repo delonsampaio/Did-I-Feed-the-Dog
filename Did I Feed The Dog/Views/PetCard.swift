@@ -148,6 +148,11 @@ struct PetCard: View {
         .padding(.bottom, 10)
     }
 
+    private var nextMealInfo: (value: String, unit: String)? {
+        guard reminderMode == .perDog else { return nil }
+        return nextMealLabel(from: pet.feedingScheduleTimes)
+    }
+
     private var statsRow: some View {
         HStack(spacing: 12) {
             if stockMode != .none {
@@ -169,6 +174,14 @@ struct PetCard: View {
                 unit: "feedings",
                 accent: .primary
             )
+            if let info = nextMealInfo {
+                statCell(
+                    title: "Next Meal",
+                    value: info.value,
+                    unit: info.unit,
+                    accent: .primary
+                )
+            }
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 14)
