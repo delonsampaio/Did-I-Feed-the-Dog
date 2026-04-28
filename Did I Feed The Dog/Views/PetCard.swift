@@ -10,6 +10,7 @@ struct PetCard: View {
     let pet: Pet
     @State private var showFeedSheet = false
     @State private var showEditSheet = false
+    @State private var showSharedStockSheet = false
 
     private var recentEvents: [FeedingEvent] {
         (pet.feedingEvents ?? [])
@@ -48,8 +49,10 @@ struct PetCard: View {
                 .buttonStyle(.plain)
 
             if isLowStock {
-                Button { showEditSheet = true } label: { lowStockBanner }
-                    .buttonStyle(.plain)
+                Button {
+                    if stockMode == .shared { showSharedStockSheet = true } else { showEditSheet = true }
+                } label: { lowStockBanner }
+                .buttonStyle(.plain)
             }
 
             statsRow
@@ -69,6 +72,9 @@ struct PetCard: View {
         }
         .sheet(isPresented: $showEditSheet) {
             AddEditPetSheet(pet: pet)
+        }
+        .sheet(isPresented: $showSharedStockSheet) {
+            SharedStockSheet(sharedFoodStock: $sharedFoodStock)
         }
     }
 
@@ -145,7 +151,9 @@ struct PetCard: View {
     private var statsRow: some View {
         HStack(spacing: 12) {
             if stockMode != .none {
-                Button { showEditSheet = true } label: {
+                Button {
+                    if stockMode == .shared { showSharedStockSheet = true } else { showEditSheet = true }
+                } label: {
                     statCell(
                         title: stockMode == .shared ? "House Stock" : "Food Stock",
                         value: "\(currentStockCount)",
@@ -227,5 +235,56 @@ struct PetCard: View {
         case "Snack":     return "🦴"
         default:          return "✏️"
         }
+    }
+}
+
+private struct SharedStockSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Binding var sharedFoodStock: Int
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 32) {
+                VStack(spacing: 8) {
+                    Text("\(sharedFoodStock)")
+                        .font(.system(size: 72, weight: .bold, design: .rounded))
+                        .foregroundStyle(.primary)
+                    Text("portions remaining")
+                        .font(.subheadline).foregroundStyle(.secondary)
+                }
+
+                HStack(spacing: 24) {
+                    Button {
+                        if sharedFoodStock > 0 { sharedFoodStock -= 1 }
+                    } label: {
+                        Image(systemName: "minus.circle.fill")
+                            .font(.system(size: 44))
+                            .foregroundStyle(.secondary)
+                    }
+                    Button {
+                        if sharedFoodStock < 9999 { sharedFoodStock += 1 }
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 44))
+                            .foregroundStyle(.green)
+                    }
+                }
+
+                Stepper("Adjust by 10", value: $sharedFoodStock, in: 0...9999, step: 10)
+                    .labelsHidden()
+                    .padding(.horizontal, 40)
+
+                Spacer()
+            }
+            .padding(.top, 40)
+            .navigationTitle("Shared Food Stock")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.medium])
     }
 }
