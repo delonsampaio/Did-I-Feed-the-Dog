@@ -8,7 +8,13 @@ final class Pet {
     var birthday: Date
     var photoData: Data?
     var foodStockCount: Int
+    var feedingScheduleTimesRaw: String
     @Relationship(deleteRule: .cascade) var feedingEvents: [FeedingEvent] = []
+
+    var feedingScheduleTimes: [Int] {
+        get { feedingScheduleTimesRaw.split(separator: ",").compactMap { Int($0) } }
+        set { feedingScheduleTimesRaw = newValue.map(String.init).joined(separator: ",") }
+    }
 
     init(name: String, birthday: Date, photoData: Data? = nil, foodStockCount: Int = 0) {
         self.id = UUID()
@@ -16,6 +22,7 @@ final class Pet {
         self.birthday = birthday
         self.photoData = photoData
         self.foodStockCount = foodStockCount
+        self.feedingScheduleTimesRaw = ""
     }
 
     var ageString: String {

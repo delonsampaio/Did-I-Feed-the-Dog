@@ -5,15 +5,22 @@ import WidgetKit
 struct LogFeedingSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("lowStockPushEnabled") private var lowStockPushEnabled = true
-    @AppStorage("lowStockThreshold")  private var lowStockThreshold = 5
-    @AppStorage("stockMode")          private var stockMode: StockMode = .individual
-    @AppStorage("sharedFoodStock")    private var sharedFoodStock = 0
+    @AppStorage("lowStockPushEnabled")     private var lowStockPushEnabled = true
+    @AppStorage("lowStockThreshold")       private var lowStockThreshold = 5
+    @AppStorage("stockMode")               private var stockMode: StockMode = .individual
+    @AppStorage("sharedFoodStock")         private var sharedFoodStock = 0
+    @AppStorage("reminderMode")            private var reminderMode: ReminderMode = .none
+    @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
+
+    private var allDogsReminderTimes: [Int] {
+        allDogsReminderTimesRaw.split(separator: ",").compactMap { Int($0) }
+    }
 
     let pet: Pet
     @State private var selectedMealType: MealType = .morning
     @State private var customLabel = ""
     @State private var showCustomField = false
+    @State private var notes = ""
 
     var body: some View {
         NavigationStack {
@@ -30,6 +37,11 @@ struct LogFeedingSheet: View {
                         .padding(.horizontal)
                 }
 
+                TextField("Add a note (optional)", text: $notes, axis: .vertical)
+                    .textFieldStyle(.roundedBorder)
+                    .lineLimit(2...3)
+                    .padding(.horizontal)
+
                 Spacer()
 
                 confirmButton
@@ -45,7 +57,7 @@ struct LogFeedingSheet: View {
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
     }
 
     private var mealPicker: some View {
@@ -126,7 +138,7 @@ struct LogFeedingSheet: View {
 
     private func logFeeding() {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        let event = FeedingEvent(mealType: resolvedMealLabel, pet: pet)
+        let event = FeedingEvent(mealType: resolvedMealLabel, notes: notes.trimmingCharacters(in: .whitespacesAndNewlines), pet: pet)
         modelContext.insert(event)
 
         switch stockMode {
@@ -145,6 +157,11 @@ struct LogFeedingSheet: View {
         }
 
         WidgetCenter.shared.reloadAllTimelines()
+        NotificationManager.shared.suppressNextUpcomingReminder(
+            reminderMode: reminderMode,
+            for: pet,
+            allDogsReminderTimes: allDogsReminderTimes
+        )
         dismiss()
     }
 }
