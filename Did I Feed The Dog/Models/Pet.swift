@@ -8,7 +8,7 @@ final class Pet {
     var birthday: Date
     var photoData: Data?
     var foodStockCount: Int
-    var feedingScheduleTimesRaw: String
+    var feedingScheduleTimesRaw: String = ""
     @Relationship(deleteRule: .cascade) var feedingEvents: [FeedingEvent] = []
 
     var feedingScheduleTimes: [Int] {
