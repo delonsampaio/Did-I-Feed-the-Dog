@@ -47,7 +47,7 @@ struct LogFeedingSheet: View {
             .padding(.top, 24)
             .safeAreaInset(edge: .bottom) {
                 confirmButton
-                    .padding(.horizontal)
+                    .padding(.horizontal, 24)
                     .padding(.bottom)
             }
             .navigationTitle("Log Feeding — \(pet.name)")
