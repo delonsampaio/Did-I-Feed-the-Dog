@@ -28,14 +28,19 @@ struct Provider: TimelineProvider {
     }
 
     @MainActor
-    private func fetchPetSnapshots() -> [PetSnapshot] {
+    private static let sharedContainer: ModelContainer? = {
         let schema = Schema([Pet.self, FeedingEvent.self])
         let config = ModelConfiguration(
             schema: schema,
             allowsSave: false,
             groupContainer: .identifier("group.com.delon.DidIFeedTheDog")
         )
-        guard let container = try? ModelContainer(for: schema, configurations: config),
+        return try? ModelContainer(for: schema, configurations: config)
+    }()
+
+    @MainActor
+    private func fetchPetSnapshots() -> [PetSnapshot] {
+        guard let container = Self.sharedContainer,
               let pets = try? container.mainContext.fetch(FetchDescriptor<Pet>())
         else { return [] }
 

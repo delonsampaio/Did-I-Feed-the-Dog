@@ -24,17 +24,21 @@ struct CircularWidgetView: View {
 struct RectangularWidgetView: View {
     let entry: WidgetEntry
 
+    private let deepLinkBase = "didfeedthedog://log?petId="
+
     var body: some View {
         if let pet = entry.mostOverdue {
-            HStack(spacing: 8) {
-                Text("🐾").font(.title3)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(pet.isFeedingOverdue ? "\(pet.name) needs feeding" : "\(pet.name) is fed")
-                        .font(.system(size: 12, weight: .bold))
-                        .lineLimit(1)
-                    Text(relativeTime(pet.lastFedDate))
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+            Link(destination: deepLinkURL(for: pet.id)) {
+                HStack(spacing: 8) {
+                    Text("🐾").font(.title3)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(pet.isFeedingOverdue ? "\(pet.name) needs feeding" : "\(pet.name) is fed")
+                            .font(.system(size: 12, weight: .bold))
+                            .lineLimit(1)
+                        Text(relativeTime(pet.lastFedDate))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
         } else {
@@ -42,6 +46,10 @@ struct RectangularWidgetView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
+    }
+
+    private func deepLinkURL(for petId: UUID) -> URL {
+        URL(string: deepLinkBase + petId.uuidString)!
     }
 
     private static let relativeFormatter: RelativeDateTimeFormatter = {
