@@ -43,12 +43,13 @@ struct LogFeedingSheet: View {
                     .padding(.horizontal)
 
                 Spacer()
-
+            }
+            .padding(.top, 24)
+            .safeAreaInset(edge: .bottom) {
                 confirmButton
                     .padding(.horizontal)
                     .padding(.bottom)
             }
-            .padding(.top, 24)
             .navigationTitle("Log Feeding — \(pet.name)")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
