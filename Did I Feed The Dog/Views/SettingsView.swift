@@ -145,6 +145,9 @@ struct SettingsView: View {
 
     private var supportSection: some View {
         Section("Support") {
+            NavigationLink(destination: HelpView()) {
+                Label("Help & FAQ", systemImage: "questionmark.circle")
+            }
             Button {
                 requestReview()
             } label: {
