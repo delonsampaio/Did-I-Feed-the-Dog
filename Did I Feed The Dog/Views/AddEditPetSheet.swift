@@ -6,6 +6,7 @@ struct AddEditPetSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @AppStorage("birthdayPushEnabled") private var birthdayPushEnabled = true
+    @AppStorage("stockMode") private var stockMode: StockMode = .individual
 
     var pet: Pet? // nil = create mode
 
@@ -49,15 +50,25 @@ struct AddEditPetSheet: View {
                     }
                 }
 
-                Section("Food Stock") {
-                    Stepper("Portions: \(foodStockCount)", value: $foodStockCount, in: 0...999)
-                    HStack {
-                        Text("Or enter directly:")
-                        Spacer()
-                        TextField("0", value: $foodStockCount, format: .number)
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.trailing)
-                            .frame(width: 60)
+                if stockMode == .individual {
+                    Section("Food Stock") {
+                        Stepper(value: $foodStockCount, in: 0...999) {
+                            HStack {
+                                Text("Portions")
+                                Spacer()
+                                Text("\(foodStockCount)")
+                                    .foregroundStyle(.secondary)
+                                    .monospacedDigit()
+                            }
+                        }
+                        HStack {
+                            Text("Enter directly")
+                            Spacer()
+                            TextField("0", value: $foodStockCount, format: .number)
+                                .keyboardType(.numberPad)
+                                .multilineTextAlignment(.trailing)
+                                .frame(width: 60)
+                        }
                     }
                 }
             }
