@@ -71,6 +71,12 @@ struct PetDetailView: View {
                     .font(.subheadline).fontWeight(.medium)
                 Text(Self.timeFormatter.string(from: event.timestamp))
                     .font(.caption).foregroundStyle(.secondary)
+                if !event.notes.isEmpty {
+                    Text(event.notes)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .italic()
+                }
             }
             Spacer()
             Text(Self.relativeFormatter.localizedString(for: event.timestamp, relativeTo: .now))

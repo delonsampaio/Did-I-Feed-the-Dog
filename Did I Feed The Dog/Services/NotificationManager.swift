@@ -55,4 +55,64 @@ final class NotificationManager {
             withIdentifiers: [birthdayIdentifier(for: pet)]
         )
     }
+
+    // MARK: - Feeding reminders
+
+    func scheduleAllDogsReminders(times: [Int], petNames: [String]) {
+        removeAllDogsReminders()
+        let nameList = ListFormatter.localizedString(byJoining: petNames)
+        for (i, minutes) in times.enumerated() {
+            scheduleReminder(
+                identifier: "feeding-all-\(i)",
+                title: "Time to Feed Your Dogs",
+                body: "Don't forget to feed \(nameList)!",
+                minutesSinceMidnight: minutes
+            )
+        }
+    }
+
+    func schedulePerDogReminders(for pet: Pet, times: [Int]) {
+        removePerDogReminders(for: pet)
+        for (i, minutes) in times.enumerated() {
+            scheduleReminder(
+                identifier: "feeding-\(pet.id.uuidString)-\(i)",
+                title: "Time to Feed \(pet.name)",
+                body: "Don't forget \(pet.name)'s feeding!",
+                minutesSinceMidnight: minutes
+            )
+        }
+    }
+
+    func removeAllDogsReminders() {
+        let ids = (0..<5).map { "feeding-all-\($0)" }
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
+    }
+
+    func removePerDogReminders(for pet: Pet) {
+        let ids = (0..<5).map { "feeding-\(pet.id.uuidString)-\($0)" }
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
+    }
+
+    func removeAllFeedingReminders(petIds: [UUID]) {
+        removeAllDogsReminders()
+        for id in petIds {
+            let ids = (0..<5).map { "feeding-\(id.uuidString)-\($0)" }
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
+        }
+    }
+
+    private func scheduleReminder(identifier: String, title: String, body: String, minutesSinceMidnight: Int) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body  = body
+        content.sound = .default
+
+        var components = DateComponents()
+        components.hour   = minutesSinceMidnight / 60
+        components.minute = minutesSinceMidnight % 60
+
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+        UNUserNotificationCenter.current().add(request)
+    }
 }

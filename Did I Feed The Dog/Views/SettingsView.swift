@@ -7,12 +7,14 @@ struct SettingsView: View {
     @Environment(\.requestReview) private var requestReview
     @Query(sort: \Pet.name) private var pets: [Pet]
 
-    @AppStorage("lowStockUIWarning")    private var lowStockUIWarning = true
-    @AppStorage("lowStockPushEnabled")  private var lowStockPushEnabled = true
-    @AppStorage("birthdayPushEnabled")  private var birthdayPushEnabled = true
-    @AppStorage("lowStockThreshold")    private var lowStockThreshold = 5
-    @AppStorage("stockMode")            private var stockMode: StockMode = .individual
-    @AppStorage("sharedFoodStock")      private var sharedFoodStock = 0
+    @AppStorage("lowStockUIWarning")       private var lowStockUIWarning = true
+    @AppStorage("lowStockPushEnabled")     private var lowStockPushEnabled = true
+    @AppStorage("birthdayPushEnabled")     private var birthdayPushEnabled = true
+    @AppStorage("lowStockThreshold")       private var lowStockThreshold = 5
+    @AppStorage("stockMode")              private var stockMode: StockMode = .individual
+    @AppStorage("sharedFoodStock")         private var sharedFoodStock = 0
+    @AppStorage("reminderMode")            private var reminderMode: ReminderMode = .none
+    @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
 
     @State private var editingPet: Pet?
     @State private var showAddPet = false
@@ -21,6 +23,7 @@ struct SettingsView: View {
         Form {
             petsSection
             foodStockSection
+            feedingRemindersSection
             notificationsSection
             safetySection
             supportSection
@@ -92,6 +95,112 @@ struct SettingsView: View {
                             .monospacedDigit()
                     }
                 }
+            }
+        }
+    }
+
+    private var allDogsReminderTimes: [Int] {
+        get { allDogsReminderTimesRaw.split(separator: ",").compactMap { Int($0) } }
+        set { allDogsReminderTimesRaw = newValue.map(String.init).joined(separator: ",") }
+    }
+
+    private func minutesToDate(_ m: Int) -> Date {
+        Calendar.current.date(bySettingHour: m / 60, minute: m % 60, second: 0, of: .now) ?? .now
+    }
+
+    private func dateToMinutes(_ d: Date) -> Int {
+        let c = Calendar.current.dateComponents([.hour, .minute], from: d)
+        return (c.hour ?? 0) * 60 + (c.minute ?? 0)
+    }
+
+    private func scheduleLabel(for pet: Pet) -> String {
+        let times = pet.feedingScheduleTimes
+        guard !times.isEmpty else { return "No reminders" }
+        let f = DateFormatter(); f.timeStyle = .short; f.dateStyle = .none
+        return times.map { f.string(from: minutesToDate($0)) }.joined(separator: ", ")
+    }
+
+    private func updateReminders() {
+        switch reminderMode {
+        case .none:
+            NotificationManager.shared.removeAllFeedingReminders(petIds: pets.map(\.id))
+        case .allDogs:
+            NotificationManager.shared.removeAllFeedingReminders(petIds: pets.map(\.id))
+            NotificationManager.shared.scheduleAllDogsReminders(
+                times: allDogsReminderTimes, petNames: pets.map(\.name)
+            )
+        case .perDog:
+            NotificationManager.shared.removeAllDogsReminders()
+            for pet in pets {
+                NotificationManager.shared.schedulePerDogReminders(for: pet, times: pet.feedingScheduleTimes)
+            }
+        }
+    }
+
+    private var feedingRemindersSection: some View {
+        Section("Feeding Reminders") {
+            Picker("Schedule", selection: $reminderMode) {
+                ForEach(ReminderMode.allCases, id: \.self) { Text($0.label).tag($0) }
+            }
+            .onChange(of: reminderMode) { _, _ in
+                if reminderMode == .allDogs && allDogsReminderTimes.isEmpty {
+                    allDogsReminderTimes = [7 * 60, 18 * 60]
+                }
+                updateReminders()
+            }
+
+            if reminderMode == .allDogs {
+                ForEach(Array(allDogsReminderTimes.enumerated()), id: \.offset) { index, minutes in
+                    HStack {
+                        DatePicker(
+                            "Time \(index + 1)",
+                            selection: Binding(
+                                get: { minutesToDate(minutes) },
+                                set: {
+                                    var t = allDogsReminderTimes
+                                    t[index] = dateToMinutes($0)
+                                    allDogsReminderTimes = t
+                                    updateReminders()
+                                }
+                            ),
+                            displayedComponents: .hourAndMinute
+                        )
+                        Button(role: .destructive) {
+                            var t = allDogsReminderTimes
+                            t.remove(at: index)
+                            allDogsReminderTimes = t
+                            updateReminders()
+                        } label: {
+                            Image(systemName: "minus.circle.fill").foregroundStyle(.red)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                if allDogsReminderTimes.count < 3 {
+                    Button {
+                        var t = allDogsReminderTimes
+                        t.append(12 * 60)
+                        allDogsReminderTimes = t
+                        updateReminders()
+                    } label: {
+                        Label("Add Reminder Time", systemImage: "plus.circle.fill")
+                    }
+                }
+            } else if reminderMode == .perDog {
+                ForEach(pets) { pet in
+                    Button { editingPet = pet } label: {
+                        HStack {
+                            Text(pet.name).foregroundStyle(.primary)
+                            Spacer()
+                            Text(scheduleLabel(for: pet))
+                                .font(.caption).foregroundStyle(.secondary)
+                            Image(systemName: "chevron.right")
+                                .font(.caption).foregroundStyle(.tertiary)
+                        }
+                    }
+                }
+                Text("Tap a dog to set their reminder times.")
+                    .font(.caption).foregroundStyle(.secondary)
             }
         }
     }
