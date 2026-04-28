@@ -1,11 +1,14 @@
 import SwiftUI
 import SwiftData
+import WidgetKit
 
 struct LogFeedingSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @AppStorage("lowStockPushEnabled") private var lowStockPushEnabled = true
-    @AppStorage("lowStockThreshold") private var lowStockThreshold = 5
+    @AppStorage("lowStockThreshold")  private var lowStockThreshold = 5
+    @AppStorage("stockMode")          private var stockMode: StockMode = .individual
+    @AppStorage("sharedFoodStock")    private var sharedFoodStock = 0
 
     let pet: Pet
     @State private var selectedMealType: MealType = .morning
@@ -125,12 +128,23 @@ struct LogFeedingSheet: View {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         let event = FeedingEvent(mealType: resolvedMealLabel, pet: pet)
         modelContext.insert(event)
-        pet.decrementStock()
 
-        if lowStockPushEnabled && pet.foodStockCount <= lowStockThreshold {
-            NotificationManager.shared.scheduleLowStockNotification(for: pet)
+        switch stockMode {
+        case .individual:
+            pet.decrementStock()
+            if lowStockPushEnabled && pet.foodStockCount <= lowStockThreshold {
+                NotificationManager.shared.scheduleLowStockNotification(for: pet)
+            }
+        case .shared:
+            sharedFoodStock = max(0, sharedFoodStock - 1)
+            if lowStockPushEnabled && sharedFoodStock <= lowStockThreshold {
+                NotificationManager.shared.scheduleLowStockNotification(for: pet, stockCount: sharedFoodStock)
+            }
+        case .none:
+            break
         }
 
+        WidgetCenter.shared.reloadAllTimelines()
         dismiss()
     }
 }

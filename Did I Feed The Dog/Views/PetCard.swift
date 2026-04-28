@@ -4,6 +4,8 @@ import SwiftData
 struct PetCard: View {
     @AppStorage("lowStockUIWarning") private var lowStockUIWarning = true
     @AppStorage("lowStockThreshold") private var lowStockThreshold = 5
+    @AppStorage("stockMode")         private var stockMode: StockMode = .individual
+    @AppStorage("sharedFoodStock")   private var sharedFoodStock = 0
 
     let pet: Pet
     @State private var showFeedSheet = false
@@ -30,8 +32,13 @@ struct PetCard: View {
         return formatter.localizedString(for: last.timestamp, relativeTo: .now)
     }
 
+    private var currentStockCount: Int {
+        stockMode == .shared ? sharedFoodStock : pet.foodStockCount
+    }
+
     private var isLowStock: Bool {
-        lowStockUIWarning && pet.foodStockCount <= lowStockThreshold
+        guard lowStockUIWarning, stockMode != .none else { return false }
+        return currentStockCount <= lowStockThreshold
     }
 
     var body: some View {
@@ -108,7 +115,7 @@ struct PetCard: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text("Low Food Stock")
                     .font(.subheadline).fontWeight(.semibold).foregroundStyle(.orange)
-                Text("Only \(pet.foodStockCount) portion\(pet.foodStockCount == 1 ? "" : "s") remaining — time to restock!")
+                Text("Only \(currentStockCount) portion\(currentStockCount == 1 ? "" : "s") remaining — time to restock!")
                     .font(.caption).foregroundStyle(.secondary)
             }
         }
@@ -122,12 +129,14 @@ struct PetCard: View {
 
     private var statsRow: some View {
         HStack(spacing: 12) {
-            statCell(
-                title: "Food Stock",
-                value: "\(pet.foodStockCount)",
-                unit: "portions",
-                accent: isLowStock ? .red : .primary
-            )
+            if stockMode != .none {
+                statCell(
+                    title: stockMode == .shared ? "House Stock" : "Food Stock",
+                    value: "\(currentStockCount)",
+                    unit: "portions",
+                    accent: isLowStock ? .red : .primary
+                )
+            }
             statCell(
                 title: "Today's Meals",
                 value: "\(pet.todaysFeedingCount)",

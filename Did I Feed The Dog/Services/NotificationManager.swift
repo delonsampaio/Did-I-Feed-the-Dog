@@ -19,10 +19,11 @@ final class NotificationManager {
         "birthday-\(pet.id.uuidString)"
     }
 
-    func scheduleLowStockNotification(for pet: Pet) {
+    func scheduleLowStockNotification(for pet: Pet, stockCount: Int? = nil) {
+        let count = stockCount ?? pet.foodStockCount
         let content = UNMutableNotificationContent()
         content.title = "🦴 Time to Restock \(pet.name)'s Food"
-        content.body = "Only \(pet.foodStockCount) portion\(pet.foodStockCount == 1 ? "" : "s") remaining."
+        content.body = "Only \(count) portion\(count == 1 ? "" : "s") remaining."
         content.sound = .default
 
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)

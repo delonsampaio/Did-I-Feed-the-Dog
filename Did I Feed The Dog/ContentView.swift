@@ -2,12 +2,14 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+    @Binding var deepLinkPetId: UUID?
+
     var body: some View {
-        DashboardView()
+        DashboardView(deepLinkPetId: $deepLinkPetId)
     }
 }
 
 #Preview {
-    ContentView()
-        .modelContainer(for: [Pet.self, FeedingEvent.self], inMemory: true)
+    ContentView(deepLinkPetId: .constant(nil))
+        .modelContainer(for: [Pet.self, FeedingEvent.self], allowsSave: false)
 }
