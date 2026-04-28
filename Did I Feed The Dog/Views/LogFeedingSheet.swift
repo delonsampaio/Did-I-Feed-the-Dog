@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import WidgetKit
 
 struct LogFeedingSheet: View {
     @Environment(\.modelContext) private var modelContext
@@ -143,6 +144,7 @@ struct LogFeedingSheet: View {
             break
         }
 
+        WidgetCenter.shared.reloadAllTimelines()
         dismiss()
     }
 }
