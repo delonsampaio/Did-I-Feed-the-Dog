@@ -22,7 +22,7 @@ final class NotificationManager {
     func scheduleLowStockNotification(for pet: Pet, stockCount: Int? = nil) {
         let count = stockCount ?? pet.foodStockCount
         let content = UNMutableNotificationContent()
-        content.title = "🦴 Time to Restock \(pet.name)'s Food"
+        content.title = "🦴 Time to Restock \(pet.name ?? "your dog")'s Food"
         content.body = "Only \(count) portion\(count == 1 ? "" : "s") remaining."
         content.sound = .default
 
@@ -36,13 +36,14 @@ final class NotificationManager {
     }
 
     func scheduleBirthdayNotification(for pet: Pet) {
+        guard let birthday = pet.birthday else { return }
         let identifier = birthdayIdentifier(for: pet)
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
 
-        let components = Calendar.current.dateComponents([.month, .day], from: pet.birthday)
+        let components = Calendar.current.dateComponents([.month, .day], from: birthday)
         let content = UNMutableNotificationContent()
-        content.title = "🎂 Happy Birthday \(pet.name)!"
-        content.body = "Give \(pet.name) extra love and pets today!"
+        content.title = "🎂 Happy Birthday \(pet.name ?? "your dog")!"
+        content.body = "Give \(pet.name ?? "them") extra love and pets today!"
         content.sound = .default
 
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
@@ -76,8 +77,8 @@ final class NotificationManager {
         for (i, minutes) in times.enumerated() {
             scheduleReminder(
                 identifier: "feeding-\(pet.id.uuidString)-\(i)",
-                title: "Time to Feed \(pet.name)",
-                body: "Don't forget \(pet.name)'s feeding!",
+                title: "Time to Feed \(pet.name ?? "your dog")",
+                body: "Don't forget \(pet.name ?? "their") feeding!",
                 minutesSinceMidnight: minutes
             )
         }
@@ -127,7 +128,7 @@ final class NotificationManager {
         case .none:
             break
         case .allDogs:
-            scheduleAllDogsReminders(times: allDogsReminderTimes, petNames: pets.map(\.name))
+            scheduleAllDogsReminders(times: allDogsReminderTimes, petNames: pets.map { $0.name ?? "Unknown" })
         case .perDog:
             for pet in pets {
                 schedulePerDogReminders(for: pet, times: pet.feedingScheduleTimes)
