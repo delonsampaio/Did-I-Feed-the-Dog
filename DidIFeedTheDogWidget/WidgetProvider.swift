@@ -43,7 +43,7 @@ struct Provider: TimelineProvider {
             .map { pet in
                 let lastDate = pet.feedingEvents
                     .max(by: { $0.timestamp < $1.timestamp })?.timestamp
-                return PetSnapshot(id: pet.id, name: pet.name,
+                return PetSnapshot(id: pet.id, name: pet.name ?? "Unknown",
                                    photoData: pet.photoData, lastFedDate: lastDate)
             }
             .sorted { a, b in
