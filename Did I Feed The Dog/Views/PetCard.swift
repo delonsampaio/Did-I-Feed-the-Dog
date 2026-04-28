@@ -9,6 +9,8 @@ struct PetCard: View {
 
     let pet: Pet
     @State private var showFeedSheet = false
+    @State private var showEditSheet = false
+    @State private var navigateToDetail = false
 
     private var recentEvents: [FeedingEvent] {
         pet.feedingEvents
@@ -42,21 +44,35 @@ struct PetCard: View {
     }
 
     var body: some View {
-        NavigationLink(destination: PetDetailView(pet: pet)) {
-            VStack(alignment: .leading, spacing: 0) {
-                headerRow
-                if isLowStock { lowStockBanner }
-                statsRow
-                if !recentEvents.isEmpty { miniHistory }
-                feedButton
+        VStack(alignment: .leading, spacing: 0) {
+            Button { navigateToDetail = true } label: { headerRow }
+                .buttonStyle(.plain)
+
+            if isLowStock {
+                Button { showEditSheet = true } label: { lowStockBanner }
+                    .buttonStyle(.plain)
             }
-            .background(Color(.systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .shadow(color: .black.opacity(0.07), radius: 8, x: 0, y: 2)
+
+            statsRow
+
+            if !recentEvents.isEmpty {
+                Button { navigateToDetail = true } label: { miniHistory }
+                    .buttonStyle(.plain)
+            }
+
+            feedButton
         }
-        .buttonStyle(.plain)
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: .black.opacity(0.07), radius: 8, x: 0, y: 2)
+        .navigationDestination(isPresented: $navigateToDetail) {
+            PetDetailView(pet: pet)
+        }
         .sheet(isPresented: $showFeedSheet) {
             LogFeedingSheet(pet: pet)
+        }
+        .sheet(isPresented: $showEditSheet) {
+            AddEditPetSheet(pet: pet)
         }
     }
 
@@ -115,9 +131,12 @@ struct PetCard: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text("Low Food Stock")
                     .font(.subheadline).fontWeight(.semibold).foregroundStyle(.orange)
-                Text("Only \(currentStockCount) portion\(currentStockCount == 1 ? "" : "s") remaining — time to restock!")
+                Text("Only \(currentStockCount) portion\(currentStockCount == 1 ? "" : "s") remaining — tap to restock")
                     .font(.caption).foregroundStyle(.secondary)
             }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption).foregroundStyle(.tertiary)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
@@ -130,12 +149,15 @@ struct PetCard: View {
     private var statsRow: some View {
         HStack(spacing: 12) {
             if stockMode != .none {
-                statCell(
-                    title: stockMode == .shared ? "House Stock" : "Food Stock",
-                    value: "\(currentStockCount)",
-                    unit: "portions",
-                    accent: isLowStock ? .red : .primary
-                )
+                Button { showEditSheet = true } label: {
+                    statCell(
+                        title: stockMode == .shared ? "House Stock" : "Food Stock",
+                        value: "\(currentStockCount)",
+                        unit: "portions",
+                        accent: isLowStock ? .red : .primary
+                    )
+                }
+                .buttonStyle(.plain)
             }
             statCell(
                 title: "Today's Meals",
