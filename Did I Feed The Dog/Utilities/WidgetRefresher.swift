@@ -10,14 +10,15 @@ struct WidgetRefresher: View {
 
     var body: some View {
         Color.clear
-            .onChange(of: feedingEvents) { _, _ in
-                if !pets.isEmpty { WidgetDataWriter.write(pets) }
+            .onChange(of: feedingEvents) { _, newEvents in
+                guard !pets.isEmpty else { return }
+                WidgetDataWriter.write(pets, events: newEvents)
             }
             .onChange(of: pets) { _, newPets in
                 guard !newPets.isEmpty else { return }
                 UserDefaults(suiteName: WidgetDataWriter.groupID)?
                     .set(newPets.count, forKey: "debugPetsCount_refresher")
-                WidgetDataWriter.write(newPets)
+                WidgetDataWriter.write(newPets, events: feedingEvents)
             }
     }
 }
