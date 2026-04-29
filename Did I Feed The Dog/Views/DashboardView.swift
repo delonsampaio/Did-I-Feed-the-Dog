@@ -13,6 +13,7 @@ struct DashboardView: View {
 
     @State private var showAddPet = false
     @State private var showSettings = false
+    @State private var showFeedAll = false
     @State private var deepLinkFeedingPet: Pet? = nil
 
     private var allDogsReminderTimes: [Int] {
@@ -50,6 +51,13 @@ struct DashboardView: View {
                         Image(systemName: "plus.circle.fill").font(.title3)
                     }
                 }
+                if pets.count >= 2 {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button { showFeedAll = true } label: {
+                            Image(systemName: "fork.knife.circle.fill").font(.title3)
+                        }
+                    }
+                }
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button { showSettings = true } label: {
                         Image(systemName: "gearshape.fill").font(.title3)
@@ -59,6 +67,7 @@ struct DashboardView: View {
             .navigationDestination(for: Pet.self) { pet in PetDetailView(pet: pet) }
             .sheet(isPresented: $showAddPet) { AddEditPetSheet() }
             .sheet(isPresented: $showSettings) { NavigationStack { SettingsView() } }
+            .sheet(isPresented: $showFeedAll) { FeedAllDogsSheet(pets: pets) }
             .sheet(item: $deepLinkFeedingPet) { pet in LogFeedingSheet(pet: pet) }
             .overlay {
                 if pets.isEmpty {

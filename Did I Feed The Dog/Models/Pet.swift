@@ -43,8 +43,10 @@ final class Pet {
     }
 
     var isFeedingOverdue: Bool {
-        guard let last = lastFeedingEvent else { return true }
-        return Date().timeIntervalSince(last.timestamp) >= 12 * 3600
+        guard let last = lastFeedingEvent else { return false }
+        let hours = max(1, UserDefaults.standard.integer(forKey: "overdueThresholdHours"))
+        let threshold = hours == 0 ? 12 : hours  // 0 means key not set yet, default to 12
+        return Date().timeIntervalSince(last.timestamp) >= Double(threshold) * 3600
     }
 
     var todaysFeedingCount: Int {

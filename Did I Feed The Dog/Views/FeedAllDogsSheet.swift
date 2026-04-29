@@ -2,22 +2,21 @@ import SwiftUI
 import SwiftData
 import WidgetKit
 
-struct LogFeedingSheet: View {
+struct FeedAllDogsSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("lowStockPushEnabled")     private var lowStockPushEnabled = true
-    @AppStorage("lowStockThreshold")       private var lowStockThreshold = 5
-    @AppStorage("stockMode")               private var stockMode: StockMode = .individual
-    @AppStorage("sharedFoodStock")         private var sharedFoodStock = 0
-    @AppStorage("reminderMode")            private var reminderMode: ReminderMode = .none
+    @AppStorage("stockMode")             private var stockMode: StockMode = .individual
+    @AppStorage("sharedFoodStock")       private var sharedFoodStock = 0
+    @AppStorage("lowStockPushEnabled")   private var lowStockPushEnabled = true
+    @AppStorage("lowStockThreshold")     private var lowStockThreshold = 5
+    @AppStorage("reminderMode")          private var reminderMode: ReminderMode = .none
     @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
 
     private var allDogsReminderTimes: [Int] {
         allDogsReminderTimesRaw.split(separator: ",").compactMap { Int($0) }
     }
 
-    let pet: Pet
-    var onLogged: ((FeedingEvent) -> Void)? = nil
+    let pets: [Pet]
     @State private var selectedMealType: MealType = .morning
     @State private var customLabel = ""
     @State private var showCustomField = false
@@ -47,7 +46,7 @@ struct LogFeedingSheet: View {
                     .padding(.horizontal, 24)
                     .padding(.bottom)
             }
-            .navigationTitle(pet.name ?? "Unknown")
+            .navigationTitle("Feed All Dogs")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -113,8 +112,8 @@ struct LogFeedingSheet: View {
     }
 
     private var confirmButton: some View {
-        Button(action: logFeeding) {
-            Label("Log Meal", systemImage: "checkmark.circle.fill")
+        Button(action: logForAll) {
+            Label("Log Meal for All Dogs", systemImage: "checkmark.circle.fill")
                 .font(.headline)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
@@ -134,36 +133,41 @@ struct LogFeedingSheet: View {
         showCustomField ? customLabel.trimmingCharacters(in: .whitespaces) : selectedMealType.label
     }
 
-    private func logFeeding() {
+    private func logForAll() {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        let event = FeedingEvent(mealType: resolvedMealLabel, notes: notes.trimmingCharacters(in: .whitespacesAndNewlines), pet: pet)
-        modelContext.insert(event)
-
+        let mealLabel = resolvedMealLabel
+        let noteText = notes.trimmingCharacters(in: .whitespacesAndNewlines)
         let shouldDecrementStock = showCustomField || selectedMealType.decrementsStock
-        if shouldDecrementStock {
-            switch stockMode {
-            case .individual:
-                pet.decrementStock()
-                if lowStockPushEnabled && pet.foodStockCount <= lowStockThreshold {
-                    NotificationManager.shared.scheduleLowStockNotification(for: pet)
+
+        for pet in pets {
+            let event = FeedingEvent(mealType: mealLabel, notes: noteText, pet: pet)
+            modelContext.insert(event)
+
+            if shouldDecrementStock {
+                switch stockMode {
+                case .individual:
+                    pet.decrementStock()
+                    if lowStockPushEnabled && pet.foodStockCount <= lowStockThreshold {
+                        NotificationManager.shared.scheduleLowStockNotification(for: pet)
+                    }
+                case .shared:
+                    sharedFoodStock = max(0, sharedFoodStock - 1)
+                    if lowStockPushEnabled && sharedFoodStock <= lowStockThreshold {
+                        NotificationManager.shared.scheduleLowStockNotification(for: pet, stockCount: sharedFoodStock)
+                    }
+                case .none:
+                    break
                 }
-            case .shared:
-                sharedFoodStock = max(0, sharedFoodStock - 1)
-                if lowStockPushEnabled && sharedFoodStock <= lowStockThreshold {
-                    NotificationManager.shared.scheduleLowStockNotification(for: pet, stockCount: sharedFoodStock)
-                }
-            case .none:
-                break
             }
         }
 
-        WidgetCenter.shared.reloadAllTimelines()
         NotificationManager.shared.suppressNextUpcomingReminder(
             reminderMode: reminderMode,
-            for: pet,
+            for: pets.first!,
             allDogsReminderTimes: allDogsReminderTimes
         )
-        onLogged?(event)
+
+        WidgetCenter.shared.reloadAllTimelines()
         dismiss()
     }
 }
