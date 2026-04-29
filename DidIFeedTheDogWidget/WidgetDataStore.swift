@@ -67,7 +67,8 @@ enum WidgetDataStore {
         let refresher = ud?.object(forKey: "debugPetsCount_refresher") as? Int ?? -99
         let cloudkit  = ud?.object(forKey: "debugPetsCount_cloudkit")  as? Int ?? -99
         let timer5    = ud?.object(forKey: "debugPetsCount_timer5")    as? Int ?? -99
-        parts.append("d:\(onAppear)/\(task) r:\(refresher) ck:\(cloudkit) t:\(timer5)")
+        let scene     = ud?.object(forKey: "debugPetsCount_scene")     as? Int ?? -99
+        parts.append("d:\(onAppear)/\(task) r:\(refresher) ck:\(cloudkit) t:\(timer5) sc:\(scene)")
 
         return parts.joined(separator: " ")
     }

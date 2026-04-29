@@ -23,24 +23,26 @@ struct Did_I_Feed_The_Dog_App: App {
         }
     }()
 
+    @Environment(\.scenePhase) private var scenePhase
     @State private var deepLinkPetId: UUID? = nil
 
     var body: some Scene {
         WindowGroup {
             ContentView(deepLinkPetId: $deepLinkPetId)
-                .background(WidgetRefresher())
                 .task {
                     await NotificationManager.shared.requestAuthorization()
                 }
                 .task(id: "timer-diagnostic") {
-                    // Sentinel: -1 = not yet run, 0 = ran but store empty, N = found dogs
                     let ud = UserDefaults(suiteName: WidgetDataWriter.groupID)
                     ud?.set(-1, forKey: "debugPetsCount_timer5")
                     try? await Task.sleep(for: .seconds(5))
-                    let pets = (try? sharedModelContainer.mainContext.fetch(FetchDescriptor<Pet>())) ?? []
+                    // Fresh context bypasses any mainContext in-memory cache
+                    let ctx = ModelContext(sharedModelContainer)
+                    let pets   = (try? ctx.fetch(FetchDescriptor<Pet>())) ?? []
+                    let events = (try? ctx.fetch(FetchDescriptor<FeedingEvent>())) ?? []
                     ud?.set(pets.count, forKey: "debugPetsCount_timer5")
                     guard !pets.isEmpty else { return }
-                    WidgetDataWriter.write(pets)
+                    WidgetDataWriter.write(pets, events: events)
                 }
                 .onOpenURL { url in
                     deepLinkPetId = parseDeepLink(url)
@@ -54,13 +56,28 @@ struct Did_I_Feed_The_Dog_App: App {
                         let ud = UserDefaults(suiteName: WidgetDataWriter.groupID)
                         ud?.set(-1, forKey: "debugPetsCount_cloudkit")
                         try? await Task.sleep(for: .seconds(3))
-                        let pets = (try? sharedModelContainer.mainContext.fetch(FetchDescriptor<Pet>())) ?? []
+                        let ctx = ModelContext(sharedModelContainer)
+                        let pets   = (try? ctx.fetch(FetchDescriptor<Pet>())) ?? []
+                        let events = (try? ctx.fetch(FetchDescriptor<FeedingEvent>())) ?? []
                         ud?.set(pets.count, forKey: "debugPetsCount_cloudkit")
                         guard !pets.isEmpty else { return }
-                        WidgetDataWriter.write(pets)
+                        WidgetDataWriter.write(pets, events: events)
                     }
                 }
         }
         .modelContainer(sharedModelContainer)
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else { return }
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(2))
+                let ctx = ModelContext(sharedModelContainer)
+                let pets   = (try? ctx.fetch(FetchDescriptor<Pet>())) ?? []
+                let events = (try? ctx.fetch(FetchDescriptor<FeedingEvent>())) ?? []
+                UserDefaults(suiteName: WidgetDataWriter.groupID)?
+                    .set(pets.count, forKey: "debugPetsCount_scene")
+                guard !pets.isEmpty else { return }
+                WidgetDataWriter.write(pets, events: events)
+            }
+        }
     }
 }
