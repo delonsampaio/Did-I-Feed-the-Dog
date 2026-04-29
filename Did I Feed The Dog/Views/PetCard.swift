@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import WidgetKit
 
 struct PetCard: View {
     @AppStorage("lowStockUIWarning") private var lowStockUIWarning = true
@@ -8,10 +9,14 @@ struct PetCard: View {
     @AppStorage("sharedFoodStock")   private var sharedFoodStock = 0
     @AppStorage("reminderMode")      private var reminderMode: ReminderMode = .none
 
+    @Environment(\.modelContext) private var modelContext
+
     let pet: Pet
     @State private var showFeedSheet = false
     @State private var showEditSheet = false
     @State private var showSharedStockSheet = false
+    @State private var lastLoggedEvent: FeedingEvent? = nil
+    @State private var showUndoToast = false
 
     private var recentEvents: [FeedingEvent] {
         (pet.feedingEvents ?? [])
@@ -68,8 +73,39 @@ struct PetCard: View {
         .background(Color(.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: .black.opacity(0.07), radius: 8, x: 0, y: 2)
+        .overlay(alignment: .bottom) {
+            if showUndoToast {
+                UndoToast(message: "Meal logged") {
+                    // Undo action
+                    if let event = lastLoggedEvent {
+                        if event.mealType != "Snack" && event.mealType != "Treat" {
+                            switch stockMode {
+                            case .individual: pet.foodStockCount += 1
+                            case .shared:
+                                let current = UserDefaults.standard.integer(forKey: "sharedFoodStock")
+                                UserDefaults.standard.set(current + 1, forKey: "sharedFoodStock")
+                            case .none: break
+                            }
+                        }
+                        modelContext.delete(event)
+                        WidgetCenter.shared.reloadAllTimelines()
+                    }
+                    showUndoToast = false
+                    lastLoggedEvent = nil
+                } onDismiss: {
+                    showUndoToast = false
+                    lastLoggedEvent = nil
+                }
+                .padding(.bottom, 80)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .animation(.spring(), value: showUndoToast)
+            }
+        }
         .sheet(isPresented: $showFeedSheet) {
-            LogFeedingSheet(pet: pet)
+            LogFeedingSheet(pet: pet, onLogged: { event in
+                lastLoggedEvent = event
+                showUndoToast = true
+            })
         }
         .sheet(isPresented: $showEditSheet) {
             AddEditPetSheet(pet: pet)
@@ -155,33 +191,42 @@ struct PetCard: View {
     }
 
     private var statsRow: some View {
-        HStack(spacing: 12) {
-            if stockMode != .none {
-                Button {
-                    if stockMode == .shared { showSharedStockSheet = true } else { showEditSheet = true }
-                } label: {
-                    statCell(
-                        title: stockMode == .shared ? "House Stock" : "Food Stock",
-                        value: "\(currentStockCount)",
-                        unit: "portions",
-                        accent: isLowStock ? .red : .primary
-                    )
+        VStack(spacing: 8) {
+            HStack(spacing: 12) {
+                if stockMode != .none {
+                    Button {
+                        if stockMode == .shared { showSharedStockSheet = true } else { showEditSheet = true }
+                    } label: {
+                        statCell(
+                            title: stockMode == .shared ? "House Stock" : "Food Stock",
+                            value: "\(currentStockCount)",
+                            unit: "portions",
+                            accent: isLowStock ? .red : .primary
+                        )
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
-            }
-            statCell(
-                title: "Today's Meals",
-                value: "\(pet.todaysFeedingCount)",
-                unit: "feedings",
-                accent: .primary
-            )
-            if let info = nextMealInfo {
                 statCell(
-                    title: "Next Meal",
-                    value: info.value,
-                    unit: info.unit,
+                    title: "Today's Meals",
+                    value: "\(pet.todaysFeedingCount)",
+                    unit: "feedings",
                     accent: .primary
                 )
+            }
+            if let info = nextMealInfo {
+                HStack(spacing: 6) {
+                    Image(systemName: "clock.fill")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text("Next meal · \(info.value) · \(info.unit)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+                .background(Color(.secondarySystemBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
             }
         }
         .padding(.horizontal, 16)

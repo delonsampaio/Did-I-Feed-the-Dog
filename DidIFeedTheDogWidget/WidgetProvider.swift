@@ -30,7 +30,7 @@ struct Provider: TimelineProvider {
             schema: schema,
             allowsSave: false,
             groupContainer: .identifier("group.com.delon.DidIFeedTheDog"),
-            cloudKitDatabase: .automatic
+            cloudKitDatabase: .none
         )
         return try? ModelContainer(for: schema, configurations: config)
     }()

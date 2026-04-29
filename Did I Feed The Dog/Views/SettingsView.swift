@@ -15,6 +15,7 @@ struct SettingsView: View {
     @AppStorage("sharedFoodStock")         private var sharedFoodStock = 0
     @AppStorage("reminderMode")            private var reminderMode: ReminderMode = .none
     @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
+    @AppStorage("overdueThresholdHours")   private var overdueThresholdHours = 12
 
     @State private var editingPet: Pet?
     @State private var showAddPet = false
@@ -225,6 +226,15 @@ struct SettingsView: View {
                         .monospacedDigit()
                 }
             }
+            Stepper(value: $overdueThresholdHours, in: 1...48) {
+                HStack {
+                    Text("Overdue After")
+                    Spacer()
+                    Text("\(overdueThresholdHours) hr\(overdueThresholdHours == 1 ? "" : "s")")
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
+            }
         }
     }
 
@@ -253,8 +263,6 @@ struct SettingsView: View {
             }
         } header: {
             Text("Safety Guide")
-        } footer: {
-            Text("Your two-for-one: a feeding tracker and a pet safety reference — all in one app.")
         }
     }
 
