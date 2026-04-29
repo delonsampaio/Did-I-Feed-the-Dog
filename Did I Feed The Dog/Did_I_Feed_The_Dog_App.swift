@@ -3,6 +3,7 @@ import SwiftData
 
 @main
 struct Did_I_Feed_The_Dog_App: App {
+    @Environment(\.scenePhase) private var scenePhase
     let sharedModelContainer: ModelContainer = {
         let schema = Schema([Pet.self, FeedingEvent.self])
         let config = ModelConfiguration(
@@ -34,5 +35,10 @@ struct Did_I_Feed_The_Dog_App: App {
                 }
         }
         .modelContainer(sharedModelContainer)
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                WidgetDataWriter.write(from: sharedModelContainer.mainContext)
+            }
+        }
     }
 }

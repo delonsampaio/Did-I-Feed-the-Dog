@@ -1,6 +1,5 @@
-// DidIFeedTheDogWidget/WidgetProvider.swift
 import WidgetKit
-import SwiftData
+import Foundation
 
 struct Provider: TimelineProvider {
 
@@ -23,30 +22,10 @@ struct Provider: TimelineProvider {
         completion(Timeline(entries: [entry], policy: .after(next)))
     }
 
-    // A fresh ModelContext per call avoids any main-actor requirement.
-    private static let sharedContainer: ModelContainer? = {
-        let schema = Schema([Pet.self, FeedingEvent.self])
-        let config = ModelConfiguration(
-            "DogFeedStore",
-            schema: schema,
-            allowsSave: false,
-            groupContainer: .identifier("group.com.delon.DidIFeedTheDog"),
-            cloudKitDatabase: .automatic
-        )
-        return try? ModelContainer(for: schema, configurations: config)
-    }()
-
     private static func fetchPetSnapshots() -> [PetSnapshot] {
-        guard let container = sharedContainer else { return [] }
-        let context = ModelContext(container)
-        let pets = (try? context.fetch(FetchDescriptor<Pet>())) ?? []
+        let pets = WidgetDataStore.load()
         return pets
-            .map { pet in
-                let lastDate = (pet.feedingEvents ?? [])
-                    .max(by: { $0.timestamp < $1.timestamp })?.timestamp
-                return PetSnapshot(id: pet.id, name: pet.name ?? "Unknown",
-                                   photoData: pet.photoData, lastFedDate: lastDate)
-            }
+            .map { PetSnapshot(id: $0.id, name: $0.name, photoData: $0.photoData, lastFedDate: $0.lastFedDate) }
             .sorted { a, b in
                 switch (a.lastFedDate, b.lastFedDate) {
                 case (nil, _): return true

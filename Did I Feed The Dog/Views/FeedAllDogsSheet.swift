@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import WidgetKit
 
 struct FeedAllDogsSheet: View {
     @Environment(\.modelContext) private var modelContext
@@ -167,7 +166,7 @@ struct FeedAllDogsSheet: View {
             allDogsReminderTimes: allDogsReminderTimes
         )
 
-        WidgetCenter.shared.reloadAllTimelines()
+        WidgetDataWriter.write(from: modelContext)
         dismiss()
     }
 }

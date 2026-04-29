@@ -304,5 +304,6 @@ struct SettingsView: View {
             NotificationManager.shared.removeBirthdayNotification(for: pet)
             modelContext.delete(pet)
         }
+        WidgetDataWriter.write(from: modelContext)
     }
 }

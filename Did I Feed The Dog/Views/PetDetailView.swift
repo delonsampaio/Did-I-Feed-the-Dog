@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import WidgetKit
 
 struct PetDetailView: View {
     @Environment(\.modelContext) private var modelContext
@@ -132,14 +131,14 @@ struct PetDetailView: View {
             }
         }
         modelContext.delete(event)
-        WidgetCenter.shared.reloadAllTimelines()
+        WidgetDataWriter.write(from: modelContext)
     }
 
     private func deleteEvents(_ events: [FeedingEvent], at offsets: IndexSet) {
         for index in offsets {
             modelContext.delete(events[index])
         }
-        WidgetCenter.shared.reloadAllTimelines()
+        WidgetDataWriter.write(from: modelContext)
     }
 
     private func emojiForMeal(_ mealType: String) -> String {
