@@ -95,8 +95,14 @@ struct PetDetailView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(event.mealType ?? "Feeding")
                     .font(.subheadline).fontWeight(.medium)
-                Text(Self.timeFormatter.string(from: event.timestamp))
-                    .font(.caption).foregroundStyle(.secondary)
+                HStack(spacing: 4) {
+                    Text(Self.timeFormatter.string(from: event.timestamp))
+                    if let by = event.loggedBy, !by.isEmpty {
+                        Text("·")
+                        Text("by \(by)")
+                    }
+                }
+                .font(.caption).foregroundStyle(.secondary)
                 if !event.notes.isEmpty {
                     Text(event.notes)
                         .font(.caption)

@@ -44,6 +44,10 @@ struct DashboardView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
             }
+            .refreshable {
+                WidgetDataWriter.write(pets, events: feedingEvents)
+                try? await Task.sleep(for: .milliseconds(600))
+            }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("My Dogs")
             .toolbar {
