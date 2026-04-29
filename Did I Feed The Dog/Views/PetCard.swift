@@ -155,33 +155,42 @@ struct PetCard: View {
     }
 
     private var statsRow: some View {
-        HStack(spacing: 12) {
-            if stockMode != .none {
-                Button {
-                    if stockMode == .shared { showSharedStockSheet = true } else { showEditSheet = true }
-                } label: {
-                    statCell(
-                        title: stockMode == .shared ? "House Stock" : "Food Stock",
-                        value: "\(currentStockCount)",
-                        unit: "portions",
-                        accent: isLowStock ? .red : .primary
-                    )
+        VStack(spacing: 8) {
+            HStack(spacing: 12) {
+                if stockMode != .none {
+                    Button {
+                        if stockMode == .shared { showSharedStockSheet = true } else { showEditSheet = true }
+                    } label: {
+                        statCell(
+                            title: stockMode == .shared ? "House Stock" : "Food Stock",
+                            value: "\(currentStockCount)",
+                            unit: "portions",
+                            accent: isLowStock ? .red : .primary
+                        )
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
-            }
-            statCell(
-                title: "Today's Meals",
-                value: "\(pet.todaysFeedingCount)",
-                unit: "feedings",
-                accent: .primary
-            )
-            if let info = nextMealInfo {
                 statCell(
-                    title: "Next Meal",
-                    value: info.value,
-                    unit: info.unit,
+                    title: "Today's Meals",
+                    value: "\(pet.todaysFeedingCount)",
+                    unit: "feedings",
                     accent: .primary
                 )
+            }
+            if let info = nextMealInfo {
+                HStack(spacing: 6) {
+                    Image(systemName: "clock.fill")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text("Next meal · \(info.value) · \(info.unit)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+                .background(Color(.secondarySystemBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
             }
         }
         .padding(.horizontal, 16)
