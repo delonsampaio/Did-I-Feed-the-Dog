@@ -27,6 +27,7 @@ struct Did_I_Feed_The_Dog_App: App {
     var body: some Scene {
         WindowGroup {
             ContentView(deepLinkPetId: $deepLinkPetId)
+                .background(WidgetRefresher())
                 .task {
                     await NotificationManager.shared.requestAuthorization()
                 }
