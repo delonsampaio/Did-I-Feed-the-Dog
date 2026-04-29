@@ -91,10 +91,14 @@ struct DashboardView: View {
                 pets: pets
             )
             DogFoodShortcuts.updateAppShortcutParameters()
+            UserDefaults(suiteName: WidgetDataWriter.groupID)?
+                .set(pets.count, forKey: "debugPetsCount_onAppear")
             WidgetDataWriter.write(pets)
         }
-        .onChange(of: pets) { _, newPets in
-            WidgetDataWriter.write(newPets)
+        .task(id: pets.count) {
+            UserDefaults(suiteName: WidgetDataWriter.groupID)?
+                .set(pets.count, forKey: "debugPetsCount_task")
+            WidgetDataWriter.write(pets)
         }
     }
 }
