@@ -25,10 +25,6 @@ struct LogFeedingSheet: View {
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 24) {
-                Text("What meal is this?")
-                    .font(.headline)
-                    .padding(.horizontal)
-
                 mealPicker
 
                 if showCustomField {

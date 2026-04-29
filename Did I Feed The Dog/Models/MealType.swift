@@ -39,5 +39,5 @@ enum MealType: Equatable {
         }
     }
 
-    static let presets: [MealType] = [.morning, .evening, .breakfast, .lunch, .afternoon, .dinner, .snack, .treat]
+    static let presets: [MealType] = [.breakfast, .lunch, .dinner, .morning, .afternoon, .evening, .snack, .treat]
 }
