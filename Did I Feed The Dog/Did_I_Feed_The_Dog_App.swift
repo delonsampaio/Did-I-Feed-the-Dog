@@ -31,6 +31,16 @@ struct Did_I_Feed_The_Dog_App: App {
                 .task {
                     await NotificationManager.shared.requestAuthorization()
                 }
+                .task(id: "timer-diagnostic") {
+                    // Sentinel: -1 = not yet run, 0 = ran but store empty, N = found dogs
+                    let ud = UserDefaults(suiteName: WidgetDataWriter.groupID)
+                    ud?.set(-1, forKey: "debugPetsCount_timer5")
+                    try? await Task.sleep(for: .seconds(5))
+                    let pets = (try? sharedModelContainer.mainContext.fetch(FetchDescriptor<Pet>())) ?? []
+                    ud?.set(pets.count, forKey: "debugPetsCount_timer5")
+                    guard !pets.isEmpty else { return }
+                    WidgetDataWriter.write(pets)
+                }
                 .onOpenURL { url in
                     deepLinkPetId = parseDeepLink(url)
                 }
@@ -39,12 +49,11 @@ struct Did_I_Feed_The_Dog_App: App {
                         for: NSNotification.Name.NSPersistentStoreRemoteChange)
                 ) { _ in
                     Task { @MainActor in
-                        // Give the main context time to merge CloudKit changes
-                        try? await Task.sleep(for: .milliseconds(500))
-                        let ctx = sharedModelContainer.mainContext
-                        let pets = (try? ctx.fetch(FetchDescriptor<Pet>())) ?? []
-                        UserDefaults(suiteName: WidgetDataWriter.groupID)?
-                            .set(pets.count, forKey: "debugPetsCount_cloudkit")
+                        let ud = UserDefaults(suiteName: WidgetDataWriter.groupID)
+                        ud?.set(-1, forKey: "debugPetsCount_cloudkit")
+                        try? await Task.sleep(for: .seconds(3))
+                        let pets = (try? sharedModelContainer.mainContext.fetch(FetchDescriptor<Pet>())) ?? []
+                        ud?.set(pets.count, forKey: "debugPetsCount_cloudkit")
                         guard !pets.isEmpty else { return }
                         WidgetDataWriter.write(pets)
                     }

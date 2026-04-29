@@ -61,11 +61,13 @@ enum WidgetDataStore {
         }
 
         // Show what DashboardView's @Query reported at each write site
-        let onAppear  = ud?.integer(forKey: "debugPetsCount_onAppear")  ?? -1
-        let task      = ud?.integer(forKey: "debugPetsCount_task")      ?? -1
-        let refresher = ud?.integer(forKey: "debugPetsCount_refresher") ?? -1
-        let cloudkit  = ud?.integer(forKey: "debugPetsCount_cloudkit")  ?? -1
-        parts.append("dash:\(onAppear)/\(task) ref:\(refresher) ck:\(cloudkit)")
+        // -1 = handler ran but context still loading; 0 = ran, store empty; N = found N dogs
+        let onAppear  = ud?.object(forKey: "debugPetsCount_onAppear")  as? Int ?? -99
+        let task      = ud?.object(forKey: "debugPetsCount_task")      as? Int ?? -99
+        let refresher = ud?.object(forKey: "debugPetsCount_refresher") as? Int ?? -99
+        let cloudkit  = ud?.object(forKey: "debugPetsCount_cloudkit")  as? Int ?? -99
+        let timer5    = ud?.object(forKey: "debugPetsCount_timer5")    as? Int ?? -99
+        parts.append("d:\(onAppear)/\(task) r:\(refresher) ck:\(cloudkit) t:\(timer5)")
 
         return parts.joined(separator: " ")
     }
