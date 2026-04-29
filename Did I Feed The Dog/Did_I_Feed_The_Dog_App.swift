@@ -1,13 +1,11 @@
-import Combine
-import CoreData
 import SwiftUI
 import SwiftData
 
-// Hoisted to file scope so AppIntents (IntentDataAccess) reference the same
-// container instance instead of spinning up a second one. Two containers
-// against the same CloudKit-backed store cause:
-// "BUG IN CLIENT OF CLOUDKIT: Registering a handler for a CKScheduler activity
-// identifier that has already been registered" and crippled sync.
+// File-scope so AppIntents (IntentDataAccess) reference the same container
+// instance. Two CloudKit-enabled containers against the same store in one
+// process cause "BUG IN CLIENT OF CLOUDKIT: Registering a handler for a
+// CKScheduler activity identifier that has already been registered" and
+// breaks sync.
 let sharedModelContainer: ModelContainer = {
     let schema = Schema([Pet.self, FeedingEvent.self])
     let config = ModelConfiguration(
@@ -28,7 +26,6 @@ let sharedModelContainer: ModelContainer = {
 
 @main
 struct Did_I_Feed_The_Dog_App: App {
-    @Environment(\.scenePhase) private var scenePhase
     @State private var deepLinkPetId: UUID? = nil
 
     var body: some Scene {
@@ -37,52 +34,10 @@ struct Did_I_Feed_The_Dog_App: App {
                 .task {
                     await NotificationManager.shared.requestAuthorization()
                 }
-                .task(id: "timer-diagnostic") {
-                    let ud = UserDefaults(suiteName: WidgetDataWriter.groupID)
-                    ud?.set(-1, forKey: "debugPetsCount_timer5")
-                    try? await Task.sleep(for: .seconds(5))
-                    // Fresh context bypasses any mainContext in-memory cache
-                    let ctx = ModelContext(sharedModelContainer)
-                    let pets   = (try? ctx.fetch(FetchDescriptor<Pet>())) ?? []
-                    let events = (try? ctx.fetch(FetchDescriptor<FeedingEvent>())) ?? []
-                    ud?.set(pets.count, forKey: "debugPetsCount_timer5")
-                    guard !pets.isEmpty else { return }
-                    WidgetDataWriter.write(pets, events: events)
-                }
                 .onOpenURL { url in
                     deepLinkPetId = parseDeepLink(url)
                 }
-                .onReceive(
-                    NotificationCenter.default.publisher(
-                        for: NSNotification.Name.NSPersistentStoreRemoteChange)
-                        .receive(on: DispatchQueue.main)
-                ) { _ in
-                    Task { @MainActor in
-                        let ud = UserDefaults(suiteName: WidgetDataWriter.groupID)
-                        ud?.set(-1, forKey: "debugPetsCount_cloudkit")
-                        try? await Task.sleep(for: .seconds(3))
-                        let ctx = ModelContext(sharedModelContainer)
-                        let pets   = (try? ctx.fetch(FetchDescriptor<Pet>())) ?? []
-                        let events = (try? ctx.fetch(FetchDescriptor<FeedingEvent>())) ?? []
-                        ud?.set(pets.count, forKey: "debugPetsCount_cloudkit")
-                        guard !pets.isEmpty else { return }
-                        WidgetDataWriter.write(pets, events: events)
-                    }
-                }
         }
         .modelContainer(sharedModelContainer)
-        .onChange(of: scenePhase) { _, newPhase in
-            guard newPhase == .active else { return }
-            Task { @MainActor in
-                try? await Task.sleep(for: .seconds(2))
-                let ctx = ModelContext(sharedModelContainer)
-                let pets   = (try? ctx.fetch(FetchDescriptor<Pet>())) ?? []
-                let events = (try? ctx.fetch(FetchDescriptor<FeedingEvent>())) ?? []
-                UserDefaults(suiteName: WidgetDataWriter.groupID)?
-                    .set(pets.count, forKey: "debugPetsCount_scene")
-                guard !pets.isEmpty else { return }
-                WidgetDataWriter.write(pets, events: events)
-            }
-        }
     }
 }
