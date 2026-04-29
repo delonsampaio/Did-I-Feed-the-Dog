@@ -1,3 +1,4 @@
+import CoreData
 import SwiftUI
 import SwiftData
 
@@ -32,6 +33,21 @@ struct Did_I_Feed_The_Dog_App: App {
                 }
                 .onOpenURL { url in
                     deepLinkPetId = parseDeepLink(url)
+                }
+                .onReceive(
+                    NotificationCenter.default.publisher(
+                        for: NSPersistentStoreRemoteChangeNotification)
+                ) { _ in
+                    Task { @MainActor in
+                        // Give the main context time to merge CloudKit changes
+                        try? await Task.sleep(for: .milliseconds(500))
+                        let ctx = sharedModelContainer.mainContext
+                        let pets = (try? ctx.fetch(FetchDescriptor<Pet>())) ?? []
+                        UserDefaults(suiteName: WidgetDataWriter.groupID)?
+                            .set(pets.count, forKey: "debugPetsCount_cloudkit")
+                        guard !pets.isEmpty else { return }
+                        WidgetDataWriter.write(pets)
+                    }
                 }
         }
         .modelContainer(sharedModelContainer)
