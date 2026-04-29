@@ -7,6 +7,7 @@ struct DashboardView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Pet.name) private var pets: [Pet]
+    @Query private var feedingEvents: [FeedingEvent]
 
     @AppStorage("reminderMode")            private var reminderMode: ReminderMode = .none
     @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
@@ -93,12 +94,16 @@ struct DashboardView: View {
             DogFoodShortcuts.updateAppShortcutParameters()
             UserDefaults(suiteName: WidgetDataWriter.groupID)?
                 .set(pets.count, forKey: "debugPetsCount_onAppear")
-            WidgetDataWriter.write(pets)
+            WidgetDataWriter.write(pets, events: feedingEvents)
         }
-        .task(id: pets.count) {
+        .onChange(of: pets) { _, newPets in
             UserDefaults(suiteName: WidgetDataWriter.groupID)?
-                .set(pets.count, forKey: "debugPetsCount_task")
-            WidgetDataWriter.write(pets)
+                .set(newPets.count, forKey: "debugPetsCount_task")
+            WidgetDataWriter.write(newPets, events: feedingEvents)
+        }
+        .onChange(of: feedingEvents) { _, newEvents in
+            guard !pets.isEmpty else { return }
+            WidgetDataWriter.write(pets, events: newEvents)
         }
     }
 }
