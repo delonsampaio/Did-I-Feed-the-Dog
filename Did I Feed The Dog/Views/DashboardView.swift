@@ -11,6 +11,7 @@ struct DashboardView: View {
 
     @AppStorage("reminderMode")            private var reminderMode: ReminderMode = .none
     @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
+    @AppStorage("appearanceMode")          private var appearanceMode: AppearanceMode = .system
 
     @State private var showAddPet = false
     @State private var showSettings = false
@@ -71,7 +72,7 @@ struct DashboardView: View {
             }
             .navigationDestination(for: Pet.self) { pet in PetDetailView(pet: pet) }
             .sheet(isPresented: $showAddPet) { AddEditPetSheet() }
-            .sheet(isPresented: $showSettings) { NavigationStack { SettingsView() } }
+            .sheet(isPresented: $showSettings) { NavigationStack { SettingsView() }.preferredColorScheme(appearanceMode.colorScheme) }
             .sheet(isPresented: $showFeedAll) { FeedAllDogsSheet(pets: pets) }
             .sheet(item: $deepLinkFeedingPet) { pet in LogFeedingSheet(pet: pet) }
             .overlay {
