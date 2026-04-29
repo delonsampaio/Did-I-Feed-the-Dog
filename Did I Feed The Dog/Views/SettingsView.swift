@@ -17,12 +17,14 @@ struct SettingsView: View {
     @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
     @AppStorage("overdueThresholdHours")   private var overdueThresholdHours = 12
     @AppStorage(LoggedBy.storageKey)       private var loggedByName = ""
+    @AppStorage("appearanceMode")          private var appearanceMode: AppearanceMode = .system
 
     @State private var editingPet: Pet?
     @State private var showAddPet = false
 
     var body: some View {
         Form {
+            appearanceSection
             petsSection
             displayNameSection
             foodStockSection
@@ -38,6 +40,17 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showAddPet) {
             AddEditPetSheet()
+        }
+    }
+
+    private var appearanceSection: some View {
+        Section("Appearance") {
+            Picker("Theme", selection: $appearanceMode) {
+                ForEach(AppearanceMode.allCases, id: \.self) { mode in
+                    Text(mode.rawValue).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
         }
     }
 
