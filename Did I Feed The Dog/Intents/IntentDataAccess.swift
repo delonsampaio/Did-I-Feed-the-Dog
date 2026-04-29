@@ -5,6 +5,7 @@ enum IntentDataAccess {
     static let container: ModelContainer? = {
         let schema = Schema([Pet.self, FeedingEvent.self])
         let config = ModelConfiguration(
+            "DogFeedStore",
             schema: schema,
             allowsSave: true,
             groupContainer: .identifier("group.com.delon.DidIFeedTheDog"),

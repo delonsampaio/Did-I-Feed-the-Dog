@@ -6,6 +6,7 @@ struct Did_I_Feed_The_Dog_App: App {
     let sharedModelContainer: ModelContainer = {
         let schema = Schema([Pet.self, FeedingEvent.self])
         let config = ModelConfiguration(
+            "DogFeedStore",
             schema: schema,
             allowsSave: true,
             groupContainer: .identifier("group.com.delon.DidIFeedTheDog"),
