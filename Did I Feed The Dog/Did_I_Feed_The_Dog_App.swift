@@ -3,26 +3,31 @@ import CoreData
 import SwiftUI
 import SwiftData
 
+// Hoisted to file scope so AppIntents (IntentDataAccess) reference the same
+// container instance instead of spinning up a second one. Two containers
+// against the same CloudKit-backed store cause:
+// "BUG IN CLIENT OF CLOUDKIT: Registering a handler for a CKScheduler activity
+// identifier that has already been registered" and crippled sync.
+let sharedModelContainer: ModelContainer = {
+    let schema = Schema([Pet.self, FeedingEvent.self])
+    let config = ModelConfiguration(
+        "DogFeedStore",
+        schema: schema,
+        allowsSave: true,
+        groupContainer: .identifier("group.com.delon.DidIFeedTheDog"),
+        cloudKitDatabase: .automatic
+    )
+    do {
+        let container = try ModelContainer(for: schema, configurations: [config])
+        container.mainContext.autosaveEnabled = true
+        return container
+    } catch {
+        fatalError("Could not create ModelContainer: \(error)")
+    }
+}()
+
 @main
 struct Did_I_Feed_The_Dog_App: App {
-    let sharedModelContainer: ModelContainer = {
-        let schema = Schema([Pet.self, FeedingEvent.self])
-        let config = ModelConfiguration(
-            "DogFeedStore",
-            schema: schema,
-            allowsSave: true,
-            groupContainer: .identifier("group.com.delon.DidIFeedTheDog"),
-            cloudKitDatabase: .automatic
-        )
-        do {
-            let container = try ModelContainer(for: schema, configurations: [config])
-            container.mainContext.autosaveEnabled = true
-            return container
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
-
     @Environment(\.scenePhase) private var scenePhase
     @State private var deepLinkPetId: UUID? = nil
 
