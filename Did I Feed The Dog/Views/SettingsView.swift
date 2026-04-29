@@ -35,6 +35,7 @@ struct SettingsView: View {
             aboutSection
         }
         .navigationTitle("Settings")
+        .preferredColorScheme(appearanceMode.colorScheme)
         .sheet(item: $editingPet) { pet in
             AddEditPetSheet(pet: pet)
         }
