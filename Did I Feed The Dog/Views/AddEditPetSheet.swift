@@ -14,8 +14,9 @@ struct AddEditPetSheet: View {
     @State private var name = ""
     @State private var birthday = Date()
     @State private var foodStockCount = 0
-    @State private var selectedPhoto: PhotosPickerItem?
     @State private var photoData: Data?
+    @State private var selectedAvatarName: String?
+    @State private var showAvatarPicker = false
     @State private var feedingTimes: [Date] = []
 
     var body: some View {
@@ -27,29 +28,17 @@ struct AddEditPetSheet: View {
                 }
 
                 Section("Photo") {
-                    PhotosPicker(selection: $selectedPhoto, matching: .images) {
-                        HStack {
-                            if let data = photoData, let uiImage = UIImage(data: data) {
-                                Image(uiImage: uiImage)
-                                    .resizable().scaledToFill()
-                                    .frame(width: 60, height: 60)
-                                    .clipShape(Circle())
-                            } else {
-                                Image(systemName: "pawprint.fill")
-                                    .font(.title2)
-                                    .frame(width: 60, height: 60)
-                                    .background(Color.accentColor.opacity(0.15))
-                                    .clipShape(Circle())
-                            }
+                    Button { showAvatarPicker = true } label: {
+                        HStack(spacing: 14) {
+                            photoPreview
                             Text(photoData == nil ? "Add Photo" : "Change Photo")
                                 .foregroundStyle(.blue)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption).foregroundStyle(.tertiary)
                         }
                     }
-                    .onChange(of: selectedPhoto) { _, newItem in
-                        Task {
-                            photoData = try? await newItem?.loadTransferable(type: Data.self)
-                        }
-                    }
+                    .buttonStyle(.plain)
                 }
 
                 if stockMode == .individual {
@@ -122,6 +111,26 @@ struct AddEditPetSheet: View {
                 }
             }
             .onAppear { prefillIfEditing() }
+            .sheet(isPresented: $showAvatarPicker) {
+                AvatarPickerSheet(selectedAvatarName: $selectedAvatarName, photoData: $photoData)
+            }
+        }
+    }
+
+    private var photoPreview: some View {
+        Group {
+            if let data = photoData, let uiImage = UIImage(data: data) {
+                Image(uiImage: uiImage)
+                    .resizable().scaledToFill()
+                    .frame(width: 60, height: 60)
+                    .clipShape(Circle())
+            } else {
+                Image(systemName: "pawprint.fill")
+                    .font(.title2)
+                    .frame(width: 60, height: 60)
+                    .background(Color.accentColor.opacity(0.15))
+                    .clipShape(Circle())
+            }
         }
     }
 
@@ -167,5 +176,86 @@ struct AddEditPetSheet: View {
             }
         }
         dismiss()
+    }
+}
+
+private struct AvatarPickerSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Binding var selectedAvatarName: String?
+    @Binding var photoData: Data?
+
+    @State private var selectedPhoto: PhotosPickerItem?
+
+    private let columns = [GridItem(.adaptive(minimum: 90))]
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    PhotosPicker(selection: $selectedPhoto, matching: .images) {
+                        Label("Upload Your Own Photo", systemImage: "photo")
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(Color(.secondarySystemBackground))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .onChange(of: selectedPhoto) { _, newItem in
+                        Task {
+                            if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                                photoData = data
+                                selectedAvatarName = nil
+                                dismiss()
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+
+                    LazyVGrid(columns: columns, spacing: 12) {
+                        ForEach(DefaultAvatars.all, id: \.self) { name in
+                            avatarCell(name)
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                .padding(.top, 16)
+            }
+            .navigationTitle("Choose Photo")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.large])
+    }
+
+    private func avatarCell(_ name: String) -> some View {
+        let isSelected = selectedAvatarName == name
+        return Button {
+            selectedAvatarName = name
+            if let uiImage = UIImage(named: name) {
+                photoData = uiImage.pngData()
+            }
+            dismiss()
+        } label: {
+            ZStack(alignment: .topTrailing) {
+                Image(name)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 90, height: 90)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 3)
+                    )
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(.white, Color.accentColor)
+                        .font(.title3)
+                        .padding(4)
+                }
+            }
+        }
     }
 }
