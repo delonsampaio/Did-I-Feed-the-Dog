@@ -61,9 +61,10 @@ enum WidgetDataStore {
         }
 
         // Show what DashboardView's @Query reported at each write site
-        let onAppear = ud?.integer(forKey: "debugPetsCount_onAppear") ?? -1
-        let task     = ud?.integer(forKey: "debugPetsCount_task")     ?? -1
-        parts.append("dash:\(onAppear)/\(task)")
+        let onAppear  = ud?.integer(forKey: "debugPetsCount_onAppear")  ?? -1
+        let task      = ud?.integer(forKey: "debugPetsCount_task")      ?? -1
+        let refresher = ud?.integer(forKey: "debugPetsCount_refresher") ?? -1
+        parts.append("dash:\(onAppear)/\(task) ref:\(refresher)")
 
         return parts.joined(separator: " ")
     }
