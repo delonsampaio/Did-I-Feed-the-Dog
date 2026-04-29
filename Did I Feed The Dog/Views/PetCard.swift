@@ -136,11 +136,8 @@ struct PetCard: View {
                 Image(uiImage: uiImage)
                     .resizable().scaledToFill()
             } else {
-                Image(systemName: "pawprint.fill")
-                    .font(.title2)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.accentColor.gradient)
+                Image(DefaultAvatars.defaultFor(id: pet.id))
+                    .resizable().scaledToFill()
             }
         }
         .frame(width: 56, height: 56)
