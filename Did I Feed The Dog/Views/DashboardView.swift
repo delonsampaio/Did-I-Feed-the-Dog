@@ -91,7 +91,7 @@ struct DashboardView: View {
                 pets: pets
             )
             DogFoodShortcuts.updateAppShortcutParameters()
-            if !pets.isEmpty { WidgetDataWriter.write(pets) }
+            WidgetDataWriter.write(pets)
         }
         .onChange(of: pets) { _, newPets in
             WidgetDataWriter.write(newPets)
