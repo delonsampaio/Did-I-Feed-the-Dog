@@ -11,9 +11,13 @@ struct WidgetRefresher: View {
     var body: some View {
         Color.clear
             .onChange(of: feedingEvents) { _, _ in
-                // Guard: don't overwrite the file with empty pets if @Query
-                // hasn't loaded yet in this background view.
                 if !pets.isEmpty { WidgetDataWriter.write(pets) }
+            }
+            .onChange(of: pets) { _, newPets in
+                guard !newPets.isEmpty else { return }
+                UserDefaults(suiteName: WidgetDataWriter.groupID)?
+                    .set(newPets.count, forKey: "debugPetsCount_refresher")
+                WidgetDataWriter.write(newPets)
             }
     }
 }
