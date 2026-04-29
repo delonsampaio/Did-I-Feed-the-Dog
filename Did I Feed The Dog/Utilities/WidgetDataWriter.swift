@@ -13,8 +13,8 @@ enum WidgetDataWriter {
     static let groupID = "group.com.delon.DidIFeedTheDog"
     static let fileName = "widgetPetData.json"
 
-    // Preferred: pass already-loaded pets directly from @Query to avoid
-    // context.fetch() returning stale/empty results before SwiftData is ready.
+    // Pass already-loaded pets from @Query — avoids context.fetch() timing issues.
+    // Does NOT guard against empty: deliberately empty (all pets deleted) is valid.
     static func write(_ pets: [Pet]) {
         let snapshots = pets.map { pet -> PetWidgetData in
             let lastDate = (pet.feedingEvents ?? [])
@@ -33,10 +33,12 @@ enum WidgetDataWriter {
         WidgetCenter.shared.reloadAllTimelines()
     }
 
-    // Fallback for callers that don't have an already-loaded pet list.
+    // Fallback for callers that only have a model context (e.g. LogFeedingSheet).
+    // Skips writing if fetch returns empty to avoid overwriting good data.
     static func write(from context: ModelContext) {
         try? context.save()
         let pets = (try? context.fetch(FetchDescriptor<Pet>())) ?? []
+        guard !pets.isEmpty else { return }
         write(pets)
     }
 

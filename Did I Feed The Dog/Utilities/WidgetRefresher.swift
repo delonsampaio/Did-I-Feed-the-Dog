@@ -1,9 +1,9 @@
 import SwiftUI
 import SwiftData
 
-// Observes FeedingEvent changes for the full app lifetime so the widget file
-// stays current when meals are logged or deleted (including CloudKit sync from
-// family members). Pet-list changes are handled directly in DashboardView.
+// Observes FeedingEvent changes so the widget file updates when meals are
+// logged or deleted (including CloudKit sync from family members).
+// Pet-list changes are handled in DashboardView.onChange(of: pets).
 struct WidgetRefresher: View {
     @Query private var pets: [Pet]
     @Query private var feedingEvents: [FeedingEvent]
@@ -11,7 +11,9 @@ struct WidgetRefresher: View {
     var body: some View {
         Color.clear
             .onChange(of: feedingEvents) { _, _ in
-                WidgetDataWriter.write(pets)
+                // Guard: don't overwrite the file with empty pets if @Query
+                // hasn't loaded yet in this background view.
+                if !pets.isEmpty { WidgetDataWriter.write(pets) }
             }
     }
 }

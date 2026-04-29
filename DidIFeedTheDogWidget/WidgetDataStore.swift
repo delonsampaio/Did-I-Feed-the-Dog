@@ -25,12 +25,14 @@ enum WidgetDataStore {
             .appendingPathComponent(fileName)
     }
 
-    // Returns a short status string shown in debug builds to diagnose widget data issues
+    // Returns a short status string for diagnosing widget data issues
     static func debugStatus() -> String {
         guard let url = fileURL() else { return "no-group-container" }
         guard FileManager.default.fileExists(atPath: url.path) else { return "file-missing" }
-        guard let data = try? Data(contentsOf: url) else { return "unreadable" }
-        guard let pets = try? JSONDecoder().decode([PetWidgetData].self, from: data) else { return "bad-json" }
-        return "\(pets.count) pets"
+        let mod = (try? FileManager.default.attributesOfItem(atPath: url.path))?[.modificationDate] as? Date
+        let time = mod.map { DateFormatter.localizedString(from: $0, dateStyle: .none, timeStyle: .medium) } ?? "?"
+        guard let data = try? Data(contentsOf: url) else { return "unreadable @\(time)" }
+        guard let pets = try? JSONDecoder().decode([PetWidgetData].self, from: data) else { return "bad-json @\(time)" }
+        return "\(pets.count) pets @\(time)"
     }
 }
