@@ -13,6 +13,7 @@ struct DashboardView: View {
     @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
     @AppStorage("appearanceMode")          private var appearanceMode: AppearanceMode = .system
 
+    @State private var syncMonitor = CloudKitSyncMonitor()
     @State private var showAddPet = false
     @State private var showSettings = false
     @State private var showFeedAll = false
@@ -65,8 +66,14 @@ struct DashboardView: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button { showSettings = true } label: {
-                        Image(systemName: "gearshape.fill").font(.title3)
+                    HStack(spacing: 10) {
+                        Button { showSettings = true } label: {
+                            Image(systemName: "gearshape.fill").font(.title3)
+                        }
+                        if syncMonitor.isSyncing {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                        }
                     }
                 }
             }
