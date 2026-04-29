@@ -70,7 +70,7 @@ struct MediumWidgetView: View {
     }
 
     private var footer: some View {
-        Text("Did I Feed The Dog?")
+        Text("Fed The Dog?")
             .font(.system(size: 9, weight: .medium))
             .foregroundStyle(.white.opacity(0.2))
     }

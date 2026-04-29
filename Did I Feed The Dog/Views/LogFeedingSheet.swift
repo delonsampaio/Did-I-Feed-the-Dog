@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import WidgetKit
 
 struct LogFeedingSheet: View {
     @Environment(\.modelContext) private var modelContext
@@ -157,7 +156,7 @@ struct LogFeedingSheet: View {
             }
         }
 
-        WidgetCenter.shared.reloadAllTimelines()
+        WidgetDataWriter.write(from: modelContext)
         NotificationManager.shared.suppressNextUpcomingReminder(
             reminderMode: reminderMode,
             for: pet,
