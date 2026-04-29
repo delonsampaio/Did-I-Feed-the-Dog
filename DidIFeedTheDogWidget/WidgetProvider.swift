@@ -27,6 +27,7 @@ struct Provider: TimelineProvider {
     private static let sharedContainer: ModelContainer? = {
         let schema = Schema([Pet.self, FeedingEvent.self])
         let config = ModelConfiguration(
+            "DogFeedStore",
             schema: schema,
             allowsSave: false,
             groupContainer: .identifier("group.com.delon.DidIFeedTheDog"),
