@@ -12,9 +12,8 @@ struct PetWidgetData: Codable {
 enum WidgetDataWriter {
     static let groupID = "group.com.delon.DidIFeedTheDog"
     static let fileName = "widgetPetData.json"
+    static let udKey    = "widgetPetData"
 
-    // Pass already-loaded pets from @Query — avoids context.fetch() timing issues.
-    // Does NOT guard against empty: deliberately empty (all pets deleted) is valid.
     static func write(_ pets: [Pet]) {
         let snapshots = pets.map { pet -> PetWidgetData in
             let lastDate = (pet.feedingEvents ?? [])
@@ -26,14 +25,20 @@ enum WidgetDataWriter {
                 lastFedDate: lastDate
             )
         }
-        guard let url = fileURL() else { return }
-        if let data = try? JSONEncoder().encode(snapshots) {
-            try? data.write(to: url, options: .atomic)
+        guard let data = try? JSONEncoder().encode(snapshots) else { return }
+
+        // Primary: write file without .atomic (atomic can silently fail in group containers)
+        if let url = fileURL() {
+            try? data.write(to: url)
         }
+
+        // Backup: also write to shared UserDefaults
+        UserDefaults(suiteName: groupID)?.set(data, forKey: udKey)
+
         WidgetCenter.shared.reloadAllTimelines()
     }
 
-    // Fallback for callers that only have a model context (e.g. LogFeedingSheet).
+    // Fallback for callers that only have a model context (LogFeedingSheet etc).
     // Skips writing if fetch returns empty to avoid overwriting good data.
     static func write(from context: ModelContext) {
         try? context.save()

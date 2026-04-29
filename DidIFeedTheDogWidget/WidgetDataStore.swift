@@ -8,15 +8,23 @@ struct PetWidgetData: Codable {
 }
 
 enum WidgetDataStore {
-    private static let groupID = "group.com.delon.DidIFeedTheDog"
+    private static let groupID  = "group.com.delon.DidIFeedTheDog"
     private static let fileName = "widgetPetData.json"
+    private static let udKey    = "widgetPetData"
 
     static func load() -> [PetWidgetData] {
-        guard let url = fileURL(),
-              let data = try? Data(contentsOf: url),
-              let pets = try? JSONDecoder().decode([PetWidgetData].self, from: data)
-        else { return [] }
-        return pets
+        // Try file first
+        if let url = fileURL(),
+           let data = try? Data(contentsOf: url),
+           let pets = try? JSONDecoder().decode([PetWidgetData].self, from: data) {
+            return pets
+        }
+        // Fall back to UserDefaults
+        if let data = UserDefaults(suiteName: groupID)?.data(forKey: udKey),
+           let pets = try? JSONDecoder().decode([PetWidgetData].self, from: data) {
+            return pets
+        }
+        return []
     }
 
     static func fileURL() -> URL? {
@@ -25,14 +33,32 @@ enum WidgetDataStore {
             .appendingPathComponent(fileName)
     }
 
-    // Returns a short status string for diagnosing widget data issues
     static func debugStatus() -> String {
-        guard let url = fileURL() else { return "no-group-container" }
-        guard FileManager.default.fileExists(atPath: url.path) else { return "file-missing" }
-        let mod = (try? FileManager.default.attributesOfItem(atPath: url.path))?[.modificationDate] as? Date
-        let time = mod.map { DateFormatter.localizedString(from: $0, dateStyle: .none, timeStyle: .medium) } ?? "?"
-        guard let data = try? Data(contentsOf: url) else { return "unreadable @\(time)" }
-        guard let pets = try? JSONDecoder().decode([PetWidgetData].self, from: data) else { return "bad-json @\(time)" }
-        return "\(pets.count) pets @\(time)"
+        var parts: [String] = []
+
+        // Check file
+        if let url = fileURL() {
+            if FileManager.default.fileExists(atPath: url.path),
+               let data = try? Data(contentsOf: url),
+               let pets = try? JSONDecoder().decode([PetWidgetData].self, from: data) {
+                let mod = (try? FileManager.default.attributesOfItem(atPath: url.path))?[.modificationDate] as? Date
+                let t = mod.map { DateFormatter.localizedString(from: $0, dateStyle: .none, timeStyle: .short) } ?? "?"
+                parts.append("file:\(pets.count)@\(t)")
+            } else {
+                parts.append("file:missing")
+            }
+        } else {
+            parts.append("no-container")
+        }
+
+        // Check UserDefaults
+        if let data = UserDefaults(suiteName: groupID)?.data(forKey: udKey),
+           let pets = try? JSONDecoder().decode([PetWidgetData].self, from: data) {
+            parts.append("ud:\(pets.count)")
+        } else {
+            parts.append("ud:none")
+        }
+
+        return parts.joined(separator: " ")
     }
 }
