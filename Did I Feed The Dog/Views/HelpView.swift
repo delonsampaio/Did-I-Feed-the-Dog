@@ -26,7 +26,6 @@ struct HelpView: View {
                 notesSection
                 foodStockSection
                 feedingRemindersSection
-                widgetSection
                 siriSection
                 icloudSection
                 notificationsSection
@@ -64,6 +63,10 @@ struct HelpView: View {
             FAQRow(
                 question: "Can I undo a meal I just logged?",
                 answer: "Yes. After logging a meal, a brief Undo banner appears at the bottom of the card. Tap Undo within a few seconds to remove the entry and restore any food portion that was deducted."
+            )
+            FAQRow(
+                question: "How do I show my name next to feedings I log?",
+                answer: "Go to Settings -> Your Name and type your name. It will appear next to every feeding you log so family members can see who fed the dog. If no name is set, the app uses your device model name (e.g. iPhone)."
             )
             FAQRow(
                 question: "How do I edit a dog's info?",
@@ -168,27 +171,6 @@ struct HelpView: View {
         }
     }
 
-    private var widgetSection: some View {
-        Section("Widget") {
-            FAQRow(
-                question: "How do I add the widget?",
-                answer: "Long-press the home screen until icons wiggle, tap the + button in the top-left corner, search for Fed The Dog?, choose a size, and tap Add Widget."
-            )
-            FAQRow(
-                question: "What do the widget sizes show?",
-                answer: "Small: your most overdue dog with their last-fed time. Medium: up to 3 dogs with fed/overdue status. Lock screen widgets show a quick count or the most overdue dog."
-            )
-            FAQRow(
-                question: "Why does the widget show old data?",
-                answer: "The widget refreshes automatically every hour. When you log a feeding in the app, the widget updates immediately."
-            )
-            FAQRow(
-                question: "What happens when I tap the widget?",
-                answer: "The small and medium widgets open the Log Meal sheet for the tapped dog directly. The lock screen widgets open the app dashboard."
-            )
-        }
-    }
-
     private var siriSection: some View {
         Section("Siri & Shortcuts") {
             FAQRow(
@@ -217,12 +199,12 @@ struct HelpView: View {
                 answer: "Yes. If everyone in your household is signed into the same iCloud account, feedings, food stock, and dog info stay in sync across all your iPhones automatically. Changes usually appear within about a minute."
             )
             FAQRow(
-                question: "What if two people log a feeding at the same time?",
-                answer: "Both feedings are saved. You may see two entries close together in the history — that's the accurate record of what happened."
+                question: "How do I know which family member fed the dog?",
+                answer: "Each feeding in the history shows the name of the person who logged it, next to the time. Make sure everyone in your household sets their name in Settings -> Your Name so their feedings are clearly attributed."
             )
             FAQRow(
-                question: "Does the widget stay in sync too?",
-                answer: "Yes. The widget shows the same data as the app, so it reflects the most recent feeding logged by anyone in the household."
+                question: "What if two people log a feeding at the same time?",
+                answer: "Both feedings are saved. You may see two entries close together in the history — that's the accurate record of what happened."
             )
         }
     }
@@ -254,6 +236,7 @@ struct HelpView: View {
             .init(section: "Getting Started", question: "How do I log a feeding?", answer: "Tap the green Log Meal button on any dog's card. Choose the meal type — Breakfast, Lunch, Dinner, Morning, Afternoon, Evening, Snack, Treat, or Custom — and confirm. The card updates immediately."),
             .init(section: "Getting Started", question: "Can I log a meal for all dogs at once?", answer: "Yes. When you have 2 or more dogs, a fork icon appears in the top-right of the dashboard next to the + button. Tap it to open the Feed All Dogs sheet and log the same meal for everyone in one tap."),
             .init(section: "Getting Started", question: "Can I undo a meal I just logged?", answer: "Yes. After logging a meal, a brief Undo banner appears at the bottom of the card. Tap Undo within a few seconds to remove the entry and restore any food portion that was deducted."),
+            .init(section: "Getting Started", question: "How do I show my name next to feedings I log?", answer: "Go to Settings -> Your Name and type your name. It will appear next to every feeding you log so family members can see who fed the dog. If no name is set, the app uses your device model name (e.g. iPhone)."),
             .init(section: "Getting Started", question: "How do I edit a dog's info?", answer: "Go to Settings -> Dogs and tap the dog's name to open the edit sheet. You can update their name, birthday, photo, and food stock count."),
             .init(section: "Getting Started", question: "How do I delete a dog?", answer: "In Settings -> Dogs, swipe left on the dog's name and tap Delete. This also removes all of their feeding history."),
             .init(section: "Feeding Status", question: "What does overdue mean?", answer: "A dog is marked overdue when their last recorded feeding was longer ago than your overdue threshold. The default is 12 hours but you can adjust it in Settings -> Notifications -> Overdue After. Their card shows a red Last Fed badge as a reminder."),
@@ -274,17 +257,13 @@ struct HelpView: View {
             .init(section: "Feeding Reminders", question: "What is Per Dog mode?", answer: "Each dog has their own reminder schedule. Tap the dog's name in Settings -> Feeding Reminders (or tap the dog's name in Settings -> Dogs) to set their individual times."),
             .init(section: "Feeding Reminders", question: "How many reminder times can I set?", answer: "Up to 3 daily reminder times per schedule. Most households need a morning and evening reminder, but a midday one is available too."),
             .init(section: "Feeding Reminders", question: "Will reminders stop firing if I already fed my dog?", answer: "Yes. When you log a feeding, the next scheduled reminder for that dog is automatically cancelled. Any later reminders that day still fire as normal. Reminders are fully restored the next time you open the app."),
-            .init(section: "Widget", question: "How do I add the widget?", answer: "Long-press the home screen until icons wiggle, tap the + button in the top-left corner, search for Fed The Dog?, choose a size, and tap Add Widget."),
-            .init(section: "Widget", question: "What do the widget sizes show?", answer: "Small: your most overdue dog with their last-fed time. Medium: up to 3 dogs with fed/overdue status. Lock screen widgets show a quick count or the most overdue dog."),
-            .init(section: "Widget", question: "Why does the widget show old data?", answer: "The widget refreshes automatically every hour. When you log a feeding in the app, the widget updates immediately."),
-            .init(section: "Widget", question: "What happens when I tap the widget?", answer: "The small and medium widgets open the Log Meal sheet for the tapped dog directly. The lock screen widgets open the app dashboard."),
             .init(section: "Siri & Shortcuts", question: "How do I log a feeding with Siri?", answer: "Say \"Log [dog's name]'s feeding in Fed The Dog?\". Siri will confirm the meal and log it instantly — no need to open the app."),
             .init(section: "Siri & Shortcuts", question: "How do I check if my dog has been fed?", answer: "Say \"Did I feed [dog's name] in Fed The Dog?\". Siri will tell you when they were last fed and whether they're overdue."),
             .init(section: "Siri & Shortcuts", question: "How do I update food stock with Siri?", answer: "Say \"Update [dog's name]'s food stock in Fed The Dog?\". Siri will ask how many portions you added and update the count."),
             .init(section: "Siri & Shortcuts", question: "Can I add these as shortcuts in the Shortcuts app?", answer: "Yes. Open the Shortcuts app, tap the + button, and search for Fed The Dog? to see all available actions. You can also go to iPhone Settings -> Siri & Search -> Fed The Dog? to manage them."),
             .init(section: "iCloud Sync", question: "Does my data sync across devices?", answer: "Yes. If everyone in your household is signed into the same iCloud account, feedings, food stock, and dog info stay in sync across all your iPhones automatically. Changes usually appear within about a minute."),
+            .init(section: "iCloud Sync", question: "How do I know which family member fed the dog?", answer: "Each feeding in the history shows the name of the person who logged it, next to the time. Make sure everyone in your household sets their name in Settings -> Your Name so their feedings are clearly attributed."),
             .init(section: "iCloud Sync", question: "What if two people log a feeding at the same time?", answer: "Both feedings are saved. You may see two entries close together in the history — that's the accurate record of what happened."),
-            .init(section: "iCloud Sync", question: "Does the widget stay in sync too?", answer: "Yes. The widget shows the same data as the app, so it reflects the most recent feeding logged by anyone in the household."),
             .init(section: "Notifications", question: "What is the Low Stock Push Alert?", answer: "A notification sent when a dog's food stock drops to or below the Low Stock Threshold after logging a feeding."),
             .init(section: "Notifications", question: "What is the Birthday Push Alert?", answer: "A notification sent on your dog's birthday each year, based on the birthday you entered when adding them."),
             .init(section: "Notifications", question: "What is the Low Stock UI Warning?", answer: "An orange banner that appears on the dog's card when stock is low. This is separate from the push notification."),
