@@ -2,21 +2,13 @@ import SwiftData
 import Foundation
 
 enum IntentDataAccess {
-    static let container: ModelContainer? = {
-        let schema = Schema([Pet.self, FeedingEvent.self])
-        let config = ModelConfiguration(
-            "DogFeedStore",
-            schema: schema,
-            allowsSave: true,
-            groupContainer: .identifier("group.com.delon.DidIFeedTheDog"),
-            cloudKitDatabase: .automatic
-        )
-        return try? ModelContainer(for: schema, configurations: [config])
-    }()
+    // Reuse the app's shared container. Creating a second CloudKit-enabled
+    // container against the same store causes CloudKit handler registration
+    // conflicts and breaks sync.
+    static var container: ModelContainer? { sharedModelContainer }
 
     static func makeContext() -> ModelContext? {
-        guard let container else { return nil }
-        return ModelContext(container)
+        ModelContext(sharedModelContainer)
     }
 
     static func fetchPets(in context: ModelContext) -> [Pet] {
