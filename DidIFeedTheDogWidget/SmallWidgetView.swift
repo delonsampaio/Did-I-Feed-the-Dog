@@ -54,6 +54,9 @@ struct SmallWidgetView: View {
                 .font(.caption)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
+            Text(WidgetDataStore.debugStatus())
+                .font(.system(size: 9))
+                .foregroundStyle(.orange)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

@@ -70,9 +70,15 @@ struct MediumWidgetView: View {
     }
 
     private var footer: some View {
-        Text("Fed The Dog?")
-            .font(.system(size: 9, weight: .medium))
-            .foregroundStyle(.white.opacity(0.2))
+        HStack {
+            Text("Fed The Dog?")
+                .font(.system(size: 9, weight: .medium))
+                .foregroundStyle(.white.opacity(0.2))
+            Spacer()
+            Text(WidgetDataStore.debugStatus())
+                .font(.system(size: 9))
+                .foregroundStyle(.orange.opacity(0.8))
+        }
     }
 
     private func avatarView(photoData: Data?) -> some View {
