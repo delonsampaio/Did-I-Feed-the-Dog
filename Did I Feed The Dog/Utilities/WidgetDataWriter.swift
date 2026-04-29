@@ -10,9 +10,9 @@ struct PetWidgetData: Codable {
 }
 
 enum WidgetDataWriter {
-    static let groupID = "group.com.delon.DidIFeedTheDog"
-    static let fileName = "widgetPetData.json"
-    static let udKey    = "widgetPetData"
+    private static let groupID  = "group.com.delon.DidIFeedTheDog"
+    private static let fileName = "widgetPetData.json"
+    private static let udKey    = "widgetPetData"
 
     // Pass explicit events to avoid stale lazy-relationship data.
     static func write(_ pets: [Pet], events: [FeedingEvent]? = nil) {

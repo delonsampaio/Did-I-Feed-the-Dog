@@ -135,7 +135,12 @@ struct LogFeedingSheet: View {
 
     private func logFeeding() {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        let event = FeedingEvent(mealType: resolvedMealLabel, notes: notes.trimmingCharacters(in: .whitespacesAndNewlines), pet: pet)
+        let event = FeedingEvent(
+            mealType: resolvedMealLabel,
+            notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
+            loggedBy: LoggedBy.current,
+            pet: pet
+        )
         modelContext.insert(event)
 
         let shouldDecrementStock = showCustomField || selectedMealType.decrementsStock

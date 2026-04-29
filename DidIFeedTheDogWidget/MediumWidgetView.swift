@@ -75,9 +75,6 @@ struct MediumWidgetView: View {
                 .font(.system(size: 9, weight: .medium))
                 .foregroundStyle(.white.opacity(0.2))
             Spacer()
-            Text(WidgetDataStore.debugStatus())
-                .font(.system(size: 9))
-                .foregroundStyle(.orange.opacity(0.8))
         }
     }
 

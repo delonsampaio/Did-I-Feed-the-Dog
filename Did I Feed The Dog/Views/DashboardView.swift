@@ -44,6 +44,10 @@ struct DashboardView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
             }
+            .refreshable {
+                WidgetDataWriter.write(pets, events: feedingEvents)
+                try? await Task.sleep(for: .milliseconds(600))
+            }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("My Dogs")
             .toolbar {
@@ -92,13 +96,9 @@ struct DashboardView: View {
                 pets: pets
             )
             DogFoodShortcuts.updateAppShortcutParameters()
-            UserDefaults(suiteName: WidgetDataWriter.groupID)?
-                .set(pets.count, forKey: "debugPetsCount_onAppear")
             WidgetDataWriter.write(pets, events: feedingEvents)
         }
         .onChange(of: pets) { _, newPets in
-            UserDefaults(suiteName: WidgetDataWriter.groupID)?
-                .set(newPets.count, forKey: "debugPetsCount_task")
             WidgetDataWriter.write(newPets, events: feedingEvents)
         }
         .onChange(of: feedingEvents) { _, newEvents in

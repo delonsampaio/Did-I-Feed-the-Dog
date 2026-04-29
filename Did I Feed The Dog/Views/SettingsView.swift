@@ -16,6 +16,7 @@ struct SettingsView: View {
     @AppStorage("reminderMode")            private var reminderMode: ReminderMode = .none
     @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
     @AppStorage("overdueThresholdHours")   private var overdueThresholdHours = 12
+    @AppStorage(LoggedBy.storageKey)       private var loggedByName = ""
 
     @State private var editingPet: Pet?
     @State private var showAddPet = false
@@ -23,6 +24,7 @@ struct SettingsView: View {
     var body: some View {
         Form {
             petsSection
+            displayNameSection
             foodStockSection
             feedingRemindersSection
             notificationsSection
@@ -60,6 +62,17 @@ struct SettingsView: View {
             } label: {
                 Label("Add Dog", systemImage: "plus.circle.fill")
             }
+        }
+    }
+
+    private var displayNameSection: some View {
+        Section {
+            TextField("e.g. \(UIDevice.current.name)", text: $loggedByName)
+                .textInputAutocapitalization(.words)
+        } header: {
+            Text("Your Name")
+        } footer: {
+            Text("Shown next to feedings you log so family members know who fed the dog.")
         }
     }
 

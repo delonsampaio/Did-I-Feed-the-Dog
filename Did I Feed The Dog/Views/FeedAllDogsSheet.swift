@@ -136,10 +136,11 @@ struct FeedAllDogsSheet: View {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         let mealLabel = resolvedMealLabel
         let noteText = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        let logger = LoggedBy.current
         let shouldDecrementStock = showCustomField || selectedMealType.decrementsStock
 
         for pet in pets {
-            let event = FeedingEvent(mealType: mealLabel, notes: noteText, pet: pet)
+            let event = FeedingEvent(mealType: mealLabel, notes: noteText, loggedBy: logger, pet: pet)
             modelContext.insert(event)
 
             if shouldDecrementStock {
