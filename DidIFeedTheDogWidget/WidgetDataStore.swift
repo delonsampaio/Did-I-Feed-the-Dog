@@ -52,12 +52,18 @@ enum WidgetDataStore {
         }
 
         // Check UserDefaults
-        if let data = UserDefaults(suiteName: groupID)?.data(forKey: udKey),
+        let ud = UserDefaults(suiteName: groupID)
+        if let data = ud?.data(forKey: udKey),
            let pets = try? JSONDecoder().decode([PetWidgetData].self, from: data) {
             parts.append("ud:\(pets.count)")
         } else {
             parts.append("ud:none")
         }
+
+        // Show what DashboardView's @Query reported at each write site
+        let onAppear = ud?.integer(forKey: "debugPetsCount_onAppear") ?? -1
+        let task     = ud?.integer(forKey: "debugPetsCount_task")     ?? -1
+        parts.append("dash:\(onAppear)/\(task)")
 
         return parts.joined(separator: " ")
     }
