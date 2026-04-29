@@ -91,6 +91,10 @@ struct DashboardView: View {
                 pets: pets
             )
             DogFoodShortcuts.updateAppShortcutParameters()
+            WidgetDataWriter.write(from: modelContext)
+        }
+        .onChange(of: pets) { _, _ in
+            WidgetDataWriter.write(from: modelContext)
         }
     }
 }

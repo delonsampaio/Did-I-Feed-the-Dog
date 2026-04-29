@@ -8,11 +8,14 @@ struct PetWidgetData: Codable {
 }
 
 enum WidgetDataStore {
-    private static let suiteName = "group.com.delon.DidIFeedTheDog"
-    private static let key = "widgetPetData"
+    private static let groupID = "group.com.delon.DidIFeedTheDog"
+    private static let fileName = "widgetPetData.json"
 
     static func load() -> [PetWidgetData] {
-        guard let data = UserDefaults(suiteName: suiteName)?.data(forKey: key),
+        guard let url = FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: groupID)?
+            .appendingPathComponent(fileName),
+              let data = try? Data(contentsOf: url),
               let pets = try? JSONDecoder().decode([PetWidgetData].self, from: data)
         else { return [] }
         return pets

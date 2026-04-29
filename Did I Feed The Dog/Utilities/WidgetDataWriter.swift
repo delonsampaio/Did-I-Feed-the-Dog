@@ -10,8 +10,8 @@ struct PetWidgetData: Codable {
 }
 
 enum WidgetDataWriter {
-    private static let suiteName = "group.com.delon.DidIFeedTheDog"
-    private static let key = "widgetPetData"
+    static let groupID = "group.com.delon.DidIFeedTheDog"
+    static let fileName = "widgetPetData.json"
 
     static func write(from context: ModelContext) {
         try? context.save()
@@ -26,9 +26,16 @@ enum WidgetDataWriter {
                 lastFedDate: lastDate
             )
         }
+        guard let url = fileURL() else { return }
         if let data = try? JSONEncoder().encode(snapshots) {
-            UserDefaults(suiteName: suiteName)?.set(data, forKey: key)
+            try? data.write(to: url, options: .atomic)
         }
         WidgetCenter.shared.reloadAllTimelines()
+    }
+
+    static func fileURL() -> URL? {
+        FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: groupID)?
+            .appendingPathComponent(fileName)
     }
 }
