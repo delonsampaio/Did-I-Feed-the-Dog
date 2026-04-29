@@ -47,6 +47,7 @@ struct Did_I_Feed_The_Dog_App: App {
                 .onReceive(
                     NotificationCenter.default.publisher(
                         for: NSNotification.Name.NSPersistentStoreRemoteChange)
+                        .receive(on: DispatchQueue.main)
                 ) { _ in
                     Task { @MainActor in
                         let ud = UserDefaults(suiteName: WidgetDataWriter.groupID)
