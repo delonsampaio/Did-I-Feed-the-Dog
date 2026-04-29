@@ -25,7 +25,15 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "How do I log a feeding?",
-                answer: "Tap the green Log Meal button on any dog's card. Choose the meal type (Morning, Evening, etc.) and confirm. The card updates immediately."
+                answer: "Tap the green Log Meal button on any dog's card. Choose the meal type — Breakfast, Lunch, Dinner, Morning, Afternoon, Evening, Snack, Treat, or Custom — and confirm. The card updates immediately."
+            )
+            FAQRow(
+                question: "Can I log a meal for all dogs at once?",
+                answer: "Yes. When you have 2 or more dogs, a fork icon appears in the top-right of the dashboard next to the + button. Tap it to open the Feed All Dogs sheet and log the same meal for everyone in one tap."
+            )
+            FAQRow(
+                question: "Can I undo a meal I just logged?",
+                answer: "Yes. After logging a meal, a brief Undo banner appears at the bottom of the card. Tap Undo within a few seconds to remove the entry and restore any food portion that was deducted."
             )
             FAQRow(
                 question: "How do I edit a dog's info?",
@@ -42,7 +50,7 @@ struct HelpView: View {
         Section("Feeding Status") {
             FAQRow(
                 question: "What does overdue mean?",
-                answer: "A dog is marked overdue when their last recorded feeding was more than 12 hours ago. Their card shows a red Last Fed badge as a reminder."
+                answer: "A dog is marked overdue when their last recorded feeding was longer ago than your overdue threshold. The default is 12 hours but you can adjust it in Settings -> Notifications -> Overdue After. Their card shows a red Last Fed badge as a reminder."
             )
             FAQRow(
                 question: "How far back does the history go?",
@@ -50,7 +58,11 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "Can I delete a feeding entry?",
-                answer: "Yes. Tap a dog's card header to open their history, then swipe left on any entry and tap Delete."
+                answer: "Yes. Tap a dog's card header to open their history, then swipe left on any entry. You'll see two options — Delete removes the entry only, and Delete & Restore Portion removes the entry and adds one portion back to the food stock."
+            )
+            FAQRow(
+                question: "Can I see when the next meal is due?",
+                answer: "Yes, if you have feeding reminders set up. In Per Dog mode, each card shows a 'Next meal' row with the upcoming scheduled time. In All Dogs mode, a single line appears above all cards on the dashboard."
             )
         }
     }
@@ -151,19 +163,19 @@ struct HelpView: View {
         Section("Siri & Shortcuts") {
             FAQRow(
                 question: "How do I log a feeding with Siri?",
-                answer: "Say \"Log [dog's name]'s feeding in Did I Feed The Dog\". Siri will confirm the meal and log it instantly — no need to open the app."
+                answer: "Say \"Log [dog's name]'s feeding in Did I Feed\". Siri will confirm the meal and log it instantly — no need to open the app."
             )
             FAQRow(
                 question: "How do I check if my dog has been fed?",
-                answer: "Say \"Did I feed [dog's name] in Did I Feed The Dog\". Siri will tell you when they were last fed and whether they're overdue."
+                answer: "Say \"Did I feed [dog's name] in Did I Feed\". Siri will tell you when they were last fed and whether they're overdue."
             )
             FAQRow(
                 question: "How do I update food stock with Siri?",
-                answer: "Say \"Update [dog's name]'s food stock in Did I Feed The Dog\". Siri will ask how many portions you added and update the count."
+                answer: "Say \"Update [dog's name]'s food stock in Did I Feed\". Siri will ask how many portions you added and update the count."
             )
             FAQRow(
                 question: "Can I add these as shortcuts in the Shortcuts app?",
-                answer: "Yes. Open the Shortcuts app, tap the + button, and search for Did I Feed The Dog to see all available actions. You can also go to iPhone Settings -> Siri & Search -> Did I Feed The Dog to manage them."
+                answer: "Yes. Open the Shortcuts app, tap the + button, and search for Did I Feed to see all available actions. You can also go to iPhone Settings -> Siri & Search -> Did I Feed to manage them."
             )
         }
     }
