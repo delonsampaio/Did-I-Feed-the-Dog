@@ -13,6 +13,14 @@ struct DashboardView: View {
     @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
     @AppStorage("appearanceMode")          private var appearanceMode: AppearanceMode = .system
 
+    private var resolvedColorScheme: ColorScheme {
+        switch appearanceMode {
+        case .light:  return .light
+        case .dark:   return .dark
+        case .system: return UITraitCollection.current.userInterfaceStyle == .dark ? .dark : .light
+        }
+    }
+
     @State private var showAddPet = false
     @State private var showSettings = false
     @State private var showFeedAll = false
@@ -72,7 +80,7 @@ struct DashboardView: View {
             }
             .navigationDestination(for: Pet.self) { pet in PetDetailView(pet: pet) }
             .sheet(isPresented: $showAddPet) { AddEditPetSheet() }
-            .sheet(isPresented: $showSettings) { NavigationStack { SettingsView() }.preferredColorScheme(appearanceMode.colorScheme) }
+            .sheet(isPresented: $showSettings) { NavigationStack { SettingsView() }.preferredColorScheme(resolvedColorScheme) }
             .sheet(isPresented: $showFeedAll) { FeedAllDogsSheet(pets: pets) }
             .sheet(item: $deepLinkFeedingPet) { pet in LogFeedingSheet(pet: pet) }
             .overlay {

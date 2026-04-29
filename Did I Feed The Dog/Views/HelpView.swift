@@ -189,6 +189,10 @@ struct HelpView: View {
                 question: "Can I add these as shortcuts in the Shortcuts app?",
                 answer: "Yes. Open the Shortcuts app, tap the + button, and search for Fed The Dog? to see all available actions. You can also go to iPhone Settings -> Siri & Search -> Fed The Dog? to manage them."
             )
+            FAQRow(
+                question: "Do I always have to say \"in Did I Feed the Dog?\" at the end?",
+                answer: "Not forever. After a few uses, Siri learns your patterns and can recognize the intent without the full app name — so \"Did I feed Luna?\" may work on its own. This happens automatically through Siri Suggestions."
+            )
         }
     }
 
@@ -261,6 +265,7 @@ struct HelpView: View {
             .init(section: "Siri & Shortcuts", question: "How do I check if my dog has been fed?", answer: "Say \"Did I feed [dog's name] in Fed The Dog?\". Siri will tell you when they were last fed and whether they're overdue."),
             .init(section: "Siri & Shortcuts", question: "How do I update food stock with Siri?", answer: "Say \"Update [dog's name]'s food stock in Fed The Dog?\". Siri will ask how many portions you added and update the count."),
             .init(section: "Siri & Shortcuts", question: "Can I add these as shortcuts in the Shortcuts app?", answer: "Yes. Open the Shortcuts app, tap the + button, and search for Fed The Dog? to see all available actions. You can also go to iPhone Settings -> Siri & Search -> Fed The Dog? to manage them."),
+            .init(section: "Siri & Shortcuts", question: "Do I always have to say \"in Did I Feed the Dog?\" at the end?", answer: "Not forever. After a few uses, Siri learns your patterns and can recognize the intent without the full app name — so \"Did I feed Luna?\" may work on its own. This happens automatically through Siri Suggestions."),
             .init(section: "iCloud Sync", question: "Does my data sync across devices?", answer: "Yes. If everyone in your household is signed into the same iCloud account, feedings, food stock, and dog info stay in sync across all your iPhones automatically. Changes usually appear within about a minute."),
             .init(section: "iCloud Sync", question: "How do I know which family member fed the dog?", answer: "Each feeding in the history shows the name of the person who logged it, next to the time. Make sure everyone in your household sets their name in Settings -> Your Name so their feedings are clearly attributed."),
             .init(section: "iCloud Sync", question: "What if two people log a feeding at the same time?", answer: "Both feedings are saved. You may see two entries close together in the history — that's the accurate record of what happened."),

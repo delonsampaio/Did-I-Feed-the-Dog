@@ -78,7 +78,7 @@ final class NotificationManager {
             scheduleReminder(
                 identifier: "feeding-\(pet.id.uuidString)-\(i)",
                 title: "Time to Feed \(pet.name ?? "your dog")",
-                body: "Don't forget \(pet.name ?? "their") feeding!",
+                body: "Don't forget to feed \(pet.name ?? "your dog")!",
                 minutesSinceMidnight: minutes
             )
         }
