@@ -36,7 +36,7 @@ struct Did_I_Feed_The_Dog_App: App {
                 }
                 .onReceive(
                     NotificationCenter.default.publisher(
-                        for: NSPersistentStoreRemoteChangeNotification)
+                        for: NSNotification.Name.NSPersistentStoreRemoteChange)
                 ) { _ in
                     Task { @MainActor in
                         // Give the main context time to merge CloudKit changes
