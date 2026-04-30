@@ -5,6 +5,7 @@ import StoreKit
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.requestReview) private var requestReview
+    @Environment(\.dismiss) private var dismiss
     @Query(sort: \Pet.name) private var pets: [Pet]
 
     @AppStorage("lowStockUIWarning")       private var lowStockUIWarning = true
@@ -35,6 +36,11 @@ struct SettingsView: View {
             aboutSection
         }
         .navigationTitle("Settings")
+        .toolbar {
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Done") { dismiss() }
+            }
+        }
         .sheet(item: $editingPet) { pet in
             AddEditPetSheet(pet: pet)
         }
