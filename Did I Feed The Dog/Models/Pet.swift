@@ -44,13 +44,12 @@ final class Pet {
 
     var isFeedingOverdue: Bool {
         let modeRaw = UserDefaults.standard.string(forKey: "reminderMode") ?? ""
-        let mode = ReminderMode(rawValue: modeRaw) ?? .none
 
-        if mode == .allDogs {
+        if modeRaw == "allDogs" {
             let raw = UserDefaults.standard.string(forKey: "allDogsReminderTimesRaw") ?? ""
             let times = raw.split(separator: ",").compactMap { Int($0) }.sorted()
             if !times.isEmpty { return isOverdueForSchedule(times) }
-        } else if mode == .perDog {
+        } else if modeRaw == "perDog" {
             let times = feedingScheduleTimes.sorted()
             if !times.isEmpty { return isOverdueForSchedule(times) }
         }
