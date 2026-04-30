@@ -91,7 +91,7 @@ struct PetCard: View {
                             }
                         }
                         modelContext.delete(event)
-                        WidgetCenter.shared.reloadAllTimelines()
+                        WidgetDataWriter.write(from: modelContext)
                     }
                     showUndoToast = false
                     lastLoggedEvent = nil
