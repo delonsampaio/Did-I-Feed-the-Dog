@@ -255,18 +255,20 @@ struct SettingsView: View {
             Text("Warn when food drops to this many portions or fewer.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
-            Stepper(value: $overdueThresholdHours, in: 1...48) {
-                HStack {
-                    Text("Overdue After")
-                    Spacer()
-                    Text("\(overdueThresholdHours) hr\(overdueThresholdHours == 1 ? "" : "s")")
-                        .foregroundStyle(.secondary)
-                        .monospacedDigit()
+            if reminderMode == .none {
+                Stepper(value: $overdueThresholdHours, in: 1...48) {
+                    HStack {
+                        Text("Overdue After")
+                        Spacer()
+                        Text("\(overdueThresholdHours) hr\(overdueThresholdHours == 1 ? "" : "s")")
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
                 }
+                Text("A dog's card turns red when they haven't been fed in this long.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
-            Text("A dog's card turns red when they haven't been fed in this long.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
         }
     }
 

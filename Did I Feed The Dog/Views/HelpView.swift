@@ -69,6 +69,14 @@ struct HelpView: View {
                 answer: "Go to Settings -> Your Name and type your name. It will appear next to every feeding you log so family members can see who fed the dog. If no name is set, the app uses your device model name (e.g. iPhone)."
             )
             FAQRow(
+                question: "Can I choose a breed photo for my dog?",
+                answer: "Yes. When adding or editing a dog, tap the photo area to open the avatar picker. Choose from 18 illustrated breed avatars or upload your own photo from your library. If no photo is set, the app automatically picks a default breed avatar for the dog."
+            )
+            FAQRow(
+                question: "Can I change the app's appearance?",
+                answer: "Yes. Go to Settings -> Appearance and pick Light, Dark, or System. System follows your iPhone's display setting. The change applies immediately, including while you're in Settings."
+            )
+            FAQRow(
                 question: "How do I edit a dog's info?",
                 answer: "Go to Settings -> Dogs and tap the dog's name to open the edit sheet. You can update their name, birthday, photo, and food stock count."
             )
@@ -83,7 +91,7 @@ struct HelpView: View {
         Section("Feeding Status") {
             FAQRow(
                 question: "What does overdue mean?",
-                answer: "A dog is marked overdue when their last recorded feeding was longer ago than your overdue threshold. The default is 12 hours but you can adjust it in Settings -> Notifications -> Overdue After. Their card shows a red Last Fed badge as a reminder."
+                answer: "A dog is marked overdue — their Last Fed badge turns red — when they're past due for a feeding. If you have a feeding reminder schedule set up, overdue is based on your schedule: a dog is overdue as soon as a scheduled meal time has passed without a feeding logged since then. If reminders are off, you can set a manual time limit in Settings -> Notifications -> Overdue After (default 12 hours)."
             )
             FAQRow(
                 question: "How far back does the history go?",
@@ -207,6 +215,10 @@ struct HelpView: View {
                 answer: "Each feeding in the history shows the name of the person who logged it, next to the time. Make sure everyone in your household sets their name in Settings -> Your Name so their feedings are clearly attributed."
             )
             FAQRow(
+                question: "How do I know if the app is syncing?",
+                answer: "A small spinner appears next to the gear icon on the dashboard while iCloud is actively syncing. If a feeding from another device hasn't appeared yet, wait a moment for the spinner to disappear."
+            )
+            FAQRow(
                 question: "What if two people log a feeding at the same time?",
                 answer: "Both feedings are saved. You may see two entries close together in the history — that's the accurate record of what happened."
             )
@@ -241,9 +253,11 @@ struct HelpView: View {
             .init(section: "Getting Started", question: "Can I log a meal for all dogs at once?", answer: "Yes. When you have 2 or more dogs, a fork icon appears in the top-right of the dashboard next to the + button. Tap it to open the Feed All Dogs sheet and log the same meal for everyone in one tap."),
             .init(section: "Getting Started", question: "Can I undo a meal I just logged?", answer: "Yes. After logging a meal, a brief Undo banner appears at the bottom of the card. Tap Undo within a few seconds to remove the entry and restore any food portion that was deducted."),
             .init(section: "Getting Started", question: "How do I show my name next to feedings I log?", answer: "Go to Settings -> Your Name and type your name. It will appear next to every feeding you log so family members can see who fed the dog. If no name is set, the app uses your device model name (e.g. iPhone)."),
+            .init(section: "Getting Started", question: "Can I choose a breed photo for my dog?", answer: "Yes. When adding or editing a dog, tap the photo area to open the avatar picker. Choose from 18 illustrated breed avatars or upload your own photo from your library. If no photo is set, the app automatically picks a default breed avatar for the dog."),
+            .init(section: "Getting Started", question: "Can I change the app's appearance?", answer: "Yes. Go to Settings -> Appearance and pick Light, Dark, or System. System follows your iPhone's display setting. The change applies immediately, including while you're in Settings."),
             .init(section: "Getting Started", question: "How do I edit a dog's info?", answer: "Go to Settings -> Dogs and tap the dog's name to open the edit sheet. You can update their name, birthday, photo, and food stock count."),
             .init(section: "Getting Started", question: "How do I delete a dog?", answer: "In Settings -> Dogs, swipe left on the dog's name and tap Delete. This also removes all of their feeding history."),
-            .init(section: "Feeding Status", question: "What does overdue mean?", answer: "A dog is marked overdue when their last recorded feeding was longer ago than your overdue threshold. The default is 12 hours but you can adjust it in Settings -> Notifications -> Overdue After. Their card shows a red Last Fed badge as a reminder."),
+            .init(section: "Feeding Status", question: "What does overdue mean?", answer: "A dog is marked overdue — their Last Fed badge turns red — when they're past due for a feeding. If you have a feeding reminder schedule set up, overdue is based on your schedule: a dog is overdue as soon as a scheduled meal time has passed without a feeding logged since then. If reminders are off, you can set a manual time limit in Settings -> Notifications -> Overdue After (default 12 hours)."),
             .init(section: "Feeding Status", question: "How far back does the history go?", answer: "All feeding events are kept forever. The card shows the 3 most recent feedings. Tap the dog's name or photo to see the full history."),
             .init(section: "Feeding Status", question: "Can I delete a feeding entry?", answer: "Yes. Tap a dog's card header to open their history, then swipe left on any entry. You'll see two options — Delete removes the entry only, and Delete & Restore Portion removes the entry and adds one portion back to the food stock."),
             .init(section: "Feeding Status", question: "Can I see when the next meal is due?", answer: "Yes, if you have feeding reminders set up. In Per Dog mode, each card shows a 'Next meal' row with the upcoming scheduled time. In All Dogs mode, a single line appears above all cards on the dashboard."),
@@ -268,6 +282,7 @@ struct HelpView: View {
             .init(section: "Siri & Shortcuts", question: "Do I always have to say \"in Did I Feed the Dog?\" at the end?", answer: "Not forever. After a few uses, Siri learns your patterns and can recognize the intent without the full app name — so \"Did I feed Luna?\" may work on its own. This happens automatically through Siri Suggestions."),
             .init(section: "iCloud Sync", question: "Does my data sync across devices?", answer: "Yes. If everyone in your household is signed into the same iCloud account, feedings, food stock, and dog info stay in sync across all your iPhones automatically. Changes usually appear within about a minute."),
             .init(section: "iCloud Sync", question: "How do I know which family member fed the dog?", answer: "Each feeding in the history shows the name of the person who logged it, next to the time. Make sure everyone in your household sets their name in Settings -> Your Name so their feedings are clearly attributed."),
+            .init(section: "iCloud Sync", question: "How do I know if the app is syncing?", answer: "A small spinner appears next to the gear icon on the dashboard while iCloud is actively syncing. If a feeding from another device hasn't appeared yet, wait a moment for the spinner to disappear."),
             .init(section: "iCloud Sync", question: "What if two people log a feeding at the same time?", answer: "Both feedings are saved. You may see two entries close together in the history — that's the accurate record of what happened."),
             .init(section: "Notifications", question: "What is the Low Stock Push Alert?", answer: "A notification sent when a dog's food stock drops to or below the Low Stock Threshold after logging a feeding."),
             .init(section: "Notifications", question: "What is the Birthday Push Alert?", answer: "A notification sent on your dog's birthday each year, based on the birthday you entered when adding them."),
