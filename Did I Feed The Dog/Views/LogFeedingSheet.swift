@@ -58,7 +58,7 @@ struct LogFeedingSheet: View {
                 }
             }
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.fraction(0.65), .large])
     }
 
     private var mealPicker: some View {
