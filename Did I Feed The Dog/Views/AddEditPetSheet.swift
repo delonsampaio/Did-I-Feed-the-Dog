@@ -186,7 +186,7 @@ private struct AvatarPickerSheet: View {
 
     @State private var selectedPhoto: PhotosPickerItem?
 
-    private let columns = [GridItem(.adaptive(minimum: 120))]
+    private let columns = [GridItem(.adaptive(minimum: 100))]
 
     var body: some View {
         NavigationStack {
@@ -243,7 +243,7 @@ private struct AvatarPickerSheet: View {
                 Image(name)
                     .resizable()
                     .scaledToFill()
-                    .frame(width: 90, height: 90)
+                    .frame(width: 80, height: 80)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)

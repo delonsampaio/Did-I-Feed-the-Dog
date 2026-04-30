@@ -68,6 +68,8 @@ struct PetCard: View {
                     .buttonStyle(.plain)
             }
 
+            Spacer(minLength: 0)
+
             feedButton
         }
         .frame(maxHeight: .infinity, alignment: .top)
@@ -89,7 +91,7 @@ struct PetCard: View {
                             }
                         }
                         modelContext.delete(event)
-                        WidgetCenter.shared.reloadAllTimelines()
+                        WidgetDataWriter.write(from: modelContext)
                     }
                     showUndoToast = false
                     lastLoggedEvent = nil

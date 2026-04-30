@@ -93,7 +93,10 @@ struct DashboardView: View {
             }
             .navigationDestination(for: Pet.self) { pet in PetDetailView(pet: pet) }
             .sheet(isPresented: $showAddPet) { AddEditPetSheet() }
-            .sheet(isPresented: $showSettings) { NavigationStack { SettingsView() } }
+            .sheet(isPresented: $showSettings) {
+                NavigationStack { SettingsView() }
+                    .presentationSizing(.page)
+            }
             .sheet(isPresented: $showFeedAll) { FeedAllDogsSheet(pets: pets) }
             .sheet(item: $deepLinkFeedingPet) { pet in LogFeedingSheet(pet: pet) }
             .overlay {
