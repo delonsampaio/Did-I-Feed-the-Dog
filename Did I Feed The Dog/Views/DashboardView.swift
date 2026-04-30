@@ -17,8 +17,12 @@ struct DashboardView: View {
 
     private var columns: [GridItem] {
         horizontalSizeClass == .regular
-            ? [GridItem(.flexible()), GridItem(.flexible())]
+            ? [GridItem(.adaptive(minimum: 320), spacing: 16)]
             : [GridItem(.flexible())]
+    }
+
+    private var horizontalPadding: CGFloat {
+        horizontalSizeClass == .regular ? 32 : 16
     }
 
     @State private var syncMonitor = CloudKitSyncMonitor()
@@ -53,7 +57,7 @@ struct DashboardView: View {
                         }
                     }
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, horizontalPadding)
                 .padding(.vertical, 12)
             }
             .refreshable {
@@ -99,6 +103,7 @@ struct DashboardView: View {
                         systemImage: "pawprint.fill",
                         description: Text("Tap + to add your first dog.")
                     )
+                    .frame(maxWidth: 480)
                 }
             }
         }

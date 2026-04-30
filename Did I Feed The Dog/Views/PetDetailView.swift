@@ -48,6 +48,8 @@ struct PetDetailView: View {
                     systemImage: "fork.knife",
                     description: Text("Tap Log Meal on \(pet.name ?? "Unknown")'s card to get started.")
                 )
+                .frame(maxWidth: 500)
+                .frame(maxWidth: .infinity)
                 .listRowBackground(Color.clear)
             } else {
                 ForEach(groupedEvents, id: \.date) { group in

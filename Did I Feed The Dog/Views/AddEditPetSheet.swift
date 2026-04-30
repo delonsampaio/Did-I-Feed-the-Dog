@@ -186,7 +186,7 @@ private struct AvatarPickerSheet: View {
 
     @State private var selectedPhoto: PhotosPickerItem?
 
-    private let columns = [GridItem(.adaptive(minimum: 90))]
+    private let columns = [GridItem(.adaptive(minimum: 120))]
 
     var body: some View {
         NavigationStack {
