@@ -56,7 +56,7 @@ struct AddEditPetSheet: View {
                             }
                         }
                         HStack {
-                            Text("Enter directly")
+                            Text("Type a number")
                             Spacer()
                             TextField("0", value: $foodStockCount, format: .number)
                                 .keyboardType(.numberPad)
