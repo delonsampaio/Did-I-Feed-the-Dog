@@ -70,6 +70,7 @@ struct PetCard: View {
 
             feedButton
         }
+        .frame(maxHeight: .infinity, alignment: .top)
         .background(Color(.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: .black.opacity(0.07), radius: 8, x: 0, y: 2)

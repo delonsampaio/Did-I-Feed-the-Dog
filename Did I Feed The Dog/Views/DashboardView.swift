@@ -13,6 +13,14 @@ struct DashboardView: View {
     @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
     @AppStorage("appearanceMode")          private var appearanceMode: AppearanceMode = .system
 
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    private var columns: [GridItem] {
+        horizontalSizeClass == .regular
+            ? [GridItem(.flexible()), GridItem(.flexible())]
+            : [GridItem(.flexible())]
+    }
+
     @State private var syncMonitor = CloudKitSyncMonitor()
     @State private var showAddPet = false
     @State private var showSettings = false
@@ -26,7 +34,7 @@ struct DashboardView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(spacing: 16) {
+                VStack(spacing: 16) {
                     if reminderMode == .allDogs, let info = nextMealLabel(from: allDogsReminderTimes) {
                         HStack(spacing: 8) {
                             Image(systemName: "clock.fill")
@@ -39,8 +47,10 @@ struct DashboardView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 4)
                     }
-                    ForEach(pets) { pet in
-                        PetCard(pet: pet)
+                    LazyVGrid(columns: columns, spacing: 16) {
+                        ForEach(pets) { pet in
+                            PetCard(pet: pet)
+                        }
                     }
                 }
                 .padding(.horizontal, 16)
