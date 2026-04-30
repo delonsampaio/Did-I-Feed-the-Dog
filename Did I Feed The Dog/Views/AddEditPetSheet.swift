@@ -115,6 +115,7 @@ struct AddEditPetSheet: View {
                 AvatarPickerSheet(selectedAvatarName: $selectedAvatarName, photoData: $photoData)
             }
         }
+        .presentationSizing(.page)
     }
 
     private var photoPreview: some View {
