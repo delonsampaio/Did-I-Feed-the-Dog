@@ -57,6 +57,7 @@ struct FeedAllDogsSheet: View {
                 }
             }
         }
+        .presentationSizing(.page)
         .presentationDetents([.fraction(0.65), .large])
     }
 
