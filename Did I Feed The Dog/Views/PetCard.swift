@@ -68,6 +68,8 @@ struct PetCard: View {
                     .buttonStyle(.plain)
             }
 
+            Spacer(minLength: 0)
+
             feedButton
         }
         .frame(maxHeight: .infinity, alignment: .top)
