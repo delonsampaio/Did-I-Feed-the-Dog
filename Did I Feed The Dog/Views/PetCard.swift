@@ -36,7 +36,7 @@ struct PetCard: View {
     private var lastFedLabel: String {
         guard let last = pet.lastFeedingEvent else { return "Never" }
         let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .full
+        formatter.unitsStyle = .abbreviated
         return formatter.localizedString(for: last.timestamp, relativeTo: .now)
     }
 
@@ -70,6 +70,7 @@ struct PetCard: View {
 
             feedButton
         }
+        .frame(maxHeight: .infinity, alignment: .top)
         .background(Color(.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: .black.opacity(0.07), radius: 8, x: 0, y: 2)
@@ -121,8 +122,11 @@ struct PetCard: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(pet.name ?? "Unknown")
                     .font(.title3).fontWeight(.bold)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
                 Text(pet.ageString)
                     .font(.caption).foregroundStyle(.secondary)
+                    .lineLimit(1)
             }
             Spacer()
             lastFedBadge
@@ -255,9 +259,12 @@ struct PetCard: View {
                 HStack {
                     Text(emojiForMeal(event.mealType ?? "") + " " + (event.mealType ?? "Feeding"))
                         .font(.subheadline)
-                    Spacer()
-                    Text(RelativeDateTimeFormatter().localizedString(for: event.timestamp, relativeTo: .now))
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                    Spacer(minLength: 8)
+                    Text(abbreviatedRelative(event.timestamp))
                         .font(.caption).foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
             }
         }
@@ -279,6 +286,12 @@ struct PetCard: View {
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 16)
+    }
+
+    private func abbreviatedRelative(_ date: Date) -> String {
+        let f = RelativeDateTimeFormatter()
+        f.unitsStyle = .abbreviated
+        return f.localizedString(for: date, relativeTo: .now)
     }
 
     private func emojiForMeal(_ mealType: String) -> String {

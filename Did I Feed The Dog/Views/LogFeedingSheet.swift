@@ -40,9 +40,13 @@ struct LogFeedingSheet: View {
 
                 Spacer()
             }
+            .frame(maxWidth: 600)
+            .frame(maxWidth: .infinity)
             .padding(.top, 24)
             .safeAreaInset(edge: .bottom) {
                 confirmButton
+                    .frame(maxWidth: 600)
+                    .frame(maxWidth: .infinity)
                     .padding(.horizontal, 24)
                     .padding(.bottom)
             }
@@ -58,7 +62,7 @@ struct LogFeedingSheet: View {
     }
 
     private var mealPicker: some View {
-        let columns = [GridItem(.adaptive(minimum: 90))]
+        let columns = [GridItem(.adaptive(minimum: 110))]
         return LazyVGrid(columns: columns, spacing: 12) {
             ForEach(MealType.presets, id: \.label) { meal in
                 mealChip(meal)
