@@ -67,5 +67,8 @@ fastlane/test_output
 # Git worktrees
 .worktrees/
 
+# Claude Code local settings
+.claude/
+
 # Private planning docs (kept in app-studio-private repo)
 docs/BACKLOG.md
