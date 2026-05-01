@@ -66,3 +66,6 @@ fastlane/test_output
 
 # Git worktrees
 .worktrees/
+
+# Private planning docs (kept in app-studio-private repo)
+docs/BACKLOG.md

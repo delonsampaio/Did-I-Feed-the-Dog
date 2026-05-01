@@ -294,7 +294,7 @@ struct SettingsView: View {
                         Text("Toxic Foods Guide")
                             .font(.body)
                             .foregroundStyle(.primary)
-                        Text("23 foods to keep away from your dog")
+                        Text("Foods that are dangerous for your dog")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
