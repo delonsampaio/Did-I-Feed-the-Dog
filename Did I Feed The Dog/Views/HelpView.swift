@@ -240,6 +240,10 @@ struct HelpView: View {
                 answer: "An orange banner that appears on the dog's card when stock is low. This is separate from the push notification."
             )
             FAQRow(
+                question: "What is the Overdue Badge?",
+                answer: "A number shown on the app icon equal to how many of your dogs are currently overdue for a feeding. It updates automatically when you open the app or log a meal. Turn it off in Settings -> Notifications -> Overdue Badge."
+            )
+            FAQRow(
                 question: "I'm not receiving notifications. What should I check?",
                 answer: "First, open the app's Settings -> Notifications. If iOS notifications are disabled, an orange warning banner will appear there and the push notification toggles will be greyed out. Tap it or go to iPhone Settings -> Notifications -> Fed The Dog? to re-enable them. Once permission is restored, the toggles will become active again with your previous settings."
             )
@@ -287,6 +291,7 @@ struct HelpView: View {
             .init(section: "Notifications", question: "What is the Low Stock Push Alert?", answer: "A notification sent when a dog's food stock drops to or below the Low Stock Threshold and the app is in the background. When you're actively using the app, the orange banner on the dog's card serves as the in-app warning instead."),
             .init(section: "Notifications", question: "What is the Birthday Push Alert?", answer: "A notification sent on your dog's birthday each year, based on the birthday you entered when adding them."),
             .init(section: "Notifications", question: "What is the Low Stock UI Warning?", answer: "An orange banner that appears on the dog's card when stock is low. This is separate from the push notification."),
+            .init(section: "Notifications", question: "What is the Overdue Badge?", answer: "A number shown on the app icon equal to how many of your dogs are currently overdue for a feeding. It updates automatically when you open the app or log a meal. Turn it off in Settings -> Notifications -> Overdue Badge."),
             .init(section: "Notifications", question: "I'm not receiving notifications. What should I check?", answer: "First, open the app's Settings -> Notifications. If iOS notifications are disabled, an orange warning banner will appear there and the push notification toggles will be greyed out. Tap it or go to iPhone Settings -> Notifications -> Fed The Dog? to re-enable them. Once permission is restored, the toggles will become active again with your previous settings."),
         ]
     }

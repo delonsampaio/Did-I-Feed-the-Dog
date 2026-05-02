@@ -277,6 +277,9 @@ struct SettingsView: View {
                         NotificationManager.shared.clearBadge()
                     }
                 }
+            Text("Shows a number on the app icon equal to how many dogs are overdue for a feeding.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
             Stepper(value: $lowStockThreshold, in: 1...50) {
                 HStack {
                     Text("Low Stock Threshold")
