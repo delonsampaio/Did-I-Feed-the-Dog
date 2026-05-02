@@ -21,6 +21,7 @@ struct LogFeedingSheet: View {
     @State private var customLabel = ""
     @State private var showCustomField = false
     @State private var notes = ""
+    @State private var deductPortion = true
     @State private var isSubmitting = false
 
     var body: some View {
@@ -31,6 +32,8 @@ struct LogFeedingSheet: View {
                 if showCustomField {
                     TextField("Meal name (e.g. Medication)", text: $customLabel)
                         .textFieldStyle(.roundedBorder)
+                        .padding(.horizontal)
+                    Toggle("Deduct a portion", isOn: $deductPortion)
                         .padding(.horizontal)
                 }
 
@@ -79,6 +82,7 @@ struct LogFeedingSheet: View {
         return Button {
             selectedMealType = meal
             showCustomField = false
+            deductPortion = true
         } label: {
             VStack(spacing: 4) {
                 Text(meal.emoji).font(.title2)
@@ -151,7 +155,7 @@ struct LogFeedingSheet: View {
         )
         modelContext.insert(event)
 
-        let shouldDecrementStock = showCustomField || selectedMealType.decrementsStock
+        let shouldDecrementStock = showCustomField ? deductPortion : selectedMealType.decrementsStock
         if shouldDecrementStock {
             switch stockMode {
             case .individual:
