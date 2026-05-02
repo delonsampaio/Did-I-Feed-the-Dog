@@ -72,6 +72,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Models/FeedingEvent.swift,
+				Models/MealType.swift,
 				Models/Pet.swift,
 			);
 			target = 148947492FA04F460031F35C /* DidIFeedTheDogWidgetExtension */;
