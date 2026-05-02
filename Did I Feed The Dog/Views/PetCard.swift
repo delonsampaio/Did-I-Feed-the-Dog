@@ -81,7 +81,7 @@ struct PetCard: View {
                 UndoToast(message: "Meal logged") {
                     // Undo action
                     if let event = lastLoggedEvent {
-                        if event.mealType != "Snack" && event.mealType != "Treat" {
+                        if event.resolvedMealType.decrementsStock {
                             switch stockMode {
                             case .individual: pet.foodStockCount += 1
                             case .shared:

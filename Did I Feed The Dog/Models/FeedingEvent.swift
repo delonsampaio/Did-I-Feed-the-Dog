@@ -9,6 +9,8 @@ final class FeedingEvent {
     var loggedBy: String?
     var pet: Pet?
 
+    var resolvedMealType: MealType { MealType.from(mealType ?? "") }
+
     init(timestamp: Date = .now, mealType: String? = nil, notes: String = "", loggedBy: String? = nil, pet: Pet) {
         self.timestamp = timestamp
         self.mealType = mealType

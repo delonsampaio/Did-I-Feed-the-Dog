@@ -126,8 +126,7 @@ struct PetDetailView: View {
     }
 
     private func eventDecrementsStock(_ event: FeedingEvent) -> Bool {
-        let nonStockMeals: Set<String> = ["Snack", "Treat"]
-        return !nonStockMeals.contains(event.mealType ?? "")
+        event.resolvedMealType.decrementsStock
     }
 
     private func deleteEvent(_ event: FeedingEvent, restoreStock: Bool) {

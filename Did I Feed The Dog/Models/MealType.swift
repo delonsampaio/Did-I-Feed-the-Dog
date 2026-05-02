@@ -44,4 +44,8 @@ enum MealType: Equatable {
     static func emoji(for label: String) -> String {
         presets.first { $0.label == label }?.emoji ?? "✏️"
     }
+
+    static func from(_ stored: String) -> MealType {
+        presets.first { $0.label == stored } ?? .custom(stored)
+    }
 }
