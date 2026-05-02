@@ -20,6 +20,7 @@ final class NotificationManager {
     }
 
     func scheduleLowStockNotification(for pet: Pet, stockCount: Int? = nil) {
+        guard UIApplication.shared.applicationState != .active else { return }
         let count = stockCount ?? pet.foodStockCount
         let content = UNMutableNotificationContent()
         content.title = "🦴 Time to Restock \(pet.name ?? "your dog")'s Food"
@@ -34,6 +35,7 @@ final class NotificationManager {
     }
 
     func scheduleSharedLowStockNotification(stockCount: Int) {
+        guard UIApplication.shared.applicationState != .active else { return }
         let content = UNMutableNotificationContent()
         content.title = "🦴 Time to Restock the Food"
         content.body = "Only \(stockCount) portion\(stockCount == 1 ? "" : "s") remaining in the shared pool."
