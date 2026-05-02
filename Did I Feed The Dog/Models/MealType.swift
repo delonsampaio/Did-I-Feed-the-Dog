@@ -25,8 +25,8 @@ enum MealType: Equatable {
         case .lunch:      return "🥗"
         case .afternoon:  return "☀️"
         case .dinner:     return "🍽️"
-        case .snack:      return "🦴"
-        case .treat:      return "🎉"
+        case .snack:      return "🐾"
+        case .treat:      return "🦴"
         case .custom:     return "✏️"
         }
     }
