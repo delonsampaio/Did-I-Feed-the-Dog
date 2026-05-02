@@ -229,7 +229,7 @@ struct HelpView: View {
         Section("Notifications") {
             FAQRow(
                 question: "What is the Low Stock Push Alert?",
-                answer: "A notification sent when a dog's food stock drops to or below the Low Stock Threshold after logging a feeding."
+                answer: "A notification sent when a dog's food stock drops to or below the Low Stock Threshold and the app is in the background. When you're actively using the app, the orange banner on the dog's card serves as the in-app warning instead."
             )
             FAQRow(
                 question: "What is the Birthday Push Alert?",
@@ -241,7 +241,7 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "I'm not receiving notifications. What should I check?",
-                answer: "Go to iPhone Settings -> Notifications -> Fed The Dog? and make sure notifications are allowed. Also confirm the toggles are on in the app's Settings -> Notifications."
+                answer: "First, open the app's Settings -> Notifications. If iOS notifications are disabled, an orange warning banner will appear there and the push notification toggles will be greyed out. Tap it or go to iPhone Settings -> Notifications -> Fed The Dog? to re-enable them. Once permission is restored, the toggles will become active again with your previous settings."
             )
         }
     }
@@ -284,10 +284,10 @@ struct HelpView: View {
             .init(section: "iCloud Sync", question: "How do I know which family member fed the dog?", answer: "Each feeding in the history shows the name of the person who logged it, next to the time. Make sure everyone in your household sets their name in Settings -> Your Name so their feedings are clearly attributed."),
             .init(section: "iCloud Sync", question: "How do I know if the app is syncing?", answer: "A small spinner appears next to the gear icon on the dashboard while iCloud is actively syncing. If a feeding from another device hasn't appeared yet, wait a moment for the spinner to disappear."),
             .init(section: "iCloud Sync", question: "What if two people log a feeding at the same time?", answer: "Both feedings are saved. You may see two entries close together in the history — that's the accurate record of what happened."),
-            .init(section: "Notifications", question: "What is the Low Stock Push Alert?", answer: "A notification sent when a dog's food stock drops to or below the Low Stock Threshold after logging a feeding."),
+            .init(section: "Notifications", question: "What is the Low Stock Push Alert?", answer: "A notification sent when a dog's food stock drops to or below the Low Stock Threshold and the app is in the background. When you're actively using the app, the orange banner on the dog's card serves as the in-app warning instead."),
             .init(section: "Notifications", question: "What is the Birthday Push Alert?", answer: "A notification sent on your dog's birthday each year, based on the birthday you entered when adding them."),
             .init(section: "Notifications", question: "What is the Low Stock UI Warning?", answer: "An orange banner that appears on the dog's card when stock is low. This is separate from the push notification."),
-            .init(section: "Notifications", question: "I'm not receiving notifications. What should I check?", answer: "Go to iPhone Settings -> Notifications -> Fed The Dog? and make sure notifications are allowed. Also confirm the toggles are on in the app's Settings -> Notifications."),
+            .init(section: "Notifications", question: "I'm not receiving notifications. What should I check?", answer: "First, open the app's Settings -> Notifications. If iOS notifications are disabled, an orange warning banner will appear there and the push notification toggles will be greyed out. Tap it or go to iPhone Settings -> Notifications -> Fed The Dog? to re-enable them. Once permission is restored, the toggles will become active again with your previous settings."),
         ]
     }
 }
