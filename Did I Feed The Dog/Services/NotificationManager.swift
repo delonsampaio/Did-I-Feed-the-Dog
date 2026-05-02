@@ -76,7 +76,7 @@ final class NotificationManager {
     // MARK: - App icon badge
 
     func updateBadgeCount(pets: [Pet]) {
-        let enabled = UserDefaults.standard.bool(forKey: "badgeEnabled")
+        let enabled = UserDefaults.standard.object(forKey: "badgeEnabled") as? Bool ?? true
         let count = enabled ? pets.filter { $0.isFeedingOverdue }.count : 0
         Task { try? await UNUserNotificationCenter.current().setBadgeCount(count) }
     }
