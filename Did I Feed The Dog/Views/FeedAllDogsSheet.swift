@@ -147,6 +147,8 @@ struct FeedAllDogsSheet: View {
         let logger = LoggedBy.current
         let shouldDecrementStock = showCustomField || selectedMealType.decrementsStock
 
+        var needsSharedLowStockAlert = false
+
         for pet in pets {
             let event = FeedingEvent(mealType: mealLabel, notes: noteText, loggedBy: logger, pet: pet)
             modelContext.insert(event)
@@ -161,12 +163,16 @@ struct FeedAllDogsSheet: View {
                 case .shared:
                     sharedFoodStock = max(0, sharedFoodStock - 1)
                     if lowStockPushEnabled && sharedFoodStock <= lowStockThreshold {
-                        NotificationManager.shared.scheduleLowStockNotification(for: pet, stockCount: sharedFoodStock)
+                        needsSharedLowStockAlert = true
                     }
                 case .none:
                     break
                 }
             }
+        }
+
+        if needsSharedLowStockAlert {
+            NotificationManager.shared.scheduleSharedLowStockNotification(stockCount: sharedFoodStock)
         }
 
         if let firstPet = pets.first {

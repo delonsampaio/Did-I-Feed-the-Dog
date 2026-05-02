@@ -26,12 +26,22 @@ final class NotificationManager {
         content.body = "Only \(count) portion\(count == 1 ? "" : "s") remaining."
         content.sound = .default
 
+        let identifier = lowStockIdentifier(for: pet)
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-        let request = UNNotificationRequest(
-            identifier: lowStockIdentifier(for: pet),
-            content: content,
-            trigger: trigger
-        )
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+        UNUserNotificationCenter.current().add(request)
+    }
+
+    func scheduleSharedLowStockNotification(stockCount: Int) {
+        let content = UNMutableNotificationContent()
+        content.title = "🦴 Time to Restock the Food"
+        content.body = "Only \(stockCount) portion\(stockCount == 1 ? "" : "s") remaining in the shared pool."
+        content.sound = .default
+
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["lowstock-shared"])
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let request = UNNotificationRequest(identifier: "lowstock-shared", content: content, trigger: trigger)
         UNUserNotificationCenter.current().add(request)
     }
 

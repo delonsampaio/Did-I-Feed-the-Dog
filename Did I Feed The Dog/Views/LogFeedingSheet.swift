@@ -162,7 +162,7 @@ struct LogFeedingSheet: View {
             case .shared:
                 sharedFoodStock = max(0, sharedFoodStock - 1)
                 if lowStockPushEnabled && sharedFoodStock <= lowStockThreshold {
-                    NotificationManager.shared.scheduleLowStockNotification(for: pet, stockCount: sharedFoodStock)
+                    NotificationManager.shared.scheduleSharedLowStockNotification(stockCount: sharedFoodStock)
                 }
             case .none:
                 break

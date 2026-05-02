@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import StoreKit
+import UserNotifications
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
@@ -22,6 +23,7 @@ struct SettingsView: View {
 
     @State private var editingPet: Pet?
     @State private var showAddPet = false
+    @State private var notificationsAuthorized = true
 
     var body: some View {
         Form {
@@ -46,6 +48,10 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showAddPet) {
             AddEditPetSheet()
+        }
+        .task {
+            let settings = await UNUserNotificationCenter.current().notificationSettings()
+            notificationsAuthorized = settings.authorizationStatus == .authorized
         }
     }
 
@@ -246,6 +252,16 @@ struct SettingsView: View {
 
     private var notificationsSection: some View {
         Section("Notifications") {
+            if !notificationsAuthorized {
+                HStack(spacing: 10) {
+                    Image(systemName: "bell.slash.fill")
+                        .foregroundStyle(.orange)
+                    Text("Notifications are disabled. Enable them in iOS Settings to receive reminders and alerts.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.vertical, 2)
+            }
             Toggle("Low Stock UI Warning", isOn: $lowStockUIWarning)
             Toggle("Low Stock Push Alert", isOn: $lowStockPushEnabled)
             Toggle("Birthday Push Alert", isOn: $birthdayPushEnabled)

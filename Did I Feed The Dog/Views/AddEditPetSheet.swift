@@ -161,6 +161,8 @@ struct AddEditPetSheet: View {
             pet.feedingScheduleTimes = times
             if birthdayPushEnabled {
                 NotificationManager.shared.scheduleBirthdayNotification(for: pet)
+            } else {
+                NotificationManager.shared.removeBirthdayNotification(for: pet)
             }
             if reminderMode == .perDog {
                 NotificationManager.shared.schedulePerDogReminders(for: pet, times: times)
@@ -171,6 +173,8 @@ struct AddEditPetSheet: View {
             modelContext.insert(newPet)
             if birthdayPushEnabled {
                 NotificationManager.shared.scheduleBirthdayNotification(for: newPet)
+            } else {
+                NotificationManager.shared.removeBirthdayNotification(for: newPet)
             }
             if reminderMode == .perDog {
                 NotificationManager.shared.schedulePerDogReminders(for: newPet, times: times)
