@@ -212,7 +212,7 @@ struct PetCard: View {
                 statCell(
                     title: "Today's Meals",
                     value: "\(pet.todaysFeedingCount)",
-                    unit: "feedings",
+                    unit: "meals",
                     accent: .primary
                 )
             }

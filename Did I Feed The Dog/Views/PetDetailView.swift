@@ -44,7 +44,7 @@ struct PetDetailView: View {
         List {
             if groupedEvents.isEmpty {
                 ContentUnavailableView(
-                    "No Feedings Yet",
+                    "No Meals Yet",
                     systemImage: "fork.knife",
                     description: Text("Tap Log Meal on \(pet.name ?? "Unknown")'s card to get started.")
                 )
