@@ -264,7 +264,9 @@ struct SettingsView: View {
             }
             Toggle("Low Stock UI Warning", isOn: $lowStockUIWarning)
             Toggle("Low Stock Push Alert", isOn: $lowStockPushEnabled)
+                .disabled(!notificationsAuthorized)
             Toggle("Birthday Push Alert", isOn: $birthdayPushEnabled)
+                .disabled(!notificationsAuthorized)
             Stepper(value: $lowStockThreshold, in: 1...50) {
                 HStack {
                     Text("Low Stock Threshold")
