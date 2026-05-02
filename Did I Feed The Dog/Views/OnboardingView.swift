@@ -8,7 +8,7 @@ struct OnboardingView: View {
     @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
 
     @State private var step = 0
-    @State private var dogName = ""
+    @State private var dogNames: [String] = [""]
     @State private var reminderEnabled = false
     @State private var reminderTime: Date = {
         var c = Calendar.current.dateComponents([.year, .month, .day], from: .now)
@@ -28,7 +28,8 @@ struct OnboardingView: View {
                     switch step {
                     case 0: welcomeStep
                     case 1: addDogStep
-                    case 2: reminderStep
+                    case 2: syncStep
+                    case 3: reminderStep
                     default: doneStep
                     }
                 }
@@ -54,7 +55,7 @@ struct OnboardingView: View {
 
     private var progressDots: some View {
         HStack(spacing: 8) {
-            ForEach(0..<4) { i in
+            ForEach(0..<5) { i in
                 Capsule()
                     .fill(i == step ? Color.accentColor : Color.secondary.opacity(0.25))
                     .frame(width: i == step ? 24 : 8, height: 8)
@@ -100,14 +101,62 @@ struct OnboardingView: View {
                     .multilineTextAlignment(.center)
             }
 
-            TextField("Dog's name", text: $dogName)
-                .font(.title3)
-                .multilineTextAlignment(.center)
-                .padding()
-                .background(Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+            VStack(spacing: 10) {
+                ForEach(dogNames.indices, id: \.self) { i in
+                    HStack(spacing: 10) {
+                        TextField(i == 0 ? "Dog's name" : "Another dog's name", text: $dogNames[i])
+                            .font(.title3)
+                            .multilineTextAlignment(.center)
+                            .padding()
+                            .background(Color(.secondarySystemBackground))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                        if dogNames.count > 1 {
+                            Button {
+                                dogNames.remove(at: i)
+                            } label: {
+                                Image(systemName: "minus.circle.fill")
+                                    .font(.title2)
+                                    .foregroundStyle(.red)
+                            }
+                        }
+                    }
+                }
+
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { dogNames.append("") }
+                } label: {
+                    Label("Add Another Dog", systemImage: "plus.circle.fill")
+                        .font(.subheadline)
+                        .foregroundStyle(Color.accentColor)
+                }
+                .padding(.top, 4)
+            }
         }
         .padding(.horizontal, 32)
+    }
+
+    private var syncStep: some View {
+        VStack(spacing: 24) {
+            Image(systemName: "person.2.fill")
+                .font(.system(size: 64))
+                .foregroundStyle(Color.accentColor)
+                .padding(28)
+                .background(Color.accentColor.opacity(0.2))
+                .clipShape(RoundedRectangle(cornerRadius: 28))
+
+            VStack(spacing: 10) {
+                Text("Stays in Sync")
+                    .font(.title.bold())
+                    .multilineTextAlignment(.center)
+
+                Text("Everyone on the same iCloud account sees feedings in real time — no setup needed.\n\nTo add a family member on a different account, use Invite Family Member in Settings.")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .padding(.horizontal, 24)
     }
 
     private var reminderStep: some View {
@@ -127,6 +176,11 @@ struct OnboardingView: View {
                     .padding()
                     .background(Color(.secondarySystemBackground))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .onChange(of: reminderEnabled) { _, enabled in
+                        if enabled {
+                            Task { await NotificationManager.shared.requestAuthorization() }
+                        }
+                    }
 
                 if reminderEnabled {
                     DatePicker("", selection: $reminderTime, displayedComponents: .hourAndMinute)
@@ -167,7 +221,7 @@ struct OnboardingView: View {
     private var bottomButtons: some View {
         VStack(spacing: 12) {
             Button(action: advance) {
-                Text(step == 3 ? "Get Started" : "Next")
+                Text(step == 4 ? "Get Started" : "Next")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
@@ -177,15 +231,15 @@ struct OnboardingView: View {
             }
             .disabled(!canAdvance)
 
-            if step == 2 {
+            if step == 3 {
                 Button("Skip for now") {
-                    withAnimation(.easeInOut(duration: 0.25)) { step = 3 }
+                    withAnimation(.easeInOut(duration: 0.25)) { step = 4 }
                 }
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             }
 
-            if step > 0 && step < 3 {
+            if step > 0 && step < 4 {
                 Button("Back") {
                     withAnimation(.easeInOut(duration: 0.25)) { step -= 1 }
                 }
@@ -198,12 +252,16 @@ struct OnboardingView: View {
     // MARK: - Helpers
 
     private var petName: String {
-        let trimmed = dogName.trimmingCharacters(in: .whitespaces)
-        return trimmed.isEmpty ? "your dog" : trimmed
+        dogNames
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .first { !$0.isEmpty } ?? "your dog"
     }
 
     private var canAdvance: Bool {
-        step == 1 ? !dogName.trimmingCharacters(in: .whitespaces).isEmpty : true
+        if step == 1 {
+            return dogNames.contains { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+        }
+        return true
     }
 
     private func advance() {
@@ -211,10 +269,10 @@ struct OnboardingView: View {
         case 1:
             saveDog()
             withAnimation(.easeInOut(duration: 0.25)) { step = 2 }
-        case 2:
-            saveReminder()
-            withAnimation(.easeInOut(duration: 0.25)) { step = 3 }
         case 3:
+            saveReminder()
+            withAnimation(.easeInOut(duration: 0.25)) { step = 4 }
+        case 4:
             dismiss()
         default:
             withAnimation(.easeInOut(duration: 0.25)) { step += 1 }
@@ -222,17 +280,20 @@ struct OnboardingView: View {
     }
 
     private func saveDog() {
-        let name = dogName.trimmingCharacters(in: .whitespaces)
-        guard !name.isEmpty else { return }
-        modelContext.insert(Pet(name: name))
+        for name in dogNames {
+            let trimmed = name.trimmingCharacters(in: .whitespaces)
+            guard !trimmed.isEmpty else { continue }
+            modelContext.insert(Pet(name: trimmed))
+        }
     }
 
     private func saveReminder() {
         guard reminderEnabled else { return }
         let c = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
         let minutes = (c.hour ?? 0) * 60 + (c.minute ?? 0)
+        let names = dogNames.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
         reminderMode = .allDogs
         allDogsReminderTimesRaw = "\(minutes)"
-        NotificationManager.shared.scheduleAllDogsReminders(times: [minutes], petNames: [petName])
+        NotificationManager.shared.scheduleAllDogsReminders(times: [minutes], petNames: names.isEmpty ? [petName] : names)
     }
 }

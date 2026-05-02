@@ -15,6 +15,8 @@ struct ContentView: View {
             .task {
                 if pets.isEmpty {
                     showOnboarding = true
+                } else {
+                    await NotificationManager.shared.requestAuthorization()
                 }
             }
             .fullScreenCover(isPresented: $showOnboarding) {

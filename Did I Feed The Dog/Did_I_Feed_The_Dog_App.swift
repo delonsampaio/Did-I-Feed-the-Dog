@@ -31,9 +31,6 @@ struct Did_I_Feed_The_Dog_App: App {
     var body: some Scene {
         WindowGroup {
             ContentView(deepLinkPetId: $deepLinkPetId)
-                .task {
-                    await NotificationManager.shared.requestAuthorization()
-                }
                 .onOpenURL { url in
                     deepLinkPetId = parseDeepLink(url)
                 }
