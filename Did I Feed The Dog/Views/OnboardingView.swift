@@ -150,7 +150,7 @@ struct OnboardingView: View {
                     .font(.title.bold())
                     .multilineTextAlignment(.center)
 
-                Text("Everyone on the same iCloud account sees feedings in real time — no setup needed.\n\nTo add a family member on a different account, use Invite Family Member in Settings.")
+                Text("Everyone signed into the same Apple ID sees feedings automatically — no setup needed.\n\nSharing across different Apple IDs isn't supported yet.")
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
