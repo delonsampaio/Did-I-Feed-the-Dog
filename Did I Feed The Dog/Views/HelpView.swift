@@ -166,7 +166,7 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "Do Snack or Treat meals count against the food stock?",
-                answer: "No. Snack and Treat are logged in the history for reference but do not reduce the portion count. All other meal types (Morning, Evening, Breakfast, Lunch, Afternoon, Dinner, and Custom) do reduce the count by one."
+                answer: "Snack and Treat do not reduce the portion count. All standard meal types (Morning, Breakfast, Lunch, Afternoon, Dinner, Evening) reduce the count by one. Custom meals reduce the count by default — but you can turn off the \"Deduct a portion\" toggle when logging a custom meal (e.g. Medication or Water) to skip the deduction."
             )
             FAQRow(
                 question: "How do I restock?",
@@ -267,7 +267,7 @@ struct HelpView: View {
             .init(section: "Food Stock", question: "What is Per Dog mode?", answer: "Each dog has their own food count. Every time you log a meal for a dog, their count decreases by one portion. Snack and Treat meals are the exception — they don't reduce the count. Set each dog's starting count in Settings -> Food Stock or by tapping the food stock cell on their card."),
             .init(section: "Food Stock", question: "What is Shared Pool mode?", answer: "One bag of food shared across all dogs. The pool decreases by one portion each time any dog is fed a meal. Snack and Treat logs do not reduce the shared count. Set the starting count in Settings -> Food Stock."),
             .init(section: "Food Stock", question: "What is Not Tracked?", answer: "Food stock tracking is turned off. No counts are shown and nothing is decremented when you log a meal."),
-            .init(section: "Food Stock", question: "Do Snack or Treat meals count against the food stock?", answer: "No. Snack and Treat are logged in the history for reference but do not reduce the portion count. All other meal types (Morning, Evening, Breakfast, Lunch, Afternoon, Dinner, and Custom) do reduce the count by one."),
+            .init(section: "Food Stock", question: "Do Snack or Treat meals count against the food stock?", answer: "Snack and Treat do not reduce the portion count. All standard meal types (Morning, Breakfast, Lunch, Afternoon, Dinner, Evening) reduce the count by one. Custom meals reduce the count by default — but you can turn off the \"Deduct a portion\" toggle when logging a custom meal (e.g. Medication or Water) to skip the deduction."),
             .init(section: "Food Stock", question: "How do I restock?", answer: "Tap the Food Stock cell or the Low Food Stock banner on any dog's card to open the edit sheet and update the count directly."),
             .init(section: "Food Stock", question: "What is the Low Stock Threshold?", answer: "When a dog's stock drops to or below this number, a warning banner appears on their card and a push notification is sent (if enabled). Adjust it in Settings -> Notifications."),
             .init(section: "Feeding Reminders", question: "How do I set up feeding reminders?", answer: "Go to Settings -> Feeding Reminders. Choose a schedule mode: Off, All Dogs, or Per Dog. Then add one or more daily reminder times."),
