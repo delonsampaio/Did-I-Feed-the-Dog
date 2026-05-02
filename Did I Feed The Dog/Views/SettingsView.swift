@@ -12,6 +12,7 @@ struct SettingsView: View {
     @AppStorage("lowStockUIWarning")       private var lowStockUIWarning = true
     @AppStorage("lowStockPushEnabled")     private var lowStockPushEnabled = true
     @AppStorage("birthdayPushEnabled")     private var birthdayPushEnabled = true
+    @AppStorage("badgeEnabled")            private var badgeEnabled = true
     @AppStorage("lowStockThreshold")       private var lowStockThreshold = 5
     @AppStorage("stockMode")              private var stockMode: StockMode = .individual
     @AppStorage("sharedFoodStock")         private var sharedFoodStock = 0
@@ -267,6 +268,15 @@ struct SettingsView: View {
                 .disabled(!notificationsAuthorized)
             Toggle("Birthday Push Alert", isOn: $birthdayPushEnabled)
                 .disabled(!notificationsAuthorized)
+            Toggle("Overdue Badge", isOn: $badgeEnabled)
+                .disabled(!notificationsAuthorized)
+                .onChange(of: badgeEnabled) { _, enabled in
+                    if enabled {
+                        NotificationManager.shared.updateBadgeCount(pets: pets)
+                    } else {
+                        NotificationManager.shared.clearBadge()
+                    }
+                }
             Stepper(value: $lowStockThreshold, in: 1...50) {
                 HStack {
                     Text("Low Stock Threshold")

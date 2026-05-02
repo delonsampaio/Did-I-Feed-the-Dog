@@ -73,6 +73,18 @@ final class NotificationManager {
         )
     }
 
+    // MARK: - App icon badge
+
+    func updateBadgeCount(pets: [Pet]) {
+        let enabled = UserDefaults.standard.bool(forKey: "badgeEnabled")
+        let count = enabled ? pets.filter { $0.isFeedingOverdue }.count : 0
+        Task { try? await UNUserNotificationCenter.current().setBadgeCount(count) }
+    }
+
+    func clearBadge() {
+        Task { try? await UNUserNotificationCenter.current().setBadgeCount(0) }
+    }
+
     // MARK: - Feeding reminders
 
     func scheduleAllDogsReminders(times: [Int], petNames: [String]) {

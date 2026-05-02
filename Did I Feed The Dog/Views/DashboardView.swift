@@ -123,13 +123,16 @@ struct DashboardView: View {
             )
             DogFoodShortcuts.updateAppShortcutParameters()
             WidgetDataWriter.write(pets, events: feedingEvents)
+            NotificationManager.shared.updateBadgeCount(pets: pets)
         }
         .onChange(of: pets) { _, newPets in
             WidgetDataWriter.write(newPets, events: feedingEvents)
+            NotificationManager.shared.updateBadgeCount(pets: newPets)
         }
         .onChange(of: feedingEvents) { _, newEvents in
             guard !pets.isEmpty else { return }
             WidgetDataWriter.write(pets, events: newEvents)
+            NotificationManager.shared.updateBadgeCount(pets: pets)
         }
     }
 }
