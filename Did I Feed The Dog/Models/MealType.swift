@@ -40,4 +40,8 @@ enum MealType: Equatable {
     }
 
     static let presets: [MealType] = [.breakfast, .lunch, .dinner, .morning, .afternoon, .evening, .snack, .treat]
+
+    static func emoji(for label: String) -> String {
+        presets.first { $0.label == label }?.emoji ?? "✏️"
+    }
 }

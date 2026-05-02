@@ -92,7 +92,7 @@ struct PetDetailView: View {
 
     private func eventRow(_ event: FeedingEvent) -> some View {
         HStack(spacing: 12) {
-            Text(emojiForMeal(event.mealType ?? ""))
+            Text(MealType.emoji(for: event.mealType ?? ""))
                 .font(.title3)
             VStack(alignment: .leading, spacing: 2) {
                 Text(event.mealType ?? "Feeding")
@@ -149,19 +149,7 @@ struct PetDetailView: View {
         WidgetDataWriter.write(from: modelContext)
     }
 
-    private func emojiForMeal(_ mealType: String) -> String {
-        switch mealType {
-        case "Morning":   return "🌅"
-        case "Evening":   return "🌙"
-        case "Breakfast": return "🍳"
-        case "Lunch":     return "🥗"
-        case "Afternoon": return "☀️"
-        case "Dinner":    return "🍽️"
-        case "Snack":     return "🦴"
-        case "Treat":     return "🎉"
-        default:          return "✏️"
-        }
-    }
+
 }
 
 private struct EditNoteSheet: View {

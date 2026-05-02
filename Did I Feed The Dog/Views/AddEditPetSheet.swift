@@ -24,7 +24,7 @@ struct AddEditPetSheet: View {
             Form {
                 Section("Dog Info") {
                     TextField("Name", text: $name)
-                    DatePicker("Birthday", selection: $birthday, displayedComponents: .date)
+                    DatePicker("Birthday", selection: $birthday, in: ...Date.now, displayedComponents: .date)
                 }
 
                 Section("Photo") {

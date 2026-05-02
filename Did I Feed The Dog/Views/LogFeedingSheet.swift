@@ -21,6 +21,7 @@ struct LogFeedingSheet: View {
     @State private var customLabel = ""
     @State private var showCustomField = false
     @State private var notes = ""
+    @State private var isSubmitting = false
 
     var body: some View {
         NavigationStack {
@@ -126,7 +127,7 @@ struct LogFeedingSheet: View {
                 .foregroundStyle(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
         }
-        .disabled(!canConfirm)
+        .disabled(!canConfirm || isSubmitting)
     }
 
     private var canConfirm: Bool {
@@ -139,6 +140,8 @@ struct LogFeedingSheet: View {
     }
 
     private func logFeeding() {
+        guard !isSubmitting else { return }
+        isSubmitting = true
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         let event = FeedingEvent(
             mealType: resolvedMealLabel,

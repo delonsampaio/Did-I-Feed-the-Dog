@@ -20,6 +20,7 @@ struct FeedAllDogsSheet: View {
     @State private var customLabel = ""
     @State private var showCustomField = false
     @State private var notes = ""
+    @State private var isSubmitting = false
 
     var body: some View {
         NavigationStack {
@@ -125,7 +126,7 @@ struct FeedAllDogsSheet: View {
                 .foregroundStyle(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
         }
-        .disabled(!canConfirm)
+        .disabled(!canConfirm || isSubmitting)
     }
 
     private var canConfirm: Bool {
@@ -138,6 +139,8 @@ struct FeedAllDogsSheet: View {
     }
 
     private func logForAll() {
+        guard !isSubmitting else { return }
+        isSubmitting = true
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         let mealLabel = resolvedMealLabel
         let noteText = notes.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -166,11 +169,13 @@ struct FeedAllDogsSheet: View {
             }
         }
 
-        NotificationManager.shared.suppressNextUpcomingReminder(
-            reminderMode: reminderMode,
-            for: pets.first!,
-            allDogsReminderTimes: allDogsReminderTimes
-        )
+        if let firstPet = pets.first {
+            NotificationManager.shared.suppressNextUpcomingReminder(
+                reminderMode: reminderMode,
+                for: firstPet,
+                allDogsReminderTimes: allDogsReminderTimes
+            )
+        }
 
         WidgetDataWriter.write(from: modelContext)
         dismiss()

@@ -259,7 +259,7 @@ struct PetCard: View {
                 .textCase(.uppercase).foregroundStyle(.secondary)
             ForEach(recentEvents) { event in
                 HStack {
-                    Text(emojiForMeal(event.mealType ?? "") + " " + (event.mealType ?? "Feeding"))
+                    Text(MealType.emoji(for: event.mealType ?? "") + " " + (event.mealType ?? "Feeding"))
                         .font(.subheadline)
                         .lineLimit(1)
                         .truncationMode(.tail)
@@ -296,19 +296,7 @@ struct PetCard: View {
         return f.localizedString(for: date, relativeTo: .now)
     }
 
-    private func emojiForMeal(_ mealType: String) -> String {
-        switch mealType {
-        case "Morning":   return "🌅"
-        case "Evening":   return "🌙"
-        case "Breakfast": return "🍳"
-        case "Lunch":     return "🥗"
-        case "Afternoon": return "☀️"
-        case "Dinner":    return "🍽️"
-        case "Snack":     return "🦴"
-        case "Treat":     return "🎉"
-        default:          return "✏️"
-        }
-    }
+
 }
 
 private struct SharedStockSheet: View {
