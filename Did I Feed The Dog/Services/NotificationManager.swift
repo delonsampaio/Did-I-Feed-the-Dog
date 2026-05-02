@@ -21,7 +21,6 @@ final class NotificationManager {
     }
 
     func scheduleLowStockNotification(for pet: Pet, stockCount: Int? = nil) {
-        guard UIApplication.shared.applicationState != .active else { return }
         let count = stockCount ?? pet.foodStockCount
         let content = UNMutableNotificationContent()
         content.title = "🦴 Time to Restock \(pet.name ?? "your dog")'s Food"
@@ -30,20 +29,19 @@ final class NotificationManager {
 
         let identifier = lowStockIdentifier(for: pet)
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 30, repeats: false)
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
         UNUserNotificationCenter.current().add(request)
     }
 
     func scheduleSharedLowStockNotification(stockCount: Int) {
-        guard UIApplication.shared.applicationState != .active else { return }
         let content = UNMutableNotificationContent()
         content.title = "🦴 Time to Restock the Food"
         content.body = "Only \(stockCount) portion\(stockCount == 1 ? "" : "s") remaining in the shared pool."
         content.sound = .default
 
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["lowstock-shared"])
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 30, repeats: false)
         let request = UNNotificationRequest(identifier: "lowstock-shared", content: content, trigger: trigger)
         UNUserNotificationCenter.current().add(request)
     }
