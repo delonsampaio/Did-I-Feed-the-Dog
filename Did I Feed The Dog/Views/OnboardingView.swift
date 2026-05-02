@@ -10,8 +10,11 @@ struct OnboardingView: View {
     @State private var step = 0
     @State private var dogName = ""
     @State private var reminderEnabled = false
-    @State private var reminderTime: Date = Calendar.current.date(
-        bySettingHour: 8, minute: 0, second: 0, of: .now) ?? .now
+    @State private var reminderTime: Date = {
+        var c = Calendar.current.dateComponents([.year, .month, .day], from: .now)
+        c.hour = 8; c.minute = 0; c.second = 0
+        return Calendar.current.date(from: c) ?? .now
+    }()
 
     var body: some View {
         ZStack {
@@ -29,12 +32,14 @@ struct OnboardingView: View {
                     default: doneStep
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity)
                 .id(step)
                 .transition(.asymmetric(
                     insertion: .move(edge: .trailing).combined(with: .opacity),
                     removal: .move(edge: .leading).combined(with: .opacity)
                 ))
+
+                Spacer()
 
                 bottomButtons
                     .padding(.horizontal, 24)
@@ -66,7 +71,7 @@ struct OnboardingView: View {
                 .font(.system(size: 72))
                 .foregroundStyle(Color.accentColor)
                 .padding(28)
-                .background(Color.accentColor.opacity(0.12))
+                .background(Color.accentColor.opacity(0.2))
                 .clipShape(RoundedRectangle(cornerRadius: 28))
 
             VStack(spacing: 10) {
