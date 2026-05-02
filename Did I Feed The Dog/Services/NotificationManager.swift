@@ -37,7 +37,7 @@ final class NotificationManager {
     func scheduleSharedLowStockNotification(stockCount: Int) {
         let content = UNMutableNotificationContent()
         content.title = "🦴 Time to Restock the Food"
-        content.body = "Only \(stockCount) portion\(stockCount == 1 ? "" : "s") of dog food remaining."
+        content.body = "Only \(stockCount) portion\(stockCount == 1 ? "" : "s") of food remaining."
         content.sound = .default
 
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["lowstock-shared"])
