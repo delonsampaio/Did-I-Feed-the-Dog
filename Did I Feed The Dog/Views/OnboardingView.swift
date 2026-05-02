@@ -165,7 +165,7 @@ struct OnboardingView: View {
                 Text("Set a Reminder")
                     .font(.title.bold())
 
-                Text("Get a daily nudge so \(petName) never misses a meal.")
+                Text("Get a daily nudge so \(petNamesNeverMiss).")
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -255,6 +255,17 @@ struct OnboardingView: View {
         dogNames
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .first { !$0.isEmpty } ?? "your dog"
+    }
+
+    private var petNamesFormatted: String {
+        let names = dogNames.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+        return names.isEmpty ? "your dogs" : ListFormatter.localizedString(byJoining: names)
+    }
+
+    private var petNamesNeverMiss: String {
+        let names = dogNames.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+        let verb = names.count == 1 ? "misses" : "miss"
+        return "\(petNamesFormatted) never \(verb) a meal"
     }
 
     private var canAdvance: Bool {
