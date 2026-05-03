@@ -134,6 +134,7 @@ struct PetCard: View {
         }
         .frame(width: 56, height: 56)
         .clipShape(Circle())
+        .accessibilityHidden(true)
     }
 
     private var lastFedBadge: some View {
@@ -150,12 +151,17 @@ struct PetCard: View {
         .padding(.vertical, 6)
         .background(lastFedBadgeColor)
         .clipShape(RoundedRectangle(cornerRadius: 10))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(pet.isFeedingOverdue
+            ? "Last fed \(lastFedLabel), overdue"
+            : "Last fed \(lastFedLabel)")
     }
 
     private var lowStockBanner: some View {
         HStack(spacing: 8) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(.orange)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 1) {
                 Text("Low Food Stock")
                     .font(.subheadline).fontWeight(.semibold).foregroundStyle(.orange)
@@ -165,6 +171,7 @@ struct PetCard: View {
             Spacer()
             Image(systemName: "chevron.right")
                 .font(.caption).foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
@@ -190,10 +197,12 @@ struct PetCard: View {
                             title: stockMode == .shared ? "House Stock" : "Food Stock",
                             value: "\(currentStockCount)",
                             unit: "portions",
-                            accent: isLowStock ? .red : .primary
+                            accent: isLowStock ? .red : .primary,
+                            statusLabel: isLowStock ? "low stock" : nil
                         )
                     }
                     .buttonStyle(.plain)
+                    .accessibilityHint("Double tap to edit food stock")
                 }
                 statCell(
                     title: "Today's Meals",
@@ -207,6 +216,7 @@ struct PetCard: View {
                     Image(systemName: "clock.fill")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
                     Text("Next meal · \(info.value) · \(info.unit)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -222,8 +232,9 @@ struct PetCard: View {
         .padding(.bottom, 14)
     }
 
-    private func statCell(title: String, value: String, unit: String, accent: Color) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+    private func statCell(title: String, value: String, unit: String, accent: Color, statusLabel: String? = nil) -> some View {
+        let label = statusLabel.map { "\(title): \(value) \(unit), \($0)" } ?? "\(title): \(value) \(unit)"
+        return VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(.caption2).fontWeight(.semibold)
                 .textCase(.uppercase).foregroundStyle(.secondary)
@@ -236,6 +247,8 @@ struct PetCard: View {
         .padding(12)
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(label)
     }
 
     private var miniHistory: some View {
@@ -308,6 +321,7 @@ private struct SharedStockSheet: View {
                             .font(.system(size: 44))
                             .foregroundStyle(.secondary)
                     }
+                    .accessibilityLabel("Decrease stock by 1")
                     Button {
                         if sharedFoodStock < 9999 { sharedFoodStock += 1 }
                     } label: {
@@ -315,6 +329,7 @@ private struct SharedStockSheet: View {
                             .font(.system(size: 44))
                             .foregroundStyle(.green)
                     }
+                    .accessibilityLabel("Increase stock by 1")
                 }
 
                 Stepper("Adjust by 10", value: $sharedFoodStock, in: 0...9999, step: 10)

@@ -80,7 +80,7 @@ struct FeedAllDogsSheet: View {
             showCustomField = false
         } label: {
             VStack(spacing: 4) {
-                Text(meal.emoji).font(.title2)
+                Text(meal.emoji).font(.title2).accessibilityHidden(true)
                 Text(meal.label).font(.caption).fontWeight(.medium)
             }
             .frame(maxWidth: .infinity)
@@ -93,6 +93,8 @@ struct FeedAllDogsSheet: View {
                     .stroke(isSelected ? Color.green : .clear, lineWidth: 2)
             )
         }
+        .accessibilityLabel(meal.label)
+        .accessibilityValue(isSelected ? "Selected" : "")
     }
 
     private var customChip: some View {
@@ -101,7 +103,7 @@ struct FeedAllDogsSheet: View {
             selectedMealType = .custom("")
         } label: {
             VStack(spacing: 4) {
-                Text("✏️").font(.title2)
+                Text("✏️").font(.title2).accessibilityHidden(true)
                 Text("Custom").font(.caption).fontWeight(.medium)
             }
             .frame(maxWidth: .infinity)
@@ -114,6 +116,8 @@ struct FeedAllDogsSheet: View {
                     .stroke(showCustomField ? Color.blue : .clear, lineWidth: 2)
             )
         }
+        .accessibilityLabel("Custom meal")
+        .accessibilityValue(showCustomField ? "Selected" : "")
     }
 
     private var confirmButton: some View {

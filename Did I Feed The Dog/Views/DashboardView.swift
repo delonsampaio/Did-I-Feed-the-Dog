@@ -14,6 +14,7 @@ struct DashboardView: View {
     @AppStorage("appearanceMode")          private var appearanceMode: AppearanceMode = .system
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var columns: [GridItem] {
         horizontalSizeClass == .regular
@@ -46,6 +47,7 @@ struct DashboardView: View {
                             Image(systemName: "clock.fill")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
+                                .accessibilityHidden(true)
                             Text("Next meal for all dogs · \(info.value) \(info.unit)")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
@@ -76,12 +78,14 @@ struct DashboardView: View {
                     Button { showAddPet = true } label: {
                         Image(systemName: "plus.circle.fill").font(.title3)
                     }
+                    .accessibilityLabel("Add dog")
                 }
                 if pets.count >= 2 {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button { showFeedAll = true } label: {
                             Image(systemName: "fork.knife.circle.fill").font(.title3)
                         }
+                        .accessibilityLabel("Feed all dogs")
                     }
                 }
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -89,9 +93,11 @@ struct DashboardView: View {
                         Button { showSettings = true } label: {
                             Image(systemName: "gearshape.fill").font(.title3)
                         }
+                        .accessibilityLabel("Settings")
                         if syncMonitor.isSyncing {
                             ProgressView()
                                 .scaleEffect(0.8)
+                                .accessibilityLabel("Syncing with iCloud")
                         }
                     }
                 }
@@ -109,7 +115,7 @@ struct DashboardView: View {
                     ContentUnavailableView(
                         "No Dogs Yet",
                         systemImage: "pawprint.fill",
-                        description: Text("Tap + to add your first dog.")
+                        description: Text("Use the Add button in the toolbar to add your first dog.")
                     )
                     .frame(maxWidth: 480)
                 }
@@ -129,7 +135,11 @@ struct DashboardView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
-            .animation(.spring(duration: 0.3), value: showUndoToast)
+            .animation(reduceMotion ? nil : .spring(duration: 0.3), value: showUndoToast)
+            .onChange(of: showUndoToast) { _, isShowing in
+                guard isShowing else { return }
+                UIAccessibility.post(notification: .announcement, argument: "Meal logged. Undo available.")
+            }
         }
         .onChange(of: deepLinkPetId) { _, newId in
             guard let id = newId else { return }

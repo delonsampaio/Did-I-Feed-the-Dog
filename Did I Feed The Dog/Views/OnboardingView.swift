@@ -4,6 +4,7 @@ import SwiftData
 struct OnboardingView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @AppStorage("reminderMode")            private var reminderMode: ReminderMode = .none
     @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
 
@@ -35,10 +36,12 @@ struct OnboardingView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .id(step)
-                .transition(.asymmetric(
-                    insertion: .move(edge: .trailing).combined(with: .opacity),
-                    removal: .move(edge: .leading).combined(with: .opacity)
-                ))
+                .transition(reduceMotion
+                    ? .opacity
+                    : .asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .move(edge: .leading).combined(with: .opacity)
+                    ))
 
                 Spacer()
 
@@ -59,9 +62,11 @@ struct OnboardingView: View {
                 Capsule()
                     .fill(i == step ? Color.accentColor : Color.secondary.opacity(0.25))
                     .frame(width: i == step ? 24 : 8, height: 8)
-                    .animation(.easeInOut(duration: 0.25), value: step)
+                    .animation(reduceMotion ? nil : .easeInOut(duration: 0.25), value: step)
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Step \(step + 1) of 5")
     }
 
     // MARK: - Steps
@@ -74,6 +79,7 @@ struct OnboardingView: View {
                 .padding(28)
                 .background(Color.accentColor.opacity(0.2))
                 .clipShape(RoundedRectangle(cornerRadius: 28))
+                .accessibilityHidden(true)
 
             VStack(spacing: 10) {
                 Text("Did I Feed the Dog?")
@@ -119,6 +125,7 @@ struct OnboardingView: View {
                                     .font(.title2)
                                     .foregroundStyle(.red)
                             }
+                            .accessibilityLabel("Remove \(dogNames[i].trimmingCharacters(in: .whitespaces).isEmpty ? "dog" : dogNames[i].trimmingCharacters(in: .whitespaces))")
                         }
                     }
                 }
@@ -144,6 +151,7 @@ struct OnboardingView: View {
                 .padding(28)
                 .background(Color.accentColor.opacity(0.2))
                 .clipShape(RoundedRectangle(cornerRadius: 28))
+                .accessibilityHidden(true)
 
             VStack(spacing: 10) {
                 Text("Stays in Sync")
@@ -202,6 +210,7 @@ struct OnboardingView: View {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 72))
                 .foregroundStyle(.green)
+                .accessibilityHidden(true)
 
             VStack(spacing: 10) {
                 Text("You're All Set!")
@@ -233,7 +242,7 @@ struct OnboardingView: View {
 
             if step == 3 {
                 Button("Skip for now") {
-                    withAnimation(.easeInOut(duration: 0.25)) { step = 4 }
+                    stepAnimate { step = 4 }
                 }
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
@@ -241,7 +250,7 @@ struct OnboardingView: View {
 
             if step > 0 && step < 4 {
                 Button("Back") {
-                    withAnimation(.easeInOut(duration: 0.25)) { step -= 1 }
+                    stepAnimate { step -= 1 }
                 }
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
@@ -275,18 +284,22 @@ struct OnboardingView: View {
         return true
     }
 
+    private func stepAnimate(_ block: @escaping () -> Void) {
+        if reduceMotion { block() } else { withAnimation(.easeInOut(duration: 0.25), block) }
+    }
+
     private func advance() {
         switch step {
         case 1:
             saveDog()
-            withAnimation(.easeInOut(duration: 0.25)) { step = 2 }
+            stepAnimate { step = 2 }
         case 3:
             saveReminder()
-            withAnimation(.easeInOut(duration: 0.25)) { step = 4 }
+            stepAnimate { step = 4 }
         case 4:
             dismiss()
         default:
-            withAnimation(.easeInOut(duration: 0.25)) { step += 1 }
+            stepAnimate { step += 1 }
         }
     }
 

@@ -61,6 +61,7 @@ struct SafetyGuideView: View {
             HStack(spacing: 6) {
                 Text(entry.level.emoji)
                     .font(.body)
+                    .accessibilityHidden(true)
                 Text(entry.name)
                     .font(.headline)
             }

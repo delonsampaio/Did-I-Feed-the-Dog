@@ -36,6 +36,7 @@ struct AddEditPetSheet: View {
                             Spacer()
                             Image(systemName: "chevron.right")
                                 .font(.caption).foregroundStyle(.tertiary)
+                                .accessibilityHidden(true)
                         }
                     }
                     .buttonStyle(.plain)
@@ -85,6 +86,7 @@ struct AddEditPetSheet: View {
                                         .foregroundStyle(.red)
                                 }
                                 .buttonStyle(.plain)
+                                .accessibilityLabel("Delete reminder time \(index + 1)")
                             }
                         }
                         if feedingTimes.count < 3 {
@@ -131,6 +133,7 @@ struct AddEditPetSheet: View {
                     .frame(width: 60, height: 60)
                     .background(Color.accentColor.opacity(0.15))
                     .clipShape(Circle())
+                    .accessibilityHidden(true)
             }
         }
     }
@@ -259,8 +262,11 @@ private struct AvatarPickerSheet: View {
                         .foregroundStyle(.white, Color.accentColor)
                         .font(.title3)
                         .padding(4)
+                        .accessibilityHidden(true)
                 }
             }
         }
+        .accessibilityLabel(name)
+        .accessibilityValue(isSelected ? "Selected" : "")
     }
 }

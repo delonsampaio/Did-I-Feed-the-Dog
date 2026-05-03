@@ -33,6 +33,7 @@ struct UndoToast: View {
                 }
             }
             .frame(height: 3)
+            .accessibilityHidden(true)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)

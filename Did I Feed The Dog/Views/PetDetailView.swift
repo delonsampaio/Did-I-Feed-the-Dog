@@ -59,6 +59,8 @@ struct PetDetailView: View {
                                 eventRow(event)
                             }
                             .buttonStyle(.plain)
+                            .accessibilityLabel("\(event.mealType ?? "Feeding"), \(Self.timeFormatter.string(from: event.timestamp))\((event.loggedBy ?? "").isEmpty ? "" : ", by \(event.loggedBy!)")")
+                            .accessibilityHint("Double tap to edit note")
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button(role: .destructive) {
                                     deleteEvent(event, restoreStock: false)
@@ -94,6 +96,7 @@ struct PetDetailView: View {
         HStack(spacing: 12) {
             Text(MealType.emoji(for: event.mealType ?? ""))
                 .font(.title3)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text(event.mealType ?? "Feeding")
                     .font(.subheadline).fontWeight(.medium)
@@ -164,6 +167,7 @@ private struct EditNoteSheet: View {
             VStack(alignment: .leading, spacing: 16) {
                 Text(event.mealType ?? "Feeding")
                     .font(.headline)
+                    .accessibilityAddTraits(.isHeader)
                     .padding(.horizontal)
                 TextField("Note (optional)", text: $noteText, axis: .vertical)
                     .textFieldStyle(.roundedBorder)

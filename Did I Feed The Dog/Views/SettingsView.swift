@@ -78,8 +78,10 @@ struct SettingsView: View {
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.caption).foregroundStyle(.tertiary)
+                            .accessibilityHidden(true)
                     }
                 }
+                .accessibilityHint("Double tap to edit \(pet.name ?? "dog")")
             }
             .onDelete(perform: deletePets)
 
@@ -220,6 +222,7 @@ struct SettingsView: View {
                             Image(systemName: "minus.circle.fill").foregroundStyle(.red)
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Delete reminder time \(index + 1)")
                     }
                 }
                 if allDogsReminderTimes.count < 3 {
@@ -242,8 +245,10 @@ struct SettingsView: View {
                                 .font(.caption).foregroundStyle(.secondary)
                             Image(systemName: "chevron.right")
                                 .font(.caption).foregroundStyle(.tertiary)
+                                .accessibilityHidden(true)
                         }
                     }
+                    .accessibilityHint("Double tap to set reminder times for \(pet.name ?? "this dog")")
                 }
                 Text("Tap a dog to set their reminder times.")
                     .font(.caption).foregroundStyle(.secondary)
@@ -257,6 +262,7 @@ struct SettingsView: View {
                 HStack(spacing: 10) {
                     Image(systemName: "bell.slash.fill")
                         .foregroundStyle(.orange)
+                        .accessibilityHidden(true)
                     Text("Notifications are disabled. Enable them in iOS Settings to receive reminders and alerts.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
@@ -321,6 +327,7 @@ struct SettingsView: View {
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundStyle(.white)
                     }
+                    .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Toxic Foods Guide")
                             .font(.body)
