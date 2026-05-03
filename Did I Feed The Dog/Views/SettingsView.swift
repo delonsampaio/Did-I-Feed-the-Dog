@@ -95,7 +95,7 @@ struct SettingsView: View {
 
     private var displayNameSection: some View {
         Section {
-            TextField("e.g. \(UIDevice.current.name)", text: $loggedByName)
+            TextField("e.g. Mom, Dad, Alex", text: $loggedByName)
                 .textInputAutocapitalization(.words)
         } header: {
             Text("Your Name")
