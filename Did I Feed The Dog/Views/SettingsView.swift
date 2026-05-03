@@ -152,6 +152,12 @@ struct SettingsView: View {
         nonmutating set { allDogsReminderTimesRaw = newValue.map(String.init).joined(separator: ",") }
     }
 
+    private var hasReminderOverlap: Bool {
+        let times = allDogsReminderTimes.sorted()
+        guard times.count >= 2 else { return false }
+        return zip(times, times.dropFirst()).contains { $1 - $0 < 30 }
+    }
+
     private func minutesToDate(_ m: Int) -> Date {
         Calendar.current.date(bySettingHour: m / 60, minute: m % 60, second: 0, of: .now) ?? .now
     }
@@ -234,6 +240,11 @@ struct SettingsView: View {
                     } label: {
                         Label("Add Reminder Time", systemImage: "plus.circle.fill")
                     }
+                }
+                if hasReminderOverlap {
+                    Label("Two reminder times are within 30 minutes of each other.", systemImage: "exclamationmark.triangle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
                 }
             } else if reminderMode == .perDog {
                 ForEach(pets) { pet in

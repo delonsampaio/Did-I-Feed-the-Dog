@@ -98,6 +98,11 @@ struct AddEditPetSheet: View {
                                 Label("Add Reminder Time", systemImage: "plus.circle.fill")
                             }
                         }
+                        if hasReminderOverlap {
+                            Label("Two reminder times are within 30 minutes of each other.", systemImage: "exclamationmark.triangle.fill")
+                                .font(.caption)
+                                .foregroundStyle(.orange)
+                        }
                     }
                 }
             }
@@ -147,6 +152,15 @@ struct AddEditPetSheet: View {
         feedingTimes = pet.feedingScheduleTimes.map { minutes in
             Calendar.current.date(bySettingHour: minutes / 60, minute: minutes % 60, second: 0, of: .now) ?? .now
         }
+    }
+
+    private var hasReminderOverlap: Bool {
+        guard feedingTimes.count >= 2 else { return false }
+        let minutes = feedingTimes.map { date -> Int in
+            let c = Calendar.current.dateComponents([.hour, .minute], from: date)
+            return (c.hour ?? 0) * 60 + (c.minute ?? 0)
+        }.sorted()
+        return zip(minutes, minutes.dropFirst()).contains { $1 - $0 < 30 }
     }
 
     private func save() {
@@ -210,7 +224,7 @@ private struct AvatarPickerSheet: View {
                     .onChange(of: selectedPhoto) { _, newItem in
                         Task {
                             if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                                photoData = data
+                                photoData = compressed(data)
                                 selectedAvatarName = nil
                                 dismiss()
                             }
@@ -236,6 +250,21 @@ private struct AvatarPickerSheet: View {
             }
         }
         .presentationDetents([.large])
+    }
+
+    private func compressed(_ data: Data) -> Data {
+        guard let image = UIImage(data: data) else { return data }
+        let maxDimension: CGFloat = 1024
+        let scale = min(maxDimension / image.size.width, maxDimension / image.size.height, 1.0)
+        let targetSize = CGSize(width: (image.size.width * scale).rounded(), height: (image.size.height * scale).rounded())
+        let renderer = UIGraphicsImageRenderer(size: targetSize)
+        let resized = renderer.image { _ in image.draw(in: CGRect(origin: .zero, size: targetSize)) }
+        for quality in stride(from: CGFloat(0.8), through: 0.2, by: -0.15) {
+            if let jpeg = resized.jpegData(compressionQuality: quality), jpeg.count <= 500_000 {
+                return jpeg
+            }
+        }
+        return resized.jpegData(compressionQuality: 0.2) ?? data
     }
 
     private func avatarCell(_ name: String) -> some View {
