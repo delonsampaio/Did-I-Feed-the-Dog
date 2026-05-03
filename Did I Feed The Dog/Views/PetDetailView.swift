@@ -130,6 +130,7 @@ struct PetDetailView: View {
     }
 
     private func deleteEvent(_ event: FeedingEvent, restoreStock: Bool) {
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         if restoreStock {
             switch stockMode {
             case .individual: pet.foodStockCount += 1
@@ -142,6 +143,7 @@ struct PetDetailView: View {
     }
 
     private func deleteEvents(_ events: [FeedingEvent], at offsets: IndexSet) {
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         for index in offsets {
             modelContext.delete(events[index])
         }

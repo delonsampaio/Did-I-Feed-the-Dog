@@ -14,6 +14,7 @@ struct UndoToast: View {
                 .foregroundStyle(.primary)
             Spacer()
             Button("Undo") {
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                 onUndo()
             }
             .font(.subheadline.bold())

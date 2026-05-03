@@ -146,7 +146,7 @@ struct LogFeedingSheet: View {
     private func logFeeding() {
         guard !isSubmitting else { return }
         isSubmitting = true
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
         let event = FeedingEvent(
             mealType: resolvedMealLabel,
             notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -160,13 +160,19 @@ struct LogFeedingSheet: View {
             switch stockMode {
             case .individual:
                 pet.decrementStock()
-                if lowStockPushEnabled && pet.foodStockCount <= lowStockThreshold {
-                    NotificationManager.shared.scheduleLowStockNotification(for: pet)
+                if pet.foodStockCount <= lowStockThreshold {
+                    UINotificationFeedbackGenerator().notificationOccurred(.warning)
+                    if lowStockPushEnabled {
+                        NotificationManager.shared.scheduleLowStockNotification(for: pet)
+                    }
                 }
             case .shared:
                 sharedFoodStock = max(0, sharedFoodStock - 1)
-                if lowStockPushEnabled && sharedFoodStock <= lowStockThreshold {
-                    NotificationManager.shared.scheduleSharedLowStockNotification(stockCount: sharedFoodStock)
+                if sharedFoodStock <= lowStockThreshold {
+                    UINotificationFeedbackGenerator().notificationOccurred(.warning)
+                    if lowStockPushEnabled {
+                        NotificationManager.shared.scheduleSharedLowStockNotification(stockCount: sharedFoodStock)
+                    }
                 }
             case .none:
                 break

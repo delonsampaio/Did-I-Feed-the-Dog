@@ -141,7 +141,7 @@ struct FeedAllDogsSheet: View {
     private func logForAll() {
         guard !isSubmitting else { return }
         isSubmitting = true
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
         let mealLabel = resolvedMealLabel
         let noteText = notes.trimmingCharacters(in: .whitespacesAndNewlines)
         let logger = LoggedBy.current
@@ -157,12 +157,15 @@ struct FeedAllDogsSheet: View {
                 switch stockMode {
                 case .individual:
                     pet.decrementStock()
-                    if lowStockPushEnabled && pet.foodStockCount <= lowStockThreshold {
-                        NotificationManager.shared.scheduleLowStockNotification(for: pet)
+                    if pet.foodStockCount <= lowStockThreshold {
+                        UINotificationFeedbackGenerator().notificationOccurred(.warning)
+                        if lowStockPushEnabled {
+                            NotificationManager.shared.scheduleLowStockNotification(for: pet)
+                        }
                     }
                 case .shared:
                     sharedFoodStock = max(0, sharedFoodStock - 1)
-                    if lowStockPushEnabled && sharedFoodStock <= lowStockThreshold {
+                    if sharedFoodStock <= lowStockThreshold {
                         needsSharedLowStockAlert = true
                     }
                 case .none:
@@ -172,7 +175,10 @@ struct FeedAllDogsSheet: View {
         }
 
         if needsSharedLowStockAlert {
-            NotificationManager.shared.scheduleSharedLowStockNotification(stockCount: sharedFoodStock)
+            UINotificationFeedbackGenerator().notificationOccurred(.warning)
+            if lowStockPushEnabled {
+                NotificationManager.shared.scheduleSharedLowStockNotification(stockCount: sharedFoodStock)
+            }
         }
 
         if let firstPet = pets.first {
