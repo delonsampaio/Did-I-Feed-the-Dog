@@ -33,6 +33,8 @@ struct DashboardView: View {
     @State private var deepLinkFeedingPet: Pet? = nil
     @State private var showUndoToast = false
     @State private var undoAction: (() -> Void)? = nil
+    @State private var toastMessage = "Meal logged"
+    @State private var toastId = UUID()
 
     private var allDogsReminderTimes: [Int] {
         allDogsReminderTimesRaw.split(separator: ",").compactMap { Int($0) }
@@ -58,8 +60,7 @@ struct DashboardView: View {
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(pets) { pet in
                             PetCard(pet: pet, onFed: { _, undo in
-                                undoAction = undo
-                                showUndoToast = true
+                                triggerToast(message: "Meal logged", undo: undo)
                             })
                         }
                     }
@@ -108,7 +109,11 @@ struct DashboardView: View {
                 NavigationStack { SettingsView() }
                     .presentationSizing(.page)
             }
-            .sheet(isPresented: $showFeedAll) { FeedAllDogsSheet(pets: pets) }
+            .sheet(isPresented: $showFeedAll) {
+                FeedAllDogsSheet(pets: pets, onLogged: { _, undo in
+                    triggerToast(message: "All dogs fed", undo: undo)
+                })
+            }
             .sheet(item: $deepLinkFeedingPet) { pet in LogFeedingSheet(pet: pet) }
             .overlay {
                 if pets.isEmpty {
@@ -122,7 +127,7 @@ struct DashboardView: View {
             }
             .overlay(alignment: .bottom) {
                 if showUndoToast {
-                    UndoToast(message: "Meal logged") {
+                    UndoToast(message: toastMessage) {
                         undoAction?()
                         showUndoToast = false
                         undoAction = nil
@@ -130,15 +135,15 @@ struct DashboardView: View {
                         showUndoToast = false
                         undoAction = nil
                     }
+                    .id(toastId)
                     .padding(.horizontal, 16)
                     .padding(.bottom, 8)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
             .animation(reduceMotion ? nil : .spring(duration: 0.3), value: showUndoToast)
-            .onChange(of: showUndoToast) { _, isShowing in
-                guard isShowing else { return }
-                UIAccessibility.post(notification: .announcement, argument: "Meal logged. Undo available.")
+            .onChange(of: toastId) { _, _ in
+                UIAccessibility.post(notification: .announcement, argument: "\(toastMessage). Undo available.")
             }
         }
         .onChange(of: deepLinkPetId) { _, newId in
@@ -165,5 +170,12 @@ struct DashboardView: View {
             WidgetDataWriter.write(pets, events: newEvents)
             NotificationManager.shared.updateBadgeCount(pets: pets)
         }
+    }
+
+    private func triggerToast(message: String, undo: @escaping () -> Void) {
+        toastMessage = message
+        undoAction = undo
+        toastId = UUID()
+        showUndoToast = true
     }
 }

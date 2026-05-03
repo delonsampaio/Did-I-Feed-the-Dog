@@ -16,6 +16,8 @@ struct FeedAllDogsSheet: View {
     }
 
     let pets: [Pet]
+    var onLogged: (([FeedingEvent], @escaping () -> Void) -> Void)? = nil
+
     @State private var selectedMealType: MealType = .morning
     @State private var customLabel = ""
     @State private var showCustomField = false
@@ -151,11 +153,19 @@ struct FeedAllDogsSheet: View {
         let logger = LoggedBy.current
         let shouldDecrementStock = showCustomField || selectedMealType.decrementsStock
 
+        let capturedStockMode = stockMode
+        let stocksBefore: [(Pet, Int)] = shouldDecrementStock && stockMode == .individual
+            ? pets.map { ($0, $0.foodStockCount) }
+            : []
+        let sharedStockBefore = sharedFoodStock
+
+        var createdEvents: [FeedingEvent] = []
         var needsSharedLowStockAlert = false
 
         for pet in pets {
             let event = FeedingEvent(mealType: mealLabel, notes: noteText, loggedBy: logger, pet: pet)
             modelContext.insert(event)
+            createdEvents.append(event)
 
             if shouldDecrementStock {
                 switch stockMode {
@@ -194,6 +204,24 @@ struct FeedAllDogsSheet: View {
         }
 
         WidgetDataWriter.write(from: modelContext)
+
+        let context = modelContext
+        let undo: () -> Void = {
+            for event in createdEvents { context.delete(event) }
+            if shouldDecrementStock {
+                switch capturedStockMode {
+                case .individual:
+                    for (pet, original) in stocksBefore { pet.foodStockCount = original }
+                case .shared:
+                    UserDefaults.standard.set(sharedStockBefore, forKey: "sharedFoodStock")
+                case .none:
+                    break
+                }
+            }
+            WidgetDataWriter.write(from: context)
+        }
+
+        onLogged?(createdEvents, undo)
         dismiss()
     }
 }
