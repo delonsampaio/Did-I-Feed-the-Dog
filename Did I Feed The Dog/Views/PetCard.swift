@@ -12,11 +12,10 @@ struct PetCard: View {
     @Environment(\.modelContext) private var modelContext
 
     let pet: Pet
+    var onFed: ((FeedingEvent, @escaping () -> Void) -> Void)? = nil
     @State private var showFeedSheet = false
     @State private var showEditSheet = false
     @State private var showSharedStockSheet = false
-    @State private var lastLoggedEvent: FeedingEvent? = nil
-    @State private var showUndoToast = false
 
     private var recentEvents: [FeedingEvent] {
         (pet.feedingEvents ?? [])
@@ -76,38 +75,22 @@ struct PetCard: View {
         .background(Color(.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: .black.opacity(0.07), radius: 8, x: 0, y: 2)
-        .overlay(alignment: .bottom) {
-            if showUndoToast {
-                UndoToast(message: "Meal logged") {
-                    // Undo action
-                    if let event = lastLoggedEvent {
-                        if event.resolvedMealType.decrementsStock {
-                            switch stockMode {
-                            case .individual: pet.foodStockCount += 1
-                            case .shared:
-                                let current = UserDefaults.standard.integer(forKey: "sharedFoodStock")
-                                UserDefaults.standard.set(current + 1, forKey: "sharedFoodStock")
-                            case .none: break
-                            }
-                        }
-                        modelContext.delete(event)
-                        WidgetDataWriter.write(from: modelContext)
-                    }
-                    showUndoToast = false
-                    lastLoggedEvent = nil
-                } onDismiss: {
-                    showUndoToast = false
-                    lastLoggedEvent = nil
-                }
-                .padding(.bottom, 80)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-                .animation(.spring(), value: showUndoToast)
-            }
-        }
         .sheet(isPresented: $showFeedSheet) {
             LogFeedingSheet(pet: pet, onLogged: { event in
-                lastLoggedEvent = event
-                showUndoToast = true
+                let undo: () -> Void = {
+                    if event.resolvedMealType.decrementsStock {
+                        switch stockMode {
+                        case .individual: pet.foodStockCount += 1
+                        case .shared:
+                            let current = UserDefaults.standard.integer(forKey: "sharedFoodStock")
+                            UserDefaults.standard.set(current + 1, forKey: "sharedFoodStock")
+                        case .none: break
+                        }
+                    }
+                    modelContext.delete(event)
+                    WidgetDataWriter.write(from: modelContext)
+                }
+                onFed?(event, undo)
             })
         }
         .sheet(isPresented: $showEditSheet) {
@@ -126,9 +109,12 @@ struct PetCard: View {
                     .font(.title3).fontWeight(.bold)
                     .lineLimit(1)
                     .truncationMode(.tail)
-                Text(pet.ageString)
-                    .font(.caption).foregroundStyle(.secondary)
-                    .lineLimit(1)
+                let age = pet.ageString
+                if !age.isEmpty {
+                    Text(age)
+                        .font(.caption).foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
             }
             Spacer()
             lastFedBadge

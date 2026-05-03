@@ -30,6 +30,8 @@ struct DashboardView: View {
     @State private var showSettings = false
     @State private var showFeedAll = false
     @State private var deepLinkFeedingPet: Pet? = nil
+    @State private var showUndoToast = false
+    @State private var undoAction: (() -> Void)? = nil
 
     private var allDogsReminderTimes: [Int] {
         allDogsReminderTimesRaw.split(separator: ",").compactMap { Int($0) }
@@ -53,7 +55,10 @@ struct DashboardView: View {
                     }
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(pets) { pet in
-                            PetCard(pet: pet)
+                            PetCard(pet: pet, onFed: { _, undo in
+                                undoAction = undo
+                                showUndoToast = true
+                            })
                         }
                     }
                 }
@@ -109,6 +114,22 @@ struct DashboardView: View {
                     .frame(maxWidth: 480)
                 }
             }
+            .overlay(alignment: .bottom) {
+                if showUndoToast {
+                    UndoToast(message: "Meal logged") {
+                        undoAction?()
+                        showUndoToast = false
+                        undoAction = nil
+                    } onDismiss: {
+                        showUndoToast = false
+                        undoAction = nil
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 8)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            .animation(.spring(duration: 0.3), value: showUndoToast)
         }
         .onChange(of: deepLinkPetId) { _, newId in
             guard let id = newId else { return }
