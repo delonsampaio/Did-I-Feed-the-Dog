@@ -44,8 +44,10 @@ struct UndoToast: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
                 onDismiss()
             }
-            withAnimation(.linear(duration: duration)) {
-                progress = 0.0
+            DispatchQueue.main.async {
+                withAnimation(.linear(duration: duration)) {
+                    progress = 0.0
+                }
             }
         }
     }
