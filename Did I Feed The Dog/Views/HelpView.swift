@@ -62,7 +62,7 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "Can I undo a meal I just logged?",
-                answer: "Yes. After logging a meal, a brief Undo banner appears at the bottom of the card. Tap Undo within a few seconds to remove the entry and restore any food portion that was deducted."
+                answer: "Yes. After logging a meal, an Undo banner appears at the bottom of the screen with a shrinking green bar showing how much time you have left. Tap Undo before the bar runs out to remove the entry and restore any food portion that was deducted."
             )
             FAQRow(
                 question: "How do I show my name next to feedings I log?",
@@ -255,7 +255,7 @@ struct HelpView: View {
             .init(section: "Getting Started", question: "How do I add a dog?", answer: "Tap the + button on the dashboard, or go to Settings -> Dogs -> Add Dog. Enter your dog's name, birthday, and an optional photo."),
             .init(section: "Getting Started", question: "How do I log a feeding?", answer: "Tap the green Log Meal button on any dog's card. Choose the meal type — Breakfast, Lunch, Dinner, Morning, Afternoon, Evening, Snack, Treat, or Custom — and confirm. The card updates immediately."),
             .init(section: "Getting Started", question: "Can I log a meal for all dogs at once?", answer: "Yes. When you have 2 or more dogs, a fork icon appears in the top-right of the dashboard next to the + button. Tap it to open the Feed All Dogs sheet and log the same meal for everyone in one tap."),
-            .init(section: "Getting Started", question: "Can I undo a meal I just logged?", answer: "Yes. After logging a meal, a brief Undo banner appears at the bottom of the card. Tap Undo within a few seconds to remove the entry and restore any food portion that was deducted."),
+            .init(section: "Getting Started", question: "Can I undo a meal I just logged?", answer: "Yes. After logging a meal, an Undo banner appears at the bottom of the screen with a shrinking green bar showing how much time you have left. Tap Undo before the bar runs out to remove the entry and restore any food portion that was deducted."),
             .init(section: "Getting Started", question: "How do I show my name next to feedings I log?", answer: "Go to Settings -> Your Name and type your name. It will appear next to every feeding you log so family members can see who fed the dog. If no name is set, the app uses your device model name (e.g. iPhone)."),
             .init(section: "Getting Started", question: "Can I choose a breed photo for my dog?", answer: "Yes. When adding or editing a dog, tap the photo area to open the avatar picker. Choose from 18 illustrated breed avatars or upload your own photo from your library. If no photo is set, the app automatically picks a default breed avatar for the dog."),
             .init(section: "Getting Started", question: "Can I change the app's appearance?", answer: "Yes. Go to Settings -> Appearance and pick Light, Dark, or System. System follows your iPhone's display setting. The change applies immediately, including while you're in Settings."),
