@@ -151,6 +151,11 @@ struct DashboardView: View {
             deepLinkFeedingPet = pets.first { $0.id == id }
             deepLinkPetId = nil
         }
+        .onReceive(NotificationCenter.default.publisher(for: .quickActionTriggered)) { notification in
+            guard let petIdString = notification.userInfo?["petId"] as? String,
+                  let petId = UUID(uuidString: petIdString) else { return }
+            deepLinkFeedingPet = pets.first { $0.id == petId }
+        }
         .onAppear {
             NotificationManager.shared.rescheduleIfNeeded(
                 reminderMode: reminderMode,
@@ -160,10 +165,18 @@ struct DashboardView: View {
             DogFoodShortcuts.updateAppShortcutParameters()
             WidgetDataWriter.write(pets, events: feedingEvents)
             NotificationManager.shared.updateBadgeCount(pets: pets)
+            QuickActionManager.shared.update(with: pets)
+            
+            if let pendingIdString = QuickActionManager.shared.pendingPetId,
+               let pendingId = UUID(uuidString: pendingIdString) {
+                deepLinkFeedingPet = pets.first { $0.id == pendingId }
+                QuickActionManager.shared.pendingPetId = nil
+            }
         }
         .onChange(of: pets) { _, newPets in
             WidgetDataWriter.write(newPets, events: feedingEvents)
             NotificationManager.shared.updateBadgeCount(pets: newPets)
+            QuickActionManager.shared.update(with: newPets)
         }
         .onChange(of: feedingEvents) { _, newEvents in
             guard !pets.isEmpty else { return }
