@@ -27,6 +27,9 @@ final class NotificationManager {
     func scheduleOverdueNotification(for pet: Pet, lastFedDate: Date) {
         let identifier = overdueIdentifier(for: pet)
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
+        
+        // Suppress if fasting
+        guard !pet.isFasting else { return }
         guard UserDefaults.standard.object(forKey: "overduePushEnabled") as? Bool ?? true else { return }
 
         let hours = UserDefaults.standard.integer(forKey: "overdueThresholdHours")
@@ -105,8 +108,6 @@ final class NotificationManager {
         )
     }
 
-    // MARK: - App icon badge
-
     func updateBadgeCount(pets: [Pet]) {
         let enabled = UserDefaults.standard.object(forKey: "badgeEnabled") as? Bool ?? true
         let count = enabled ? pets.filter { $0.isFeedingOverdue }.count : 0
@@ -116,8 +117,6 @@ final class NotificationManager {
     func clearBadge() {
         Task { try? await UNUserNotificationCenter.current().setBadgeCount(0) }
     }
-
-    // MARK: - Feeding reminders
 
     func scheduleAllDogsReminders(times: [Int], petNames: [String]) {
         removeAllDogsReminders()
@@ -134,6 +133,10 @@ final class NotificationManager {
 
     func schedulePerDogReminders(for pet: Pet, times: [Int]) {
         removePerDogReminders(for: pet)
+        
+        // Suppress if fasting
+        guard !pet.isFasting else { return }
+        
         for (i, minutes) in times.enumerated() {
             scheduleReminder(
                 identifier: "feeding-\(pet.id.uuidString)-\(i)",
@@ -188,7 +191,13 @@ final class NotificationManager {
         case .none:
             break
         case .allDogs:
-            scheduleAllDogsReminders(times: allDogsReminderTimes, petNames: pets.map { $0.name ?? "Unknown" })
+            // Refinement: Filter out fasting dogs from global reminders
+            let activePetNames = pets.filter { !$0.isFasting }.compactMap { $0.name }
+            if activePetNames.isEmpty {
+                removeAllDogsReminders()
+            } else {
+                scheduleAllDogsReminders(times: allDogsReminderTimes, petNames: activePetNames)
+            }
         case .perDog:
             for pet in pets {
                 schedulePerDogReminders(for: pet, times: pet.feedingScheduleTimes)

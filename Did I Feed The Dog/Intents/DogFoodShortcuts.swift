@@ -7,7 +7,7 @@ struct DogFoodShortcuts: AppShortcutsProvider {
             phrases: [
                 "Log a \(.applicationName) meal",
                 "Log feeding in \(.applicationName)",
-                "I fed the dog"
+                "I fed the dog in \(.applicationName)"
             ],
             shortTitle: "Log Feeding",
             systemImageName: "dog.fill"

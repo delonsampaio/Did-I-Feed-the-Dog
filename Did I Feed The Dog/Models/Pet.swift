@@ -9,6 +9,8 @@ final class Pet {
     var photoData: Data?
     var foodStockCount: Int = 0
     var feedingScheduleTimesRaw: String = ""
+    var isFasting: Bool = false // Feature #22
+    
     @Relationship(deleteRule: .cascade) var feedingEvents: [FeedingEvent]?
 
     var feedingScheduleTimes: [Int] {
@@ -16,13 +18,14 @@ final class Pet {
         set { feedingScheduleTimesRaw = newValue.map(String.init).joined(separator: ",") }
     }
 
-    init(name: String? = nil, birthday: Date? = nil, photoData: Data? = nil, foodStockCount: Int = 0) {
+    init(name: String? = nil, birthday: Date? = nil, photoData: Data? = nil, foodStockCount: Int = 0, isFasting: Bool = false) {
         self.id = UUID()
         self.name = name
         self.birthday = birthday
         self.photoData = photoData
         self.foodStockCount = foodStockCount
         self.feedingScheduleTimesRaw = ""
+        self.isFasting = isFasting
     }
 
     var ageString: String {
@@ -42,6 +45,9 @@ final class Pet {
     }
 
     var isFeedingOverdue: Bool {
+        // Fasting dogs are never marked as overdue
+        if isFasting { return false }
+        
         let modeRaw = UserDefaults.standard.string(forKey: "reminderMode") ?? ""
 
         if modeRaw == "allDogs" {
@@ -53,7 +59,6 @@ final class Pet {
             if !times.isEmpty { return isOverdueForSchedule(times) }
         }
 
-        // Fallback: hours-based threshold
         guard let last = lastFeedingEvent else { return false }
         let hours = max(1, UserDefaults.standard.integer(forKey: "overdueThresholdHours"))
         return Date().timeIntervalSince(last.timestamp) >= Double(hours) * 3600
@@ -65,7 +70,7 @@ final class Pet {
         let currentMinutes = (now.hour ?? 0) * 60 + (now.minute ?? 0)
 
         guard let lastPassedMinutes = times.filter({ $0 <= currentMinutes }).last else {
-            return false // No scheduled time has passed yet today
+            return false 
         }
 
         var components = cal.dateComponents([.year, .month, .day], from: .now)
@@ -74,7 +79,7 @@ final class Pet {
         components.second = 0
         guard let scheduledDate = cal.date(from: components) else { return false }
 
-        guard let last = lastFeedingEvent else { return true } // Never fed and a meal time has passed
+        guard let last = lastFeedingEvent else { return true } 
         return last.timestamp < scheduledDate
     }
 

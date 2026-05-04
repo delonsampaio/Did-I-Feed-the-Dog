@@ -18,6 +18,9 @@ struct AddEditPetSheet: View {
     @State private var selectedAvatarName: String?
     @State private var showAvatarPicker = false
     @State private var feedingTimes: [Date] = []
+    
+    // Feature #22
+    @State private var isFasting = false
 
     var body: some View {
         NavigationStack {
@@ -40,6 +43,18 @@ struct AddEditPetSheet: View {
                         }
                     }
                     .buttonStyle(.plain)
+                }
+                
+                // Feature #22: Medical Section
+                Section("Medical") {
+                    Toggle("Fasting Mode", isOn: $isFasting)
+                        .tint(.red)
+                    
+                    if isFasting {
+                        Text("Reminders and overdue alerts are disabled. A DO NOT FEED warning will appear on the dashboard.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
 
                 if stockMode == .individual {
@@ -149,6 +164,7 @@ struct AddEditPetSheet: View {
         birthday = pet.birthday ?? Date()
         foodStockCount = pet.foodStockCount
         photoData = pet.photoData
+        isFasting = pet.isFasting //
         feedingTimes = pet.feedingScheduleTimes.map { minutes in
             Calendar.current.date(bySettingHour: minutes / 60, minute: minutes % 60, second: 0, of: .now) ?? .now
         }
@@ -175,17 +191,25 @@ struct AddEditPetSheet: View {
             pet.birthday = birthday
             pet.photoData = photoData
             pet.foodStockCount = foodStockCount
+            pet.isFasting = isFasting
             pet.feedingScheduleTimes = times
+            
+            // Cleanup alerts if fasting
+            if isFasting {
+                NotificationManager.shared.removeOverdueNotification(for: pet)
+                NotificationManager.shared.removePerDogReminders(for: pet)
+            }
+            
             if birthdayPushEnabled {
                 NotificationManager.shared.scheduleBirthdayNotification(for: pet)
             } else {
                 NotificationManager.shared.removeBirthdayNotification(for: pet)
             }
-            if reminderMode == .perDog {
+            if reminderMode == .perDog && !isFasting {
                 NotificationManager.shared.schedulePerDogReminders(for: pet, times: times)
             }
         } else {
-            let newPet = Pet(name: trimmedName, birthday: birthday, photoData: photoData, foodStockCount: foodStockCount)
+            let newPet = Pet(name: trimmedName, birthday: birthday, photoData: photoData, foodStockCount: foodStockCount, isFasting: isFasting)
             newPet.feedingScheduleTimes = times
             modelContext.insert(newPet)
             if birthdayPushEnabled {
@@ -193,7 +217,7 @@ struct AddEditPetSheet: View {
             } else {
                 NotificationManager.shared.removeBirthdayNotification(for: newPet)
             }
-            if reminderMode == .perDog {
+            if reminderMode == .perDog && !isFasting {
                 NotificationManager.shared.schedulePerDogReminders(for: newPet, times: times)
             }
         }

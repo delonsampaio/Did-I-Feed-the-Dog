@@ -68,6 +68,22 @@ struct PetCard: View {
             }
 
             Spacer(minLength: 0)
+            
+            // Fasting Mode Banner (Item #22)
+            if pet.isFasting {
+                HStack {
+                    Image(systemName: "exclamationmark.octagon.fill")
+                    Text("DO NOT FEED — FASTING")
+                        .font(.caption).fontWeight(.bold)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(Color.red.opacity(0.15))
+                .foregroundStyle(.red)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal, 16)
+                .padding(.bottom, 10)
+            }
 
             feedButton
         }
@@ -75,6 +91,31 @@ struct PetCard: View {
         .background(Color(.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: .black.opacity(0.07), radius: 8, x: 0, y: 2)
+        
+        // --- NEW: Context Menu for fast toggling ---
+        .contextMenu {
+            Button(role: pet.isFasting ? .none : .destructive) {
+                pet.isFasting.toggle()
+                if pet.isFasting {
+                    // Immediately clear alerts for the fasting dog
+                    NotificationManager.shared.removeOverdueNotification(for: pet)
+                    NotificationManager.shared.removePerDogReminders(for: pet)
+                }
+                // Force a reminder refresh to handle "All Dogs" mode
+                UserDefaults.standard.set(true, forKey: "needsReminderReschedule")
+            } label: {
+                Label(pet.isFasting ? "End Fasting" : "Start Fasting", 
+                      systemImage: pet.isFasting ? "fork.knife" : "exclamationmark.octagon")
+            }
+            
+            Button {
+                showEditSheet = true
+            } label: {
+                Label("Edit Dog", systemImage: "pencil")
+            }
+        }
+        // -------------------------------------------
+        
         .sheet(isPresented: $showFeedSheet) {
             LogFeedingSheet(pet: pet, onLogged: { event in
                 let undo: () -> Void = {
@@ -281,10 +322,11 @@ struct PetCard: View {
                 .font(.headline)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(Color.green)
+                .background(pet.isFasting ? Color.gray.opacity(0.3) : Color.green)
                 .foregroundStyle(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
         }
+        .disabled(pet.isFasting)
         .padding(.horizontal, 16)
         .padding(.bottom, 16)
     }
@@ -294,8 +336,6 @@ struct PetCard: View {
         f.unitsStyle = .abbreviated
         return f.localizedString(for: date, relativeTo: .now)
     }
-
-
 }
 
 private struct SharedStockSheet: View {
