@@ -28,6 +28,8 @@ struct LogFeedingIntent: AppIntent {
 
         let event = FeedingEvent(mealType: meal.label, pet: foundPet)
         context.insert(event)
+        
+        NotificationManager.shared.scheduleOverdueNotification(for: foundPet, lastFedDate: event.date)
 
         let stockModeRaw = UserDefaults.standard.string(forKey: "stockMode") ?? ""
         let stockMode = StockMode(rawValue: stockModeRaw) ?? .none

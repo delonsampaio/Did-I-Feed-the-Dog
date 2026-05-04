@@ -20,6 +20,38 @@ final class NotificationManager {
         "birthday-\(pet.id.uuidString)"
     }
 
+    func overdueIdentifier(for pet: Pet) -> String {
+        "overdue-\(pet.id.uuidString)"
+    }
+
+    func scheduleOverdueNotification(for pet: Pet, lastFedDate: Date) {
+        let identifier = overdueIdentifier(for: pet)
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
+        guard UserDefaults.standard.object(forKey: "overduePushEnabled") as? Bool ?? true else { return }
+
+        let hours = UserDefaults.standard.integer(forKey: "overdueThresholdHours")
+        let thresholdHours = hours == 0 ? 12 : max(1, hours)
+        let triggerDate = lastFedDate.addingTimeInterval(TimeInterval(thresholdHours * 3600))
+
+        guard triggerDate > Date() else { return }
+
+        let content = UNMutableNotificationContent()
+        content.title = "⚠️ \(pet.name ?? "Your dog") is overdue for a meal"
+        content.body = "It's been over \(thresholdHours) hours since their last feeding."
+        content.sound = .default
+
+        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: triggerDate)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+        UNUserNotificationCenter.current().add(request)
+    }
+
+    func removeOverdueNotification(for pet: Pet) {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(
+            withIdentifiers: [overdueIdentifier(for: pet)]
+        )
+    }
+
     func scheduleLowStockNotification(for pet: Pet, stockCount: Int? = nil) {
         let count = stockCount ?? pet.foodStockCount
         let name = pet.name ?? "your dog"

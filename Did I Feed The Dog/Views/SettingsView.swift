@@ -13,6 +13,7 @@ struct SettingsView: View {
     @AppStorage("lowStockPushEnabled")     private var lowStockPushEnabled = true
     @AppStorage("birthdayPushEnabled")     private var birthdayPushEnabled = true
     @AppStorage("badgeEnabled")            private var badgeEnabled = true
+    @AppStorage("overduePushEnabled")      private var overduePushEnabled = true
     @AppStorage("lowStockThreshold")       private var lowStockThreshold = 5
     @AppStorage("stockMode")              private var stockMode: StockMode = .individual
     @AppStorage("sharedFoodStock")         private var sharedFoodStock = 0
@@ -284,6 +285,8 @@ struct SettingsView: View {
             Toggle("Low Stock Push Alert", isOn: $lowStockPushEnabled)
                 .disabled(!notificationsAuthorized)
             Toggle("Birthday Push Alert", isOn: $birthdayPushEnabled)
+                .disabled(!notificationsAuthorized)
+            Toggle("Overdue Push Alert", isOn: $overduePushEnabled)
                 .disabled(!notificationsAuthorized)
             Toggle("Overdue Badge", isOn: $badgeEnabled)
                 .disabled(!notificationsAuthorized)
