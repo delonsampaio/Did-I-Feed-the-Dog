@@ -59,7 +59,7 @@ final class Pet {
             if !times.isEmpty { return isOverdueForSchedule(times) }
         }
 
-        guard let last = lastFeedingEvent else { return false }
+        guard let last = lastFeedingEvent else { return true }
         let hours = max(1, UserDefaults.standard.integer(forKey: "overdueThresholdHours"))
         return Date().timeIntervalSince(last.timestamp) >= Double(hours) * 3600
     }

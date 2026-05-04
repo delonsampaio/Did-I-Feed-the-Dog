@@ -9,7 +9,7 @@ struct PetSnapshot: Identifiable {
     let lastFedDate: Date?
     let isFeedingOverdue: Bool
 
-    init(data: PetWidgetData) {
+    init(data: PetWidgetData, at date: Date = .now) {
         self.id = data.id
         self.name = data.name
         self.photoData = data.photoData
@@ -23,11 +23,11 @@ struct PetSnapshot: Identifiable {
             self.isFeedingOverdue = false
         } else if !scheduleTimes.isEmpty {
             let cal = Calendar.current
-            let now = cal.dateComponents([.hour, .minute], from: .now)
+            let now = cal.dateComponents([.hour, .minute], from: date)
             let currentMinutes = (now.hour ?? 0) * 60 + (now.minute ?? 0)
             
             if let lastPassedMinutes = scheduleTimes.filter({ $0 <= currentMinutes }).last {
-                var components = cal.dateComponents([.year, .month, .day], from: .now)
+                var components = cal.dateComponents([.year, .month, .day], from: date)
                 components.hour = lastPassedMinutes / 60
                 components.minute = lastPassedMinutes % 60
                 components.second = 0
@@ -41,8 +41,42 @@ struct PetSnapshot: Identifiable {
             }
         } else {
             self.isFeedingOverdue = data.lastFedDate.map {
-                Date().timeIntervalSince($0) >= Double(thresholdHours) * 3600
-            } ?? false // Note: Pet.swift returns false if no lastFedDate and no schedule.
+                date.timeIntervalSince($0) >= Double(thresholdHours) * 3600
+            } ?? true // Note: Pet.swift returns true if no lastFedDate and no schedule.
+        }
+    }
+
+    static func nextOverdueDate(for data: PetWidgetData, after date: Date = .now) -> Date? {
+        let isFasting = data.isFasting ?? false
+        let scheduleTimes = data.scheduleTimes ?? []
+        let thresholdHours = data.thresholdHours ?? 12
+
+        if isFasting { return nil }
+
+        if !scheduleTimes.isEmpty {
+            let cal = Calendar.current
+            var components = cal.dateComponents([.year, .month, .day], from: date)
+            components.second = 0
+            
+            var potentialDates: [Date] = []
+            for minutes in scheduleTimes {
+                components.hour = minutes / 60
+                components.minute = minutes % 60
+                if let d = cal.date(from: components) {
+                    potentialDates.append(d)
+                    if let dNext = cal.date(byAdding: .day, value: 1, to: d) {
+                        potentialDates.append(dNext)
+                    }
+                }
+            }
+            
+            return potentialDates.filter { $0 > date }.min()
+        } else {
+            if let last = data.lastFedDate {
+                let overdueDate = last.addingTimeInterval(Double(thresholdHours) * 3600)
+                return overdueDate > date ? overdueDate : nil
+            }
+            return nil
         }
     }
 }

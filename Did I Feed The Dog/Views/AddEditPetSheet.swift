@@ -221,6 +221,8 @@ struct AddEditPetSheet: View {
                 NotificationManager.shared.schedulePerDogReminders(for: newPet, times: times)
             }
         }
+        
+        WidgetDataWriter.write(from: modelContext)
         dismiss()
     }
 }

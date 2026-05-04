@@ -17,15 +17,33 @@ struct Provider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<WidgetEntry>) -> Void) {
-        let entry = WidgetEntry(date: .now, pets: Self.fetchPetSnapshots())
-        let next  = Date().addingTimeInterval(3600)
-        completion(Timeline(entries: [entry], policy: .after(next)))
+        let petsData = WidgetDataStore.load()
+        let now = Date()
+        
+        var entries: [WidgetEntry] = []
+        entries.append(WidgetEntry(date: now, pets: Self.fetchPetSnapshots(data: petsData, at: now)))
+        
+        // Find future overdue times
+        var futureDates = Set<Date>()
+        for pet in petsData {
+            if let nextDate = PetSnapshot.nextOverdueDate(for: pet, after: now) {
+                futureDates.insert(nextDate)
+            }
+        }
+        
+        let sortedFutureDates = futureDates.sorted().prefix(5) // Max 5 future entries
+        for date in sortedFutureDates {
+            entries.append(WidgetEntry(date: date, pets: Self.fetchPetSnapshots(data: petsData, at: date)))
+        }
+        
+        let next = Date().addingTimeInterval(3600)
+        completion(Timeline(entries: entries, policy: .after(next)))
     }
 
-    private static func fetchPetSnapshots() -> [PetSnapshot] {
-        let pets = WidgetDataStore.load()
+    private static func fetchPetSnapshots(data: [PetWidgetData]? = nil, at date: Date = .now) -> [PetSnapshot] {
+        let pets = data ?? WidgetDataStore.load()
         return pets
-            .map { PetSnapshot(data: $0) }
+            .map { PetSnapshot(data: $0, at: date) }
             .sorted { a, b in
                 switch (a.lastFedDate, b.lastFedDate) {
                 case (nil, nil): return a.name < b.name
