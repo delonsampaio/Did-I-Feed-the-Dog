@@ -216,7 +216,7 @@ struct OnboardingView: View {
                 Text("You're All Set!")
                     .font(.largeTitle.bold())
 
-                Text("Head to the dashboard to log \(petName)'s first meal.")
+                Text("Head to the dashboard to log \(firstMealText).")
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -275,6 +275,15 @@ struct OnboardingView: View {
         let names = dogNames.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
         let verb = names.count == 1 ? "misses" : "miss"
         return "\(petNamesFormatted) never \(verb) a meal"
+    }
+
+    private var firstMealText: String {
+        let names = dogNames.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+        if names.isEmpty {
+            return "your dog's first meal"
+        }
+        let joined = ListFormatter.localizedString(byJoining: names)
+        return "\(joined)'s first \(names.count > 1 ? "meals" : "meal")"
     }
 
     private var canAdvance: Bool {
