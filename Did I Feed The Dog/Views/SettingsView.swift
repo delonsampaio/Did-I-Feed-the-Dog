@@ -14,6 +14,9 @@ struct SettingsView: View {
     @AppStorage("birthdayPushEnabled")     private var birthdayPushEnabled = true
     @AppStorage("badgeEnabled")            private var badgeEnabled = true
     @AppStorage("overduePushEnabled")      private var overduePushEnabled = true
+    @AppStorage("waterBowlReminderEnabled") private var waterBowlReminderEnabled = false
+    @AppStorage("waterBowlReminderWeekday") private var waterBowlReminderWeekday = 1
+    @AppStorage("waterBowlReminderTime")   private var waterBowlReminderTime = 600
     @AppStorage("lowStockThreshold")       private var lowStockThreshold = 5
     @AppStorage("stockMode")              private var stockMode: StockMode = .individual
     @AppStorage("sharedFoodStock")         private var sharedFoodStock = 0
@@ -35,6 +38,7 @@ struct SettingsView: View {
             foodStockSection
             feedingRemindersSection
             notificationsSection
+            hygieneSection
             safetySection
             supportSection
             aboutSection
@@ -329,6 +333,46 @@ struct SettingsView: View {
         }
     }
 
+    private var hygieneSection: some View {
+        Section("Health & Hygiene") {
+            Toggle("Water Bowl Cleaning Reminder", isOn: $waterBowlReminderEnabled)
+                .disabled(!notificationsAuthorized)
+                .onChange(of: waterBowlReminderEnabled) { _, _ in
+                    updateWaterBowlReminder()
+                }
+
+            if waterBowlReminderEnabled {
+                Picker("Day of Week", selection: $waterBowlReminderWeekday) {
+                    Text("Sunday").tag(1)
+                    Text("Monday").tag(2)
+                    Text("Tuesday").tag(3)
+                    Text("Wednesday").tag(4)
+                    Text("Thursday").tag(5)
+                    Text("Friday").tag(6)
+                    Text("Saturday").tag(7)
+                }
+                .onChange(of: waterBowlReminderWeekday) { _, _ in
+                    updateWaterBowlReminder()
+                }
+
+                DatePicker(
+                    "Time",
+                    selection: Binding(
+                        get: { minutesToDate(waterBowlReminderTime) },
+                        set: {
+                            waterBowlReminderTime = dateToMinutes($0)
+                            updateWaterBowlReminder()
+                        }
+                    ),
+                    displayedComponents: .hourAndMinute
+                )
+            }
+            Text("Biofilm buildup in water bowls can cause health issues. Get a weekly nudge to scrub it clean.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+    }
+
     private var safetySection: some View {
         Section {
             NavigationLink(destination: SafetyGuideView()) {
@@ -387,6 +431,14 @@ struct SettingsView: View {
                 Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
                     .foregroundStyle(.secondary)
             }
+        }
+    }
+
+    private func updateWaterBowlReminder() {
+        if waterBowlReminderEnabled {
+            NotificationManager.shared.scheduleWaterBowlReminder(weekday: waterBowlReminderWeekday, timeMinutes: waterBowlReminderTime)
+        } else {
+            NotificationManager.shared.removeWaterBowlReminder()
         }
     }
 

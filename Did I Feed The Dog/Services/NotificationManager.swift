@@ -213,6 +213,29 @@ final class NotificationManager {
         }
     }
 
+    func scheduleWaterBowlReminder(weekday: Int, timeMinutes: Int) {
+        removeWaterBowlReminder() // Clear existing first
+        
+        let content = UNMutableNotificationContent()
+        content.title = "Time to scrub the water bowl! 🧼"
+        content.body = "Biofilm buildup can cause health issues. Give the water bowl a good clean to keep your dog healthy."
+        content.sound = .default
+        
+        var dateComponents = DateComponents()
+        dateComponents.weekday = weekday
+        dateComponents.hour = timeMinutes / 60
+        dateComponents.minute = timeMinutes % 60
+        
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+        let request = UNNotificationRequest(identifier: "waterBowlReminder", content: content, trigger: trigger)
+        
+        UNUserNotificationCenter.current().add(request)
+    }
+
+    func removeWaterBowlReminder() {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["waterBowlReminder"])
+    }
+
     private func scheduleReminder(identifier: String, title: String, body: String, minutesSinceMidnight: Int) {
         let content = UNMutableNotificationContent()
         content.title = title

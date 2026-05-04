@@ -264,6 +264,10 @@ struct HelpView: View {
                 answer: "A number shown on the app icon equal to how many of your dogs are currently overdue for a feeding. It updates automatically when you open the app or log a meal. Turn it off in Settings -> Notifications -> App Icon Badge."
             )
             FAQRow(
+                question: "What is the Water Bowl Cleaning Reminder?",
+                answer: "A weekly notification reminding you to scrub your dog's water bowl to prevent unhealthy biofilm buildup. You can choose the day and time in Settings -> Health & Hygiene."
+            )
+            FAQRow(
                 question: "I'm not receiving notifications. What should I check?",
                 answer: "First, open the app's Settings -> Notifications. If iOS notifications are disabled, an orange warning banner will appear there and the push notification toggles will be greyed out. Tap it or go to iPhone Settings -> Notifications -> Fed The Dog? to re-enable them. Once permission is restored, the toggles will become active again with your previous settings."
             )
@@ -313,6 +317,7 @@ struct HelpView: View {
             .init(section: "Notifications", question: "What is the In-App Low Stock Banner?", answer: "An orange banner that appears on the dog's card when stock is low. This is separate from the push notification."),
             .init(section: "Notifications", question: "What is the Overdue Notification?", answer: "A notification sent when a dog hasn't been fed past their overdue threshold (default 12 hours). It fires once per feeding window and is automatically cancelled when the next meal is logged. Turn it off in Settings -> Notifications -> Overdue Notification."),
             .init(section: "Notifications", question: "What is the App Icon Badge?", answer: "A number shown on the app icon equal to how many of your dogs are currently overdue for a feeding. It updates automatically when you open the app or log a meal. Turn it off in Settings -> Notifications -> App Icon Badge."),
+            .init(section: "Notifications", question: "What is the Water Bowl Cleaning Reminder?", answer: "A weekly notification reminding you to scrub your dog's water bowl to prevent unhealthy biofilm buildup. You can choose the day and time in Settings -> Health & Hygiene."),
             .init(section: "Notifications", question: "I'm not receiving notifications. What should I check?", answer: "First, open the app's Settings -> Notifications. If iOS notifications are disabled, an orange warning banner will appear there and the push notification toggles will be greyed out. Tap it or go to iPhone Settings -> Notifications -> Fed The Dog? to re-enable them. Once permission is restored, the toggles will become active again with your previous settings."),
         ]
 }
