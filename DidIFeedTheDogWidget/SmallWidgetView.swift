@@ -74,14 +74,10 @@ struct SmallWidgetView: View {
     }
 
     private func lastFedBadge(pet: PetSnapshot) -> some View {
-        let (icon, text, color) = badgeDetails(for: pet)
+        let (icon, _, color) = badgeDetails(for: pet)
         return VStack(spacing: 2) {
-            HStack(spacing: 2) {
-                Image(systemName: icon)
-                Text(text)
-            }
-                .font(.system(size: 9, weight: .bold))
-                .textCase(.uppercase)
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .bold))
                 .foregroundStyle(color)
             Text(relativeTime(pet.lastFedDate))
                 .font(.system(size: 11, weight: .semibold))

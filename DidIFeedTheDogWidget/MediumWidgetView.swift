@@ -45,8 +45,8 @@ struct MediumWidgetView: View {
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(.white)
                     .lineLimit(1)
-                Spacer()
                 lastFedBadge(pet: pet)
+                Spacer()
             }
             .padding(.vertical, 4)
         }
@@ -95,10 +95,10 @@ struct MediumWidgetView: View {
     }
 
     private func lastFedBadge(pet: PetSnapshot) -> some View {
-        let (icon, _, color) = badgeDetails(for: pet)
+        let (icon, text, color) = badgeDetails(for: pet)
         return HStack(spacing: 4) {
             Image(systemName: icon)
-            Text(relativeTime(pet.lastFedDate))
+            Text(pet.isFasting ? text : relativeTime(pet.lastFedDate))
         }
             .font(.system(size: 11, weight: .semibold))
             .foregroundStyle(color)
