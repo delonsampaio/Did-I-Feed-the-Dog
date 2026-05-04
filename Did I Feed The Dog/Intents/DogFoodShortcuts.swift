@@ -4,7 +4,7 @@ struct DogFoodShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
             intent: LogFeedingIntent(),
-            shortcuts: [
+            phrases: [
                 "Log a \(.applicationName) meal",
                 "Log feeding in \(.applicationName)",
                 "I fed the dog"
@@ -14,7 +14,7 @@ struct DogFoodShortcuts: AppShortcutsProvider {
         )
         AppShortcut(
             intent: FeedingStatusIntent(),
-            shortcuts: [
+            phrases: [
                 "Did I feed the dog in \(.applicationName)?",
                 "Check feeding status in \(.applicationName)",
                 "Has the dog been fed?"
@@ -24,7 +24,7 @@ struct DogFoodShortcuts: AppShortcutsProvider {
         )
         AppShortcut(
             intent: FoodStockStatusIntent(),
-            shortcuts: [
+            phrases: [
                 "How much food is left in \(.applicationName)?",
                 "Check food stock in \(.applicationName)"
             ],
@@ -33,7 +33,7 @@ struct DogFoodShortcuts: AppShortcutsProvider {
         )
         AppShortcut(
             intent: UpdateFoodStockIntent(),
-            shortcuts: [
+            phrases: [
                 "Update food stock in \(.applicationName)",
                 "Add dog food in \(.applicationName)"
             ],
@@ -42,5 +42,5 @@ struct DogFoodShortcuts: AppShortcutsProvider {
         )
     }
 
-    static var shortcutTileColor: ShortcutTileColor = .green
+    static var shortcutTileColor: ShortcutTileColor = .lime
 }

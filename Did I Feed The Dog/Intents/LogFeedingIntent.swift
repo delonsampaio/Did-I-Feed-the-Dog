@@ -1,5 +1,6 @@
 import AppIntents
 import SwiftData
+import Foundation
 
 struct LogFeedingIntent: AppIntent {
     static var title: LocalizedStringResource = "Log Feeding"
@@ -19,23 +20,28 @@ struct LogFeedingIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         let context = sharedModelContainer.mainContext
-
+        
+        // Pulling name from storage for the intent process
+        let loggedByName = UserDefaults.standard.string(forKey: "loggedByName") ?? "Family Member"
+        
         guard let petEntity = pet,
-              let modelPet = try IntentDataAccess.fetchPet(for: petEntity, in: context) else {
+              let modelPet = IntentDataAccess.fetchPets(in: context).first(where: { $0.id == petEntity.id }) else {
             return .result(dialog: "Which dog did you feed?")
         }
-
+        
         let label = mealType?.rawValue ?? "Meal"
-
+        
+        // Corrected 'timestamp' argument to match FeedingEvent.swift
         let event = FeedingEvent(
             timestamp: .now,
             mealType: label,
             notes: "",
-            loggedBy: LoggedBy.current,
+            loggedBy: loggedByName,
             pet: modelPet
         )
+        
         context.insert(event)
-
+        
         let stockModeRaw = UserDefaults.standard.string(forKey: "stockMode") ?? ""
         switch StockMode(rawValue: stockModeRaw) ?? .none {
         case .individual:
@@ -49,8 +55,9 @@ struct LogFeedingIntent: AppIntent {
 
         NotificationManager.shared.scheduleOverdueNotification(for: modelPet, lastFedDate: .now)
         WidgetDataWriter.write(from: context)
+        
         try context.save()
-
+        
         return .result(dialog: "Logged \(label) for \(modelPet.name ?? "your dog").")
     }
 }
