@@ -96,7 +96,7 @@ struct MediumWidgetView: View {
 
     private func lastFedBadge(pet: PetSnapshot) -> some View {
         let (icon, _, color) = badgeDetails(for: pet)
-        HStack(spacing: 4) {
+        return HStack(spacing: 4) {
             Image(systemName: icon)
             Text(relativeTime(pet.lastFedDate))
         }
