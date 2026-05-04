@@ -110,7 +110,7 @@ struct SettingsView: View {
     }
 
     private var foodStockSection: some View {
-        Section("Food Stock") {
+        Section {
             Picker("Tracking Mode", selection: $stockMode) {
                 ForEach(StockMode.allCases, id: \.self) { mode in
                     Text(mode.label).tag(mode)
@@ -143,11 +143,11 @@ struct SettingsView: View {
                     }
                 }
             }
-
+        } header: {
+            Text("Food Stock")
+        } footer: {
             if stockMode != .none {
                 Text("Snack and Treat meals do not reduce the portion count.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
             }
         }
     }
@@ -285,61 +285,104 @@ struct SettingsView: View {
                 }
                 .padding(.vertical, 2)
             }
-            Toggle("In-App Low Stock Banner", isOn: $lowStockUIWarning)
-            Toggle("Low Stock Notification", isOn: $lowStockPushEnabled)
-                .disabled(!notificationsAuthorized)
-            Toggle("Birthday Notification", isOn: $birthdayPushEnabled)
-                .disabled(!notificationsAuthorized)
-            Toggle("Overdue Notification", isOn: $overduePushEnabled)
-                .disabled(!notificationsAuthorized)
-            Toggle("App Icon Badge", isOn: $badgeEnabled)
-                .disabled(!notificationsAuthorized)
-                .onChange(of: badgeEnabled) { _, enabled in
-                    if enabled {
-                        NotificationManager.shared.updateBadgeCount(pets: pets)
-                    } else {
-                        NotificationManager.shared.clearBadge()
-                    }
+            Toggle(isOn: $lowStockUIWarning) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("In-App Low Stock Banner")
+                    Text("Shows an orange warning on the dog's card.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
-            Text("Shows a number on the app icon equal to how many dogs are overdue for a feeding.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+            }
+            Toggle(isOn: $lowStockPushEnabled) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Low Stock Notification")
+                    Text("Sends a push notification when food is low.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .disabled(!notificationsAuthorized)
+            Toggle(isOn: $birthdayPushEnabled) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Birthday Notification")
+                    Text("Sends a celebration alert on your dog's special day.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .disabled(!notificationsAuthorized)
+            Toggle(isOn: $overduePushEnabled) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Overdue Notification")
+                    Text("Alerts you if a dog misses their feeding window.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .disabled(!notificationsAuthorized)
+            Toggle(isOn: $badgeEnabled) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("App Icon Badge")
+                    Text("Shows the number of overdue dogs on your home screen.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .disabled(!notificationsAuthorized)
+            .onChange(of: badgeEnabled) { _, enabled in
+                if enabled {
+                    NotificationManager.shared.updateBadgeCount(pets: pets)
+                } else {
+                    NotificationManager.shared.clearBadge()
+                }
+            }
             Stepper(value: $lowStockThreshold, in: 1...50) {
                 HStack {
-                    Text("Low Stock Threshold")
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Low Stock Threshold")
+                        Text("Warn when stock is this low.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                     Spacer()
                     Text("\(lowStockThreshold) portions")
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
                 }
             }
-            Text("Warn when food drops to this many portions or fewer.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
             if reminderMode == .none {
                 Stepper(value: $overdueThresholdHours, in: 1...48) {
                     HStack {
-                        Text("Overdue After")
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Overdue After")
+                            Text("Card turns red when past due.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                         Spacer()
                         Text("\(overdueThresholdHours) hr\(overdueThresholdHours == 1 ? "" : "s")")
                             .foregroundStyle(.secondary)
                             .monospacedDigit()
                     }
                 }
-                Text("A dog's card turns red when they haven't been fed in this long.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
             }
         }
     }
 
     private var hygieneSection: some View {
         Section("Health & Hygiene") {
-            Toggle("Water Bowl Cleaning Reminder", isOn: $waterBowlReminderEnabled)
-                .disabled(!notificationsAuthorized)
-                .onChange(of: waterBowlReminderEnabled) { _, _ in
-                    updateWaterBowlReminder()
+            Toggle(isOn: $waterBowlReminderEnabled) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Water Bowl Cleaning Reminder")
+                    Text("Weekly nudge to scrub the bowl and prevent biofilm buildup.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
+            }
+            .disabled(!notificationsAuthorized)
+            .onChange(of: waterBowlReminderEnabled) { _, _ in
+                updateWaterBowlReminder()
+            }
 
             if waterBowlReminderEnabled {
                 Picker("Day of Week", selection: $waterBowlReminderWeekday) {
@@ -367,9 +410,6 @@ struct SettingsView: View {
                     displayedComponents: .hourAndMinute
                 )
             }
-            Text("Biofilm buildup in water bowls can cause health issues. Get a weekly nudge to scrub it clean.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
         }
     }
 
