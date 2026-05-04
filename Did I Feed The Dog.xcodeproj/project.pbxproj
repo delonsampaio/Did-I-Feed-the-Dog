@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		148947642FA04F480031F35C /* DidIFeedTheDogWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1489474A2FA04F460031F35C /* DidIFeedTheDogWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1489474D2FA04F470031F35C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1489474C2FA04F460031F35C /* WidgetKit.framework */; };
 		1489474F2FA04F470031F35C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1489474E2FA04F470031F35C /* SwiftUI.framework */; };
 /* End PBXBuildFile section */
@@ -42,6 +43,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
+				148947642FA04F480031F35C /* DidIFeedTheDogWidgetExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;

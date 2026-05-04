@@ -32,6 +32,7 @@ struct HelpView: View {
         List {
             if searchText.isEmpty {
                 gettingStartedSection
+                widgetsSection
                 feedingStatusSection
                 notesSection
                 foodStockSection
@@ -77,6 +78,10 @@ struct HelpView: View {
                 answer: "Yes. After logging a meal, an Undo banner appears at the bottom of the screen with a shrinking green bar showing how much time you have left. Tap Undo before the bar runs out to remove the entry and restore any food portion that was deducted."
             )
             FAQRow(
+                question: "How do I use the Home Screen widget?",
+                answer: "Long-press your iPhone's home screen, tap the + button, and search for 'Fed The Dog?'. You can add the widget to see the feeding status of your dogs at a glance. Note: The widget currently does not sync fasting mode, so fasting dogs may still appear as 'Needs feeding' on the widget."
+            )
+            FAQRow(
                 question: "How do I show my name next to feedings I log?",
                 answer: "Go to Settings -> Your Name and type your name. It will appear next to every feeding you log so family members can see who fed the dog. If no name is set, the app uses your device model name (e.g. iPhone)."
             )
@@ -95,6 +100,23 @@ struct HelpView: View {
             FAQRow(
                 question: "How do I delete a dog?",
                 answer: "In Settings -> Dogs, swipe left on the dog's name and tap Delete. This also removes all of their feeding history."
+            )
+        }
+    }
+
+    private var widgetsSection: some View {
+        Section("Widgets") {
+            FAQRow(
+                question: "Can I tap the widget to log a meal?",
+                answer: "Yes. Tapping any dog on the small or medium widget opens the Log Meal sheet for that dog directly. You don't need to navigate to the dashboard first."
+            )
+            FAQRow(
+                question: "Why isn't my widget updating?",
+                answer: "The widget refreshes automatically every hour and immediately any time you log a meal inside the app. If it looks stale, open the app and log a feeding — the widget will update right away."
+            )
+            FAQRow(
+                question: "What widget sizes are available?",
+                answer: "There are five layouts: Small (shows your most-overdue dog), Medium (shows up to 3 dogs side by side), and three Lock Screen variants — Circular (fed count out of total), Rectangular (most-overdue dog with relative time), and Inline (a short summary line). Long-press your Lock Screen and tap Customize to add the lock screen widgets."
             )
         }
     }
@@ -279,11 +301,15 @@ struct HelpView: View {
             .init(section: "Getting Started", question: "How do I log a feeding?", answer: "Tap the green Log Meal button on any dog's card. Choose the meal type — Breakfast, Lunch, Dinner, Morning, Afternoon, Evening, Snack, Treat, or Custom — and confirm. The card updates immediately."),
             .init(section: "Getting Started", question: "Can I log a meal for all dogs at once?", answer: "Yes. When you have 2 or more dogs, a fork icon appears in the top-right of the dashboard next to the + button. Tap it to open the Feed All Dogs sheet and log the same meal for everyone in one tap."),
             .init(section: "Getting Started", question: "Can I undo a meal I just logged?", answer: "Yes. After logging a meal, an Undo banner appears at the bottom of the screen with a shrinking green bar showing how much time you have left. Tap Undo before the bar runs out to remove the entry and restore any food portion that was deducted."),
+            .init(section: "Getting Started", question: "How do I use the Home Screen widget?", answer: "Long-press your iPhone's home screen, tap the + button, and search for 'Fed The Dog?'. You can add the widget to see the feeding status of your dogs at a glance. Note: The widget currently does not sync fasting mode, so fasting dogs may still appear as 'Needs feeding' on the widget."),
             .init(section: "Getting Started", question: "How do I show my name next to feedings I log?", answer: "Go to Settings -> Your Name and type your name. It will appear next to every feeding you log so family members can see who fed the dog. If no name is set, the app uses your device model name (e.g. iPhone)."),
             .init(section: "Getting Started", question: "Can I choose a breed photo for my dog?", answer: "Yes. When adding or editing a dog, tap the photo area to open the avatar picker. Choose from 18 illustrated breed avatars or upload your own photo from your library. If no photo is set, the app automatically picks a default breed avatar for the dog."),
             .init(section: "Getting Started", question: "Can I change the app's appearance?", answer: "Yes. Go to Settings -> Appearance and pick Light, Dark, or System. System follows your iPhone's display setting. The change applies immediately, including while you're in Settings."),
             .init(section: "Getting Started", question: "How do I edit a dog's info?", answer: "Go to Settings -> Dogs and tap the dog's name to open the edit sheet. You can update their name, birthday, photo, and food stock count."),
             .init(section: "Getting Started", question: "How do I delete a dog?", answer: "In Settings -> Dogs, swipe left on the dog's name and tap Delete. This also removes all of their feeding history."),
+            .init(section: "Widgets", question: "Can I tap the widget to log a meal?", answer: "Yes. Tapping any dog on the small or medium widget opens the Log Meal sheet for that dog directly. You don't need to navigate to the dashboard first."),
+            .init(section: "Widgets", question: "Why isn't my widget updating?", answer: "The widget refreshes automatically every hour and immediately any time you log a meal inside the app. If it looks stale, open the app and log a feeding — the widget will update right away."),
+            .init(section: "Widgets", question: "What widget sizes are available?", answer: "There are five layouts: Small (shows your most-overdue dog), Medium (shows up to 3 dogs side by side), and three Lock Screen variants — Circular (fed count out of total), Rectangular (most-overdue dog with relative time), and Inline (a short summary line). Long-press your Lock Screen and tap Customize to add the lock screen widgets."),
             .init(section: "Feeding Status", question: "What does overdue mean?", answer: "A dog is marked overdue — their Last Fed badge turns red — when they're past due for a feeding. If you have a feeding reminder schedule set up, overdue is based on your schedule: a dog is overdue as soon as a scheduled meal time has passed without a feeding logged since then. If reminders are off, you can set a manual time limit in Settings -> Notifications -> Overdue After (default 12 hours)."),
             .init(section: "Feeding Status", question: "How far back does the history go?", answer: "All feeding events are kept forever. The card shows the 3 most recent feedings. Tap the dog's name or photo to see the full history."),
             .init(section: "Feeding Status", question: "Can I delete a feeding entry?", answer: "Yes. Tap a dog's card header to open their history, then swipe left on any entry. You'll see two options — Delete removes the entry only, and Delete & Restore Portion removes the entry and adds one portion back to the food stock."),

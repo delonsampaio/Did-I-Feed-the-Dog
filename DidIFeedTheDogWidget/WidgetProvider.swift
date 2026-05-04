@@ -28,9 +28,12 @@ struct Provider: TimelineProvider {
             .map { PetSnapshot(id: $0.id, name: $0.name, photoData: $0.photoData, lastFedDate: $0.lastFedDate) }
             .sorted { a, b in
                 switch (a.lastFedDate, b.lastFedDate) {
+                case (nil, nil): return a.name < b.name
                 case (nil, _): return true
                 case (_, nil): return false
-                case let (d1?, d2?): return d1 < d2
+                case let (d1?, d2?): 
+                    if d1 == d2 { return a.name < b.name }
+                    return d1 < d2
                 }
             }
     }

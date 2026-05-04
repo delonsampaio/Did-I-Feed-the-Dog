@@ -76,7 +76,10 @@ struct SmallWidgetView: View {
 
     private func lastFedBadge(pet: PetSnapshot) -> some View {
         VStack(spacing: 2) {
-            Text("Fed")
+            HStack(spacing: 2) {
+                Image(systemName: pet.isFeedingOverdue ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
+                Text("Fed")
+            }
                 .font(.system(size: 9, weight: .bold))
                 .textCase(.uppercase)
                 .foregroundStyle(pet.isFeedingOverdue ? .red : .green)

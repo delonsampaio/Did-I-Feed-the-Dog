@@ -95,7 +95,10 @@ struct MediumWidgetView: View {
     }
 
     private func lastFedBadge(pet: PetSnapshot) -> some View {
-        Text(relativeTime(pet.lastFedDate))
+        HStack(spacing: 4) {
+            Image(systemName: pet.isFeedingOverdue ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
+            Text(relativeTime(pet.lastFedDate))
+        }
             .font(.system(size: 11, weight: .semibold))
             .foregroundStyle(pet.isFeedingOverdue ? .red : .green)
             .padding(.horizontal, 8)
