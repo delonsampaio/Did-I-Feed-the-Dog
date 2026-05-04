@@ -194,8 +194,12 @@ struct HelpView: View {
     private var siriSection: some View {
         Section("Siri & Shortcuts") {
             FAQRow(
+                question: "Can I use the Action Button to log a meal?",
+                answer: "Yes, on iPhone 15 Pro and later. Go to iPhone Settings -> Action Button, choose Shortcuts, then select \"Log Feeding\" under Fed The Dog?. Press the Action Button to log a meal instantly without unlocking your phone."
+            )
+            FAQRow(
                 question: "How do I log a feeding with Siri?",
-                answer: "Say \"Log [dog's name]'s feeding in Fed The Dog?\". Siri will confirm the meal and log it instantly — no need to open the app."
+                answer: "Say \"Log a Fed The Dog? meal\" or \"I fed the dog\". Siri will ask which dog and meal type, then log it instantly — no need to open the app."
             )
             FAQRow(
                 question: "How do I check if my dog has been fed?",
@@ -252,6 +256,10 @@ struct HelpView: View {
                 answer: "An orange banner that appears on the dog's card when stock is low. This is separate from the push notification."
             )
             FAQRow(
+                question: "What is the Overdue Push Alert?",
+                answer: "A notification sent when a dog hasn't been fed past their overdue threshold (default 12 hours). It fires once per feeding window and is automatically cancelled when the next meal is logged. Turn it off in Settings -> Notifications -> Overdue Push Alert."
+            )
+            FAQRow(
                 question: "What is the Overdue Badge?",
                 answer: "A number shown on the app icon equal to how many of your dogs are currently overdue for a feeding. It updates automatically when you open the app or log a meal. Turn it off in Settings -> Notifications -> Overdue Badge."
             )
@@ -290,7 +298,8 @@ struct HelpView: View {
             .init(section: "Feeding Reminders", question: "What is Per Dog mode?", answer: "Each dog has their own reminder schedule. Tap the dog's name in Settings -> Feeding Reminders (or tap the dog's name in Settings -> Dogs) to set their individual times."),
             .init(section: "Feeding Reminders", question: "How many reminder times can I set?", answer: "Up to 3 daily reminder times per schedule. Most households need a morning and evening reminder, but a midday one is available too."),
             .init(section: "Feeding Reminders", question: "Will reminders stop firing if I already fed my dog?", answer: "Yes. When you log a feeding, the next scheduled reminder for that dog is automatically cancelled. Any later reminders that day still fire as normal. Reminders are fully restored the next time you open the app."),
-            .init(section: "Siri & Shortcuts", question: "How do I log a feeding with Siri?", answer: "Say \"Log [dog's name]'s feeding in Fed The Dog?\". Siri will confirm the meal and log it instantly — no need to open the app."),
+            .init(section: "Siri & Shortcuts", question: "Can I use the Action Button to log a meal?", answer: "Yes, on iPhone 15 Pro and later. Go to iPhone Settings -> Action Button, choose Shortcuts, then select \"Log Feeding\" under Fed The Dog?. Press the Action Button to log a meal instantly without unlocking your phone."),
+            .init(section: "Siri & Shortcuts", question: "How do I log a feeding with Siri?", answer: "Say \"Log a Fed The Dog? meal\" or \"I fed the dog\". Siri will ask which dog and meal type, then log it instantly — no need to open the app."),
             .init(section: "Siri & Shortcuts", question: "How do I check if my dog has been fed?", answer: "Say \"Did I feed [dog's name] in Fed The Dog?\". Siri will tell you when they were last fed and whether they're overdue."),
             .init(section: "Siri & Shortcuts", question: "How do I update food stock with Siri?", answer: "Say \"Update [dog's name]'s food stock in Fed The Dog?\". Siri will ask how many portions you added and update the count."),
             .init(section: "Siri & Shortcuts", question: "Can I add these as shortcuts in the Shortcuts app?", answer: "Yes. Open the Shortcuts app, tap the + button, and search for Fed The Dog? to see all available actions. You can also go to iPhone Settings -> Siri & Search -> Fed The Dog? to manage them."),
@@ -302,6 +311,7 @@ struct HelpView: View {
             .init(section: "Notifications", question: "What is the Low Stock Push Alert?", answer: "A notification sent when a dog's food stock drops to or below the Low Stock Threshold and the app is in the background. When you're actively using the app, the orange banner on the dog's card serves as the in-app warning instead."),
             .init(section: "Notifications", question: "What is the Birthday Push Alert?", answer: "A notification sent on your dog's birthday each year, based on the birthday you entered when adding them."),
             .init(section: "Notifications", question: "What is the Low Stock UI Warning?", answer: "An orange banner that appears on the dog's card when stock is low. This is separate from the push notification."),
+            .init(section: "Notifications", question: "What is the Overdue Push Alert?", answer: "A notification sent when a dog hasn't been fed past their overdue threshold (default 12 hours). It fires once per feeding window and is automatically cancelled when the next meal is logged. Turn it off in Settings -> Notifications -> Overdue Push Alert."),
             .init(section: "Notifications", question: "What is the Overdue Badge?", answer: "A number shown on the app icon equal to how many of your dogs are currently overdue for a feeding. It updates automatically when you open the app or log a meal. Turn it off in Settings -> Notifications -> Overdue Badge."),
             .init(section: "Notifications", question: "I'm not receiving notifications. What should I check?", answer: "First, open the app's Settings -> Notifications. If iOS notifications are disabled, an orange warning banner will appear there and the push notification toggles will be greyed out. Tap it or go to iPhone Settings -> Notifications -> Fed The Dog? to re-enable them. Once permission is restored, the toggles will become active again with your previous settings."),
         ]

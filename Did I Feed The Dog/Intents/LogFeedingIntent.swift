@@ -1,41 +1,45 @@
 import AppIntents
 import SwiftData
-import WidgetKit
 
 struct LogFeedingIntent: AppIntent {
-    static var title: LocalizedStringResource = "Log Meal"
-    static var description = IntentDescription("Log a meal for your dog")
+    static var title: LocalizedStringResource = "Log Feeding"
+    static var description = IntentDescription("Quickly log a meal for one of your dogs.")
+    static var openAppWhenRun: Bool = false
 
     @Parameter(title: "Dog")
-    var pet: PetEntity
+    var pet: PetEntity?
 
-    @Parameter(title: "Meal", default: .morning)
-    var meal: MealTypeAppEnum
+    @Parameter(title: "Meal Type")
+    var mealType: MealTypeAppEnum?
 
     static var parameterSummary: some ParameterSummary {
-        Summary("Log \(\.$meal) feeding for \(\.$pet)")
+        Summary("Log \(\.$mealType) for \(\.$pet)")
     }
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        guard let context = IntentDataAccess.makeContext() else {
-            return .result(dialog: "Could not access app data.")
-        }
-        let pets = IntentDataAccess.fetchPets(in: context)
-        guard let foundPet = pets.first(where: { $0.id == pet.id }) else {
-            return .result(dialog: "Could not find \(pet.name).")
+        let context = sharedModelContainer.mainContext
+
+        guard let petEntity = pet,
+              let modelPet = try IntentDataAccess.fetchPet(for: petEntity, in: context) else {
+            return .result(dialog: "Which dog did you feed?")
         }
 
-        let event = FeedingEvent(mealType: meal.label, pet: foundPet)
+        let label = mealType?.rawValue ?? "Meal"
+
+        let event = FeedingEvent(
+            timestamp: .now,
+            mealType: label,
+            notes: "",
+            loggedBy: LoggedBy.current,
+            pet: modelPet
+        )
         context.insert(event)
-        
-        NotificationManager.shared.scheduleOverdueNotification(for: foundPet, lastFedDate: event.date)
 
         let stockModeRaw = UserDefaults.standard.string(forKey: "stockMode") ?? ""
-        let stockMode = StockMode(rawValue: stockModeRaw) ?? .none
-        switch stockMode {
+        switch StockMode(rawValue: stockModeRaw) ?? .none {
         case .individual:
-            foundPet.decrementStock()
+            modelPet.decrementStock()
         case .shared:
             let current = UserDefaults.standard.integer(forKey: "sharedFoodStock")
             UserDefaults.standard.set(max(0, current - 1), forKey: "sharedFoodStock")
@@ -43,9 +47,10 @@ struct LogFeedingIntent: AppIntent {
             break
         }
 
-        try? context.save()
-        WidgetCenter.shared.reloadAllTimelines()
+        NotificationManager.shared.scheduleOverdueNotification(for: modelPet, lastFedDate: .now)
+        WidgetDataWriter.write(from: context)
+        try context.save()
 
-        return .result(dialog: "\(meal.label) feeding logged for \(pet.name).")
+        return .result(dialog: "Logged \(label) for \(modelPet.name ?? "your dog").")
     }
 }

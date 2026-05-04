@@ -152,7 +152,7 @@ struct LogFeedingSheet: View {
         isSubmitting = true
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         let event = FeedingEvent(
-            date: date,
+            timestamp: .now,
             mealType: resolvedMealLabel,
             notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
             loggedBy: LoggedBy.current,
@@ -160,7 +160,7 @@ struct LogFeedingSheet: View {
         )
         modelContext.insert(event)
 
-        NotificationManager.shared.scheduleOverdueNotification(for: pet, lastFedDate: event.date)
+        NotificationManager.shared.scheduleOverdueNotification(for: pet, lastFedDate: event.timestamp)
 
         let shouldDecrementStock = showCustomField ? deductPortion : selectedMealType.decrementsStock
         if shouldDecrementStock {

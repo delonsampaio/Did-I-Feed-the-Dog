@@ -167,7 +167,7 @@ struct FeedAllDogsSheet: View {
             modelContext.insert(event)
             createdEvents.append(event)
             
-            NotificationManager.shared.scheduleOverdueNotification(for: pet, lastFedDate: event.date)
+            NotificationManager.shared.scheduleOverdueNotification(for: pet, lastFedDate: event.timestamp)
 
             if shouldDecrementStock {
                 switch stockMode {

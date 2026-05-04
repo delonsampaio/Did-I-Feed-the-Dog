@@ -4,39 +4,43 @@ struct DogFoodShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
             intent: LogFeedingIntent(),
-            phrases: [
-                "Log \(\.$pet)'s feeding in \(.applicationName)",
-                "Feed \(\.$pet) in \(.applicationName)"
+            shortcuts: [
+                "Log a \(.applicationName) meal",
+                "Log feeding in \(.applicationName)",
+                "I fed the dog"
             ],
-            shortTitle: "Log Meal",
-            systemImageName: "fork.knife"
-        )
-        AppShortcut(
-            intent: UpdateFoodStockIntent(),
-            phrases: [
-                "Update \(\.$pet)'s food stock in \(.applicationName)",
-                "Restock \(\.$pet)'s food in \(.applicationName)"
-            ],
-            shortTitle: "Update Food Stock",
-            systemImageName: "bag.fill"
+            shortTitle: "Log Feeding",
+            systemImageName: "dog.fill"
         )
         AppShortcut(
             intent: FeedingStatusIntent(),
-            phrases: [
-                "Did I feed \(\.$pet) in \(.applicationName)",
-                "When did I last feed \(\.$pet) in \(.applicationName)"
+            shortcuts: [
+                "Did I feed the dog in \(.applicationName)?",
+                "Check feeding status in \(.applicationName)",
+                "Has the dog been fed?"
             ],
-            shortTitle: "Feeding Status",
-            systemImageName: "clock"
+            shortTitle: "Check Feeding",
+            systemImageName: "questionmark.circle"
         )
         AppShortcut(
             intent: FoodStockStatusIntent(),
-            phrases: [
-                "How much food does \(\.$pet) have in \(.applicationName)",
-                "Check \(\.$pet)'s food stock in \(.applicationName)"
+            shortcuts: [
+                "How much food is left in \(.applicationName)?",
+                "Check food stock in \(.applicationName)"
             ],
-            shortTitle: "Food Stock",
-            systemImageName: "chart.bar.fill"
+            shortTitle: "Check Stock",
+            systemImageName: "box.truck"
+        )
+        AppShortcut(
+            intent: UpdateFoodStockIntent(),
+            shortcuts: [
+                "Update food stock in \(.applicationName)",
+                "Add dog food in \(.applicationName)"
+            ],
+            shortTitle: "Update Stock",
+            systemImageName: "plus.box"
         )
     }
+
+    static var shortcutTileColor: ShortcutTileColor = .green
 }
