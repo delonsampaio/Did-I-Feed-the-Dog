@@ -291,12 +291,12 @@ struct OnboardingView: View {
     private func advance() {
         switch step {
         case 1:
-            saveDog()
             stepAnimate { step = 2 }
         case 3:
-            saveReminder()
             stepAnimate { step = 4 }
         case 4:
+            saveDog()
+            saveReminder()
             dismiss()
         default:
             stepAnimate { step += 1 }

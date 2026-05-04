@@ -10,12 +10,22 @@ private struct FAQItem: Identifiable {
 struct HelpView: View {
     @State private var searchText = ""
 
-    private var filteredFAQs: [FAQItem] {
+    private var groupedSearchResults: [(section: String, items: [FAQItem])] {
         guard !searchText.isEmpty else { return [] }
         let q = searchText.lowercased()
-        return allFAQs.filter {
+        let matches = allFAQs.filter {
             $0.question.lowercased().contains(q) || $0.answer.lowercased().contains(q)
         }
+        
+        var groups: [(section: String, items: [FAQItem])] = []
+        for item in matches {
+            if let index = groups.firstIndex(where: { $0.section == item.section }) {
+                groups[index].items.append(item)
+            } else {
+                groups.append((section: item.section, items: [item]))
+            }
+        }
+        return groups
     }
 
     var body: some View {
@@ -29,14 +39,16 @@ struct HelpView: View {
                 siriSection
                 icloudSection
                 notificationsSection
-            } else if filteredFAQs.isEmpty {
+            } else if groupedSearchResults.isEmpty {
                 Text("No results for \"\(searchText)\"")
                     .foregroundStyle(.secondary)
                     .listRowBackground(Color.clear)
             } else {
-                ForEach(filteredFAQs) { item in
-                    Section(item.section) {
-                        FAQRow(question: item.question, answer: item.answer, startExpanded: true)
+                ForEach(groupedSearchResults, id: \.section) { group in
+                    Section(group.section) {
+                        ForEach(group.items) { item in
+                            FAQRow(question: item.question, answer: item.answer, startExpanded: true)
+                        }
                     }
                 }
             }
@@ -250,8 +262,7 @@ struct HelpView: View {
         }
     }
 
-    private var allFAQs: [FAQItem] {
-        [
+    private let allFAQs: [FAQItem] = [
             .init(section: "Getting Started", question: "How do I add a dog?", answer: "Tap the + button on the dashboard, or go to Settings -> Dogs -> Add Dog. Enter your dog's name, birthday, and an optional photo."),
             .init(section: "Getting Started", question: "How do I log a feeding?", answer: "Tap the green Log Meal button on any dog's card. Choose the meal type — Breakfast, Lunch, Dinner, Morning, Afternoon, Evening, Snack, Treat, or Custom — and confirm. The card updates immediately."),
             .init(section: "Getting Started", question: "Can I log a meal for all dogs at once?", answer: "Yes. When you have 2 or more dogs, a fork icon appears in the top-right of the dashboard next to the + button. Tap it to open the Feed All Dogs sheet and log the same meal for everyone in one tap."),
@@ -294,7 +305,6 @@ struct HelpView: View {
             .init(section: "Notifications", question: "What is the Overdue Badge?", answer: "A number shown on the app icon equal to how many of your dogs are currently overdue for a feeding. It updates automatically when you open the app or log a meal. Turn it off in Settings -> Notifications -> Overdue Badge."),
             .init(section: "Notifications", question: "I'm not receiving notifications. What should I check?", answer: "First, open the app's Settings -> Notifications. If iOS notifications are disabled, an orange warning banner will appear there and the push notification toggles will be greyed out. Tap it or go to iPhone Settings -> Notifications -> Fed The Dog? to re-enable them. Once permission is restored, the toggles will become active again with your previous settings."),
         ]
-    }
 }
 
 private struct FAQRow: View {
