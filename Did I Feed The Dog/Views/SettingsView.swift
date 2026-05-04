@@ -281,14 +281,14 @@ struct SettingsView: View {
                 }
                 .padding(.vertical, 2)
             }
-            Toggle("Low Stock UI Warning", isOn: $lowStockUIWarning)
-            Toggle("Low Stock Push Alert", isOn: $lowStockPushEnabled)
+            Toggle("In-App Low Stock Banner", isOn: $lowStockUIWarning)
+            Toggle("Low Stock Notification", isOn: $lowStockPushEnabled)
                 .disabled(!notificationsAuthorized)
-            Toggle("Birthday Push Alert", isOn: $birthdayPushEnabled)
+            Toggle("Birthday Notification", isOn: $birthdayPushEnabled)
                 .disabled(!notificationsAuthorized)
-            Toggle("Overdue Push Alert", isOn: $overduePushEnabled)
+            Toggle("Overdue Notification", isOn: $overduePushEnabled)
                 .disabled(!notificationsAuthorized)
-            Toggle("Overdue Badge", isOn: $badgeEnabled)
+            Toggle("App Icon Badge", isOn: $badgeEnabled)
                 .disabled(!notificationsAuthorized)
                 .onChange(of: badgeEnabled) { _, enabled in
                     if enabled {

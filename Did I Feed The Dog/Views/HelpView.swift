@@ -244,24 +244,24 @@ struct HelpView: View {
     private var notificationsSection: some View {
         Section("Notifications") {
             FAQRow(
-                question: "What is the Low Stock Push Alert?",
+                question: "What is the Low Stock Notification?",
                 answer: "A notification sent when a dog's food stock drops to or below the Low Stock Threshold and the app is in the background. When you're actively using the app, the orange banner on the dog's card serves as the in-app warning instead."
             )
             FAQRow(
-                question: "What is the Birthday Push Alert?",
+                question: "What is the Birthday Notification?",
                 answer: "A notification sent on your dog's birthday each year, based on the birthday you entered when adding them."
             )
             FAQRow(
-                question: "What is the Low Stock UI Warning?",
+                question: "What is the In-App Low Stock Banner?",
                 answer: "An orange banner that appears on the dog's card when stock is low. This is separate from the push notification."
             )
             FAQRow(
-                question: "What is the Overdue Push Alert?",
-                answer: "A notification sent when a dog hasn't been fed past their overdue threshold (default 12 hours). It fires once per feeding window and is automatically cancelled when the next meal is logged. Turn it off in Settings -> Notifications -> Overdue Push Alert."
+                question: "What is the Overdue Notification?",
+                answer: "A notification sent when a dog hasn't been fed past their overdue threshold (default 12 hours). It fires once per feeding window and is automatically cancelled when the next meal is logged. Turn it off in Settings -> Notifications -> Overdue Notification."
             )
             FAQRow(
-                question: "What is the Overdue Badge?",
-                answer: "A number shown on the app icon equal to how many of your dogs are currently overdue for a feeding. It updates automatically when you open the app or log a meal. Turn it off in Settings -> Notifications -> Overdue Badge."
+                question: "What is the App Icon Badge?",
+                answer: "A number shown on the app icon equal to how many of your dogs are currently overdue for a feeding. It updates automatically when you open the app or log a meal. Turn it off in Settings -> Notifications -> App Icon Badge."
             )
             FAQRow(
                 question: "I'm not receiving notifications. What should I check?",
@@ -308,11 +308,11 @@ struct HelpView: View {
             .init(section: "iCloud Sync", question: "How do I know which family member fed the dog?", answer: "Each feeding in the history shows the name of the person who logged it, next to the time. Make sure everyone in your household sets their name in Settings -> Your Name so their feedings are clearly attributed."),
             .init(section: "iCloud Sync", question: "How do I know if the app is syncing?", answer: "A small spinner appears next to the gear icon on the dashboard while iCloud is actively syncing. If a feeding from another device hasn't appeared yet, wait a moment for the spinner to disappear."),
             .init(section: "iCloud Sync", question: "What if two people log a feeding at the same time?", answer: "Both feedings are saved. You may see two entries close together in the history — that's the accurate record of what happened."),
-            .init(section: "Notifications", question: "What is the Low Stock Push Alert?", answer: "A notification sent when a dog's food stock drops to or below the Low Stock Threshold and the app is in the background. When you're actively using the app, the orange banner on the dog's card serves as the in-app warning instead."),
-            .init(section: "Notifications", question: "What is the Birthday Push Alert?", answer: "A notification sent on your dog's birthday each year, based on the birthday you entered when adding them."),
-            .init(section: "Notifications", question: "What is the Low Stock UI Warning?", answer: "An orange banner that appears on the dog's card when stock is low. This is separate from the push notification."),
-            .init(section: "Notifications", question: "What is the Overdue Push Alert?", answer: "A notification sent when a dog hasn't been fed past their overdue threshold (default 12 hours). It fires once per feeding window and is automatically cancelled when the next meal is logged. Turn it off in Settings -> Notifications -> Overdue Push Alert."),
-            .init(section: "Notifications", question: "What is the Overdue Badge?", answer: "A number shown on the app icon equal to how many of your dogs are currently overdue for a feeding. It updates automatically when you open the app or log a meal. Turn it off in Settings -> Notifications -> Overdue Badge."),
+            .init(section: "Notifications", question: "What is the Low Stock Notification?", answer: "A notification sent when a dog's food stock drops to or below the Low Stock Threshold and the app is in the background. When you're actively using the app, the orange banner on the dog's card serves as the in-app warning instead."),
+            .init(section: "Notifications", question: "What is the Birthday Notification?", answer: "A notification sent on your dog's birthday each year, based on the birthday you entered when adding them."),
+            .init(section: "Notifications", question: "What is the In-App Low Stock Banner?", answer: "An orange banner that appears on the dog's card when stock is low. This is separate from the push notification."),
+            .init(section: "Notifications", question: "What is the Overdue Notification?", answer: "A notification sent when a dog hasn't been fed past their overdue threshold (default 12 hours). It fires once per feeding window and is automatically cancelled when the next meal is logged. Turn it off in Settings -> Notifications -> Overdue Notification."),
+            .init(section: "Notifications", question: "What is the App Icon Badge?", answer: "A number shown on the app icon equal to how many of your dogs are currently overdue for a feeding. It updates automatically when you open the app or log a meal. Turn it off in Settings -> Notifications -> App Icon Badge."),
             .init(section: "Notifications", question: "I'm not receiving notifications. What should I check?", answer: "First, open the app's Settings -> Notifications. If iOS notifications are disabled, an orange warning banner will appear there and the push notification toggles will be greyed out. Tap it or go to iPhone Settings -> Notifications -> Fed The Dog? to re-enable them. Once permission is restored, the toggles will become active again with your previous settings."),
         ]
 }
