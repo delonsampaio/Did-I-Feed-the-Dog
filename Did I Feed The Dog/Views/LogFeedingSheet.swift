@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import WidgetKit
 
 struct LogFeedingSheet: View {
     @Environment(\.modelContext) private var modelContext
@@ -23,6 +24,8 @@ struct LogFeedingSheet: View {
     @State private var notes = ""
     @State private var deductPortion = true
     @State private var isSubmitting = false
+    @State private var showCustomTime = false
+    @State private var logDate = Date()
 
     var body: some View {
         NavigationStack {
@@ -36,6 +39,16 @@ struct LogFeedingSheet: View {
                     Toggle("Deduct a portion", isOn: $deductPortion)
                         .padding(.horizontal)
                 }
+
+                VStack(spacing: 12) {
+                    Toggle("Set custom time", isOn: $showCustomTime.animation())
+                        .tint(.green)
+                    
+                    if showCustomTime {
+                        DatePicker("Time", selection: $logDate, in: ...Date(), displayedComponents: [.date, .hourAndMinute])
+                    }
+                }
+                .padding(.horizontal)
 
                 TextField("Add a note (optional)", text: $notes, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
@@ -152,7 +165,7 @@ struct LogFeedingSheet: View {
         isSubmitting = true
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         let event = FeedingEvent(
-            timestamp: .now,
+            timestamp: showCustomTime ? logDate : .now,
             mealType: resolvedMealLabel,
             notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
             loggedBy: LoggedBy.current,
@@ -187,6 +200,7 @@ struct LogFeedingSheet: View {
         }
 
         WidgetDataWriter.write(from: modelContext)
+        WidgetCenter.shared.reloadAllTimelines()
         NotificationManager.shared.suppressNextUpcomingReminder(
             reminderMode: reminderMode,
             for: pet,

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import WidgetKit
 
 struct PetDetailView: View {
     @Environment(\.modelContext) private var modelContext
@@ -143,6 +144,7 @@ struct PetDetailView: View {
         }
         modelContext.delete(event)
         WidgetDataWriter.write(from: modelContext)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private func deleteEvents(_ events: [FeedingEvent], at offsets: IndexSet) {
@@ -151,6 +153,7 @@ struct PetDetailView: View {
             modelContext.delete(events[index])
         }
         WidgetDataWriter.write(from: modelContext)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
 

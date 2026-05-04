@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import WidgetKit
 
 struct FeedAllDogsSheet: View {
     @Environment(\.modelContext) private var modelContext
@@ -23,6 +24,8 @@ struct FeedAllDogsSheet: View {
     @State private var showCustomField = false
     @State private var notes = ""
     @State private var isSubmitting = false
+    @State private var showCustomTime = false
+    @State private var logDate = Date()
 
     var body: some View {
         NavigationStack {
@@ -34,6 +37,16 @@ struct FeedAllDogsSheet: View {
                         .textFieldStyle(.roundedBorder)
                         .padding(.horizontal)
                 }
+
+                VStack(spacing: 12) {
+                    Toggle("Set custom time", isOn: $showCustomTime.animation())
+                        .tint(.green)
+                    
+                    if showCustomTime {
+                        DatePicker("Time", selection: $logDate, in: ...Date(), displayedComponents: [.date, .hourAndMinute])
+                    }
+                }
+                .padding(.horizontal)
 
                 TextField("Add a note (optional)", text: $notes, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
@@ -163,7 +176,7 @@ struct FeedAllDogsSheet: View {
         var needsSharedLowStockAlert = false
 
         for pet in pets {
-            let event = FeedingEvent(mealType: mealLabel, notes: noteText, loggedBy: logger, pet: pet)
+            let event = FeedingEvent(timestamp: showCustomTime ? logDate : .now, mealType: mealLabel, notes: noteText, loggedBy: logger, pet: pet)
             modelContext.insert(event)
             createdEvents.append(event)
             
@@ -206,6 +219,7 @@ struct FeedAllDogsSheet: View {
         }
 
         WidgetDataWriter.write(from: modelContext)
+        WidgetCenter.shared.reloadAllTimelines()
 
         let context = modelContext
         let undo: () -> Void = {
@@ -221,6 +235,7 @@ struct FeedAllDogsSheet: View {
                 }
             }
             WidgetDataWriter.write(from: context)
+            WidgetCenter.shared.reloadAllTimelines()
         }
 
         onLogged?(createdEvents, undo)

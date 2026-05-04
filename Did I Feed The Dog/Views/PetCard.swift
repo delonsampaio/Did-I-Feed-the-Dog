@@ -130,6 +130,7 @@ struct PetCard: View {
                     }
                     modelContext.delete(event)
                     WidgetDataWriter.write(from: modelContext)
+                    WidgetCenter.shared.reloadAllTimelines()
                 }
                 onFed?(event, undo)
             })

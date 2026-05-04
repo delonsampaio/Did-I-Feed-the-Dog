@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import StoreKit
 import UserNotifications
+import WidgetKit
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
@@ -488,6 +489,6 @@ struct SettingsView: View {
             NotificationManager.shared.removeBirthdayNotification(for: pet)
             modelContext.delete(pet)
         }
-        WidgetDataWriter.write(from: modelContext)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 }

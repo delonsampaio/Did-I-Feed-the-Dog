@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import PhotosUI
+import WidgetKit
 
 struct AddEditPetSheet: View {
     @Environment(\.modelContext) private var modelContext
@@ -223,6 +224,7 @@ struct AddEditPetSheet: View {
         }
         
         WidgetDataWriter.write(from: modelContext)
+        WidgetCenter.shared.reloadAllTimelines()
         dismiss()
     }
 }
