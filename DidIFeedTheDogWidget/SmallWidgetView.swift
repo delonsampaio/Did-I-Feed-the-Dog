@@ -33,10 +33,9 @@ struct SmallWidgetView: View {
                 .font(.system(size: 20, weight: .heavy, design: .rounded))
                 .foregroundStyle(.white)
                 .lineLimit(1)
-            Text(pet.isFeedingOverdue ? "Needs feeding" : "Fed recently")
-                .font(.caption2)
-                .foregroundStyle(.white.opacity(0.55))
-                .padding(.top, 2)
+            Text(statusText(for: pet))
+                .font(pet.isFasting ? .caption.bold() : .caption2)
+                .foregroundStyle(statusColor(for: pet))
             Spacer()
             Text("Fed The Dog?")
                 .font(.system(size: 9, weight: .medium))
@@ -75,26 +74,43 @@ struct SmallWidgetView: View {
     }
 
     private func lastFedBadge(pet: PetSnapshot) -> some View {
+        let (icon, text, color) = badgeDetails(for: pet)
         VStack(spacing: 2) {
             HStack(spacing: 2) {
-                Image(systemName: pet.isFeedingOverdue ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
-                Text("Fed")
+                Image(systemName: icon)
+                Text(text)
             }
                 .font(.system(size: 9, weight: .bold))
                 .textCase(.uppercase)
-                .foregroundStyle(pet.isFeedingOverdue ? .red : .green)
+                .foregroundStyle(color)
             Text(relativeTime(pet.lastFedDate))
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.white)
         }
         .padding(.horizontal, 7)
         .padding(.vertical, 4)
-        .background(
-            pet.isFeedingOverdue
-                ? Color.red.opacity(0.2)
-                : Color.green.opacity(0.2)
-        )
+        .background(color.opacity(0.2))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    private func badgeDetails(for pet: PetSnapshot) -> (icon: String, text: String, color: Color) {
+        if pet.isFasting {
+            return ("exclamationmark.octagon.fill", "Fasting", .orange)
+        }
+        if pet.isFeedingOverdue {
+            return ("exclamationmark.triangle.fill", "Overdue", .red)
+        }
+        return ("checkmark.circle.fill", "Fed", .green)
+    }
+
+    private func statusText(for pet: PetSnapshot) -> String {
+        if pet.isFasting { return "Fasting" }
+        return pet.isFeedingOverdue ? "Needs feeding" : "Fed recently"
+    }
+
+    private func statusColor(for pet: PetSnapshot) -> Color {
+        if pet.isFasting { return .orange }
+        return .white.opacity(0.55)
     }
 
     private static let relativeFormatter: RelativeDateTimeFormatter = {

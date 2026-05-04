@@ -95,20 +95,27 @@ struct MediumWidgetView: View {
     }
 
     private func lastFedBadge(pet: PetSnapshot) -> some View {
+        let (icon, _, color) = badgeDetails(for: pet)
         HStack(spacing: 4) {
-            Image(systemName: pet.isFeedingOverdue ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
+            Image(systemName: icon)
             Text(relativeTime(pet.lastFedDate))
         }
             .font(.system(size: 11, weight: .semibold))
-            .foregroundStyle(pet.isFeedingOverdue ? .red : .green)
+            .foregroundStyle(color)
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
-            .background(
-                pet.isFeedingOverdue
-                    ? Color.red.opacity(0.2)
-                    : Color.green.opacity(0.2)
-            )
+            .background(color.opacity(0.2))
             .clipShape(RoundedRectangle(cornerRadius: 7))
+    }
+
+    private func badgeDetails(for pet: PetSnapshot) -> (icon: String, text: String, color: Color) {
+        if pet.isFasting {
+            return ("exclamationmark.octagon.fill", "Fasting", .orange)
+        }
+        if pet.isFeedingOverdue {
+            return ("exclamationmark.triangle.fill", "Overdue", .red)
+        }
+        return ("checkmark.circle.fill", "Fed", .green)
     }
 
     private static let relativeFormatter: RelativeDateTimeFormatter = {

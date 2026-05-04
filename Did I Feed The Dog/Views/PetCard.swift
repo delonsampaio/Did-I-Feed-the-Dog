@@ -103,6 +103,8 @@ struct PetCard: View {
                 }
                 // Force a reminder refresh to handle "All Dogs" mode
                 UserDefaults.standard.set(true, forKey: "needsReminderReschedule")
+                WidgetDataWriter.write(from: modelContext)
+                WidgetCenter.shared.reloadAllTimelines()
             } label: {
                 Label(pet.isFasting ? "End Fasting" : "Start Fasting", 
                       systemImage: pet.isFasting ? "fork.knife" : "exclamationmark.octagon")

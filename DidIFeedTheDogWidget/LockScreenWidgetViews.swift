@@ -32,9 +32,13 @@ struct RectangularWidgetView: View {
                 HStack(spacing: 8) {
                     Text("🐾").font(.title3)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(pet.isFeedingOverdue ? "\(pet.name) needs feeding" : "\(pet.name) is fed")
-                            .font(.system(size: 12, weight: .bold))
-                            .lineLimit(1)
+                        if pet.isFasting {
+                            Text("\(pet.name) is fasting")
+                                .font(.system(size: 12, weight: .bold))
+                        } else {
+                            Text(pet.isFeedingOverdue ? "\(pet.name) needs feeding" : "\(pet.name) is fed")
+                                .font(.system(size: 12, weight: .bold))
+                        }
                         Text(relativeTime(pet.lastFedDate))
                             .font(.caption2)
                             .foregroundStyle(.secondary)

@@ -8,12 +8,14 @@ struct PetSnapshot: Identifiable {
     let photoData: Data?
     let lastFedDate: Date?
     let isFeedingOverdue: Bool
+    let isFasting: Bool
 
     init(data: PetWidgetData, at date: Date = .now) {
         self.id = data.id
         self.name = data.name
         self.photoData = data.photoData
         self.lastFedDate = data.lastFedDate
+        self.isFasting = data.isFasting ?? false
         
         let isFasting = data.isFasting ?? false
         let scheduleTimes = data.scheduleTimes ?? []
