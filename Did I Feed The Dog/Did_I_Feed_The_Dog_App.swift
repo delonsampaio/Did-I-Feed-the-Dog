@@ -26,6 +26,7 @@ let sharedModelContainer: ModelContainer = {
 
 @main
 struct Did_I_Feed_The_Dog_App: App {
+    @UIApplicationDelegateAdaptor(QuickActionAppDelegate.self) var appDelegate
     @State private var deepLinkPetId: UUID? = nil
 
     var body: some Scene {
