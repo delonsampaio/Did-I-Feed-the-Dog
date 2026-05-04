@@ -11,7 +11,7 @@ final class Pet {
     var feedingScheduleTimesRaw: String = ""
     var isFasting: Bool = false // Feature #22
     
-    @Relationship(deleteRule: .cascade) var feedingEvents: [FeedingEvent]?
+    @Relationship(deleteRule: .cascade, inverse: \FeedingEvent.pet) var feedingEvents: [FeedingEvent]?
 
     var feedingScheduleTimes: [Int] {
         get { feedingScheduleTimesRaw.split(separator: ",").compactMap { Int($0) } }

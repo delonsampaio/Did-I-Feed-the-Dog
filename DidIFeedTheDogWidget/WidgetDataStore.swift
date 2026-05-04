@@ -5,6 +5,9 @@ struct PetWidgetData: Codable {
     let name: String
     let photoData: Data?
     let lastFedDate: Date?
+    let isFasting: Bool?
+    let scheduleTimes: [Int]?
+    let thresholdHours: Int?
 }
 
 enum WidgetDataStore {

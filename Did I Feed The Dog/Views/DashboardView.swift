@@ -179,7 +179,6 @@ struct DashboardView: View {
             QuickActionManager.shared.update(with: newPets)
         }
         .onChange(of: feedingEvents) { _, newEvents in
-            guard !pets.isEmpty else { return }
             WidgetDataWriter.write(pets, events: newEvents)
             NotificationManager.shared.updateBadgeCount(pets: pets)
         }

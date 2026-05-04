@@ -7,6 +7,9 @@ struct PetWidgetData: Codable {
     let name: String
     let photoData: Data?
     let lastFedDate: Date?
+    let isFasting: Bool
+    let scheduleTimes: [Int]
+    let thresholdHours: Int
 }
 
 enum WidgetDataWriter {
@@ -17,21 +20,34 @@ enum WidgetDataWriter {
     // Pass explicit events to avoid stale lazy-relationship data.
     static func write(_ pets: [Pet], events: [FeedingEvent]? = nil) {
         let snapshots: [PetWidgetData]
+        
+        let modeRaw = UserDefaults.standard.string(forKey: "reminderMode") ?? ""
+        let allDogsTimes = (UserDefaults.standard.string(forKey: "allDogsReminderTimesRaw") ?? "")
+            .split(separator: ",").compactMap { Int($0) }.sorted()
+        let threshold = max(1, UserDefaults.standard.integer(forKey: "overdueThresholdHours"))
 
         if let events = events {
             let byPetId = Dictionary(grouping: events, by: { $0.pet?.id ?? UUID() })
             snapshots = pets.map { pet in
                 let lastDate = (byPetId[pet.id] ?? [])
                     .max(by: { $0.timestamp < $1.timestamp })?.timestamp
+                
+                let times = modeRaw == "allDogs" ? allDogsTimes : (modeRaw == "perDog" ? pet.feedingScheduleTimes.sorted() : [])
+                
                 return PetWidgetData(id: pet.id, name: pet.name ?? "Unknown",
-                                     photoData: pet.photoData, lastFedDate: lastDate)
+                                     photoData: pet.photoData, lastFedDate: lastDate,
+                                     isFasting: pet.isFasting, scheduleTimes: times, thresholdHours: threshold)
             }
         } else {
             snapshots = pets.map { pet in
                 let lastDate = (pet.feedingEvents ?? [])
                     .max(by: { $0.timestamp < $1.timestamp })?.timestamp
+                    
+                let times = modeRaw == "allDogs" ? allDogsTimes : (modeRaw == "perDog" ? pet.feedingScheduleTimes.sorted() : [])
+
                 return PetWidgetData(id: pet.id, name: pet.name ?? "Unknown",
-                                     photoData: pet.photoData, lastFedDate: lastDate)
+                                     photoData: pet.photoData, lastFedDate: lastDate,
+                                     isFasting: pet.isFasting, scheduleTimes: times, thresholdHours: threshold)
             }
         }
 
@@ -45,7 +61,6 @@ enum WidgetDataWriter {
     static func write(from context: ModelContext) {
         try? context.save()
         let pets = (try? context.fetch(FetchDescriptor<Pet>())) ?? []
-        guard !pets.isEmpty else { return }
         let events = (try? context.fetch(FetchDescriptor<FeedingEvent>())) ?? []
         write(pets, events: events)
     }

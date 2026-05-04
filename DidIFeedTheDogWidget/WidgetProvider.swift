@@ -5,10 +5,10 @@ struct Provider: TimelineProvider {
 
     func placeholder(in context: Context) -> WidgetEntry {
         WidgetEntry(date: .now, pets: [
-            PetSnapshot(id: UUID(), name: "Max",    photoData: nil,
-                        lastFedDate: Date().addingTimeInterval(-1800)),
-            PetSnapshot(id: UUID(), name: "Bailey", photoData: nil,
-                        lastFedDate: Date().addingTimeInterval(-32400))
+            PetSnapshot(data: PetWidgetData(id: UUID(), name: "Max", photoData: nil,
+                        lastFedDate: Date().addingTimeInterval(-1800), isFasting: false, scheduleTimes: [], thresholdHours: 12)),
+            PetSnapshot(data: PetWidgetData(id: UUID(), name: "Bailey", photoData: nil,
+                        lastFedDate: Date().addingTimeInterval(-32400), isFasting: false, scheduleTimes: [], thresholdHours: 12))
         ])
     }
 
@@ -25,7 +25,7 @@ struct Provider: TimelineProvider {
     private static func fetchPetSnapshots() -> [PetSnapshot] {
         let pets = WidgetDataStore.load()
         return pets
-            .map { PetSnapshot(id: $0.id, name: $0.name, photoData: $0.photoData, lastFedDate: $0.lastFedDate) }
+            .map { PetSnapshot(data: $0) }
             .sorted { a, b in
                 switch (a.lastFedDate, b.lastFedDate) {
                 case (nil, nil): return a.name < b.name

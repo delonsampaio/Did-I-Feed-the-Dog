@@ -9,15 +9,41 @@ struct PetSnapshot: Identifiable {
     let lastFedDate: Date?
     let isFeedingOverdue: Bool
 
-    init(id: UUID, name: String, photoData: Data?, lastFedDate: Date?) {
-        self.id = id
-        self.name = name
-        self.photoData = photoData
-        self.lastFedDate = lastFedDate
-        let threshold: TimeInterval = 12 * 3600
-        self.isFeedingOverdue = lastFedDate.map {
-            Date().timeIntervalSince($0) >= threshold
-        } ?? true
+    init(data: PetWidgetData) {
+        self.id = data.id
+        self.name = data.name
+        self.photoData = data.photoData
+        self.lastFedDate = data.lastFedDate
+        
+        let isFasting = data.isFasting ?? false
+        let scheduleTimes = data.scheduleTimes ?? []
+        let thresholdHours = data.thresholdHours ?? 12
+
+        if isFasting {
+            self.isFeedingOverdue = false
+        } else if !scheduleTimes.isEmpty {
+            let cal = Calendar.current
+            let now = cal.dateComponents([.hour, .minute], from: .now)
+            let currentMinutes = (now.hour ?? 0) * 60 + (now.minute ?? 0)
+            
+            if let lastPassedMinutes = scheduleTimes.filter({ $0 <= currentMinutes }).last {
+                var components = cal.dateComponents([.year, .month, .day], from: .now)
+                components.hour = lastPassedMinutes / 60
+                components.minute = lastPassedMinutes % 60
+                components.second = 0
+                if let scheduledDate = cal.date(from: components) {
+                    self.isFeedingOverdue = data.lastFedDate.map { $0 < scheduledDate } ?? true
+                } else {
+                    self.isFeedingOverdue = false
+                }
+            } else {
+                self.isFeedingOverdue = false
+            }
+        } else {
+            self.isFeedingOverdue = data.lastFedDate.map {
+                Date().timeIntervalSince($0) >= Double(thresholdHours) * 3600
+            } ?? false // Note: Pet.swift returns false if no lastFedDate and no schedule.
+        }
     }
 }
 
