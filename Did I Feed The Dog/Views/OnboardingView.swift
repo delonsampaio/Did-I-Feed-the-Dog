@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import WidgetKit
 
 struct OnboardingView: View {
     @Environment(\.modelContext) private var modelContext
@@ -306,6 +307,8 @@ struct OnboardingView: View {
         case 4:
             saveDog()
             saveReminder()
+            WidgetDataWriter.write(from: modelContext)
+            WidgetCenter.shared.reloadAllTimelines()
             dismiss()
         default:
             stepAnimate { step += 1 }

@@ -163,7 +163,7 @@ struct DashboardView: View {
                 pets: pets
             )
             DogFoodShortcuts.updateAppShortcutParameters()
-            WidgetDataWriter.write(pets, events: feedingEvents)
+            WidgetDataWriter.write(from: modelContext)
             NotificationManager.shared.updateBadgeCount(pets: pets)
             QuickActionManager.shared.update(with: pets)
             
@@ -174,12 +174,12 @@ struct DashboardView: View {
             }
         }
         .onChange(of: pets) { _, newPets in
-            WidgetDataWriter.write(newPets, events: feedingEvents)
+            WidgetDataWriter.write(from: modelContext)
             NotificationManager.shared.updateBadgeCount(pets: newPets)
             QuickActionManager.shared.update(with: newPets)
         }
         .onChange(of: feedingEvents) { _, newEvents in
-            WidgetDataWriter.write(pets, events: newEvents)
+            WidgetDataWriter.write(from: modelContext)
             NotificationManager.shared.updateBadgeCount(pets: pets)
         }
     }
