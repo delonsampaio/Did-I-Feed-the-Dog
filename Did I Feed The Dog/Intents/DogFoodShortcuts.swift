@@ -17,7 +17,7 @@ struct DogFoodShortcuts: AppShortcutsProvider {
             phrases: [
                 "Did I feed the dog in \(.applicationName)?",
                 "Check feeding status in \(.applicationName)",
-                "Has the dog been fed?"
+                "Has the dog been fed in \(.applicationName)?"
             ],
             shortTitle: "Check Feeding",
             systemImageName: "questionmark.circle"
