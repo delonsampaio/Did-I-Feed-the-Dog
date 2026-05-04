@@ -15,6 +15,7 @@ struct PetEntity: AppEntity {
 }
 
 struct PetQuery: EntityQuery {
+    @MainActor
     func entities(for identifiers: [UUID]) async throws -> [PetEntity] {
         let context = sharedModelContainer.mainContext
         let descriptor = FetchDescriptor<Pet>(predicate: #Predicate { identifiers.contains($0.id) })
@@ -22,6 +23,7 @@ struct PetQuery: EntityQuery {
         return pets.map { PetEntity(id: $0.id, name: $0.name ?? "Unknown") }
     }
     
+    @MainActor
     func suggestedEntities() async throws -> [PetEntity] {
         let context = sharedModelContainer.mainContext
         let descriptor = FetchDescriptor<Pet>(sortBy: [SortDescriptor(\.name)])
