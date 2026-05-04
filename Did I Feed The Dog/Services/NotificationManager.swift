@@ -218,7 +218,7 @@ final class NotificationManager {
         
         let content = UNMutableNotificationContent()
         content.title = "Time to scrub the water bowl! 🧼"
-        content.body = "Biofilm buildup can cause health issues. Give the water bowl a good clean to keep your dog healthy."
+        content.body = "Give it a quick scrub to prevent unhealthy biofilm buildup."
         content.sound = .default
         
         var dateComponents = DateComponents()
