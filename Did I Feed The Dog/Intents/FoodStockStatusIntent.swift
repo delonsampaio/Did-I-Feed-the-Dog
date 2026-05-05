@@ -5,7 +5,7 @@ struct FoodStockStatusIntent: AppIntent {
     static var title: LocalizedStringResource = "Food Stock Status"
     static var description = IntentDescription("Check how many portions a dog has remaining")
 
-    @Parameter(title: "Dog")
+    @Parameter(title: "Dog", requestValueDialog: IntentDialog("Which dog's food stock would you like to check?"))
     var pet: PetEntity
 
     static var parameterSummary: some ParameterSummary {

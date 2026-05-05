@@ -26,10 +26,13 @@ struct LogFeedingIntent: AppIntent {
         guard let modelPet = IntentDataAccess.fetchPets(in: context).first(where: { $0.id == pet.id }) else {
             return .result(dialog: "Couldn't find \(pet.name) in the app.")
         }
-        
+
+        if modelPet.isFasting {
+            return .result(dialog: "\(modelPet.name ?? "That dog") is currently fasting and can't be fed.")
+        }
+
         let label = mealType?.rawValue ?? "Meal"
-        
-        // Corrected 'timestamp' argument to match FeedingEvent.swift
+
         let event = FeedingEvent(
             timestamp: .now,
             mealType: label,

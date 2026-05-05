@@ -17,9 +17,10 @@ struct DogFoodShortcuts: AppShortcutsProvider {
         AppShortcut(
             intent: FeedingStatusIntent(),
             phrases: [
-                "Did I feed the dog in \(.applicationName)?",
                 "Check feeding status in \(.applicationName)",
-                "Has the dog been fed in \(.applicationName)?"
+                "Did I feed \(\.$pet) in \(.applicationName)?",
+                "Has \(\.$pet) been fed in \(.applicationName)?",
+                "When was \(\.$pet) last fed in \(.applicationName)?"
             ],
             shortTitle: "Check Feeding",
             systemImageName: "questionmark.circle"
@@ -27,8 +28,9 @@ struct DogFoodShortcuts: AppShortcutsProvider {
         AppShortcut(
             intent: FoodStockStatusIntent(),
             phrases: [
-                "How much food is left in \(.applicationName)?",
-                "Check food stock in \(.applicationName)"
+                "Check food stock in \(.applicationName)",
+                "How much food does \(\.$pet) have in \(.applicationName)?",
+                "Check \(\.$pet)'s food stock in \(.applicationName)"
             ],
             shortTitle: "Check Stock",
             systemImageName: "box.truck"
@@ -36,11 +38,22 @@ struct DogFoodShortcuts: AppShortcutsProvider {
         AppShortcut(
             intent: UpdateFoodStockIntent(),
             phrases: [
-                "Update food stock in \(.applicationName)",
-                "Add dog food in \(.applicationName)"
+                "Add dog food in \(.applicationName)",
+                "Restock \(\.$pet)'s food in \(.applicationName)",
+                "Add food for \(\.$pet) in \(.applicationName)"
             ],
             shortTitle: "Update Stock",
             systemImageName: "plus.box"
+        )
+        AppShortcut(
+            intent: FeedAllDogsIntent(),
+            phrases: [
+                "Feed all dogs in \(.applicationName)",
+                "Mark all dogs as fed in \(.applicationName)",
+                "Log all feedings in \(.applicationName)"
+            ],
+            shortTitle: "Feed All Dogs",
+            systemImageName: "fork.knife"
         )
     }
 

@@ -6,7 +6,7 @@ struct UpdateFoodStockIntent: AppIntent {
     static var title: LocalizedStringResource = "Update Food Stock"
     static var description = IntentDescription("Add portions to a dog's food stock after restocking")
 
-    @Parameter(title: "Dog")
+    @Parameter(title: "Dog", requestValueDialog: IntentDialog("Which dog's food stock would you like to update?"))
     var pet: PetEntity
 
     @Parameter(
