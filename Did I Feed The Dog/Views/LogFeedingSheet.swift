@@ -1,20 +1,9 @@
 import SwiftUI
 import SwiftData
-import WidgetKit
 
 struct LogFeedingSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("lowStockPushEnabled")     private var lowStockPushEnabled = true
-    @AppStorage("lowStockThreshold")       private var lowStockThreshold = 5
-    @AppStorage("stockMode")               private var stockMode: StockMode = .individual
-    @AppStorage("sharedFoodStock")         private var sharedFoodStock = 0
-    @AppStorage("reminderMode")            private var reminderMode: ReminderMode = .none
-    @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
-
-    private var allDogsReminderTimes: [Int] {
-        allDogsReminderTimesRaw.split(separator: ",").compactMap { Int($0) }
-    }
 
     let pet: Pet
     var onLogged: ((FeedingEvent) -> Void)? = nil
@@ -164,49 +153,24 @@ struct LogFeedingSheet: View {
         guard !isSubmitting else { return }
         isSubmitting = true
         UINotificationFeedbackGenerator().notificationOccurred(.success)
-        let event = FeedingEvent(
-            timestamp: showCustomTime ? logDate : .now,
-            mealType: resolvedMealLabel,
-            notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
-            loggedBy: LoggedBy.current,
-            pet: pet
-        )
-        modelContext.insert(event)
-
-        NotificationManager.shared.scheduleOverdueNotification(for: pet, lastFedDate: event.timestamp)
 
         let shouldDecrementStock = showCustomField ? deductPortion : selectedMealType.decrementsStock
-        if shouldDecrementStock {
-            switch stockMode {
-            case .individual:
-                pet.decrementStock()
-                if pet.foodStockCount <= lowStockThreshold {
-                    UINotificationFeedbackGenerator().notificationOccurred(.warning)
-                    if lowStockPushEnabled {
-                        NotificationManager.shared.scheduleLowStockNotification(for: pet)
-                    }
-                }
-            case .shared:
-                sharedFoodStock = max(0, sharedFoodStock - 1)
-                if sharedFoodStock <= lowStockThreshold {
-                    UINotificationFeedbackGenerator().notificationOccurred(.warning)
-                    if lowStockPushEnabled {
-                        NotificationManager.shared.scheduleSharedLowStockNotification(stockCount: sharedFoodStock)
-                    }
-                }
-            case .none:
-                break
-            }
+
+        let result = FeedingLogService.logFeeding(
+            for: pet,
+            mealLabel: resolvedMealLabel,
+            deductsStock: shouldDecrementStock,
+            timestamp: showCustomTime ? logDate : .now,
+            notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
+            logger: LoggedBy.current,
+            in: modelContext
+        )
+
+        if result.didTriggerLowStock {
+            UINotificationFeedbackGenerator().notificationOccurred(.warning)
         }
 
-        WidgetDataWriter.write(from: modelContext)
-        WidgetCenter.shared.reloadAllTimelines()
-        NotificationManager.shared.suppressNextUpcomingReminder(
-            reminderMode: reminderMode,
-            for: pet,
-            allDogsReminderTimes: allDogsReminderTimes
-        )
-        onLogged?(event)
+        onLogged?(result.event)
         dismiss()
     }
 }

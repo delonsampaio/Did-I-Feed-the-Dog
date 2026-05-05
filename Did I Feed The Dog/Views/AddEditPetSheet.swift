@@ -225,6 +225,10 @@ struct AddEditPetSheet: View {
         
         WidgetDataWriter.write(from: modelContext)
         WidgetCenter.shared.reloadAllTimelines()
+        // Refresh Siri's pet vocabulary right away — adding/renaming a dog
+        // here should let "Feed Rex" work without waiting for the dashboard
+        // onChange to fire.
+        DogFoodShortcuts.updateAppShortcutParameters()
         dismiss()
     }
 }

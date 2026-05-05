@@ -1,20 +1,14 @@
 import SwiftUI
 import SwiftData
-import WidgetKit
 
 struct FeedAllDogsSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("stockMode")             private var stockMode: StockMode = .individual
-    @AppStorage("sharedFoodStock")       private var sharedFoodStock = 0
-    @AppStorage("lowStockPushEnabled")   private var lowStockPushEnabled = true
-    @AppStorage("lowStockThreshold")     private var lowStockThreshold = 5
-    @AppStorage("reminderMode")          private var reminderMode: ReminderMode = .none
-    @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
 
-    private var allDogsReminderTimes: [Int] {
-        allDogsReminderTimesRaw.split(separator: ",").compactMap { Int($0) }
-    }
+    // Retained only for the undo path — we need to know which counter to
+    // restore. The service owns the live decrement.
+    @AppStorage("stockMode")        private var stockMode: StockMode = .individual
+    @AppStorage("sharedFoodStock")  private var sharedFoodStock = 0
 
     let pets: [Pet]
     var onLogged: (([FeedingEvent], @escaping () -> Void) -> Void)? = nil
@@ -161,67 +155,32 @@ struct FeedAllDogsSheet: View {
         guard !isSubmitting else { return }
         isSubmitting = true
         UINotificationFeedbackGenerator().notificationOccurred(.success)
-        let mealLabel = resolvedMealLabel
-        let noteText = notes.trimmingCharacters(in: .whitespacesAndNewlines)
-        let logger = LoggedBy.current
+
         let shouldDecrementStock = showCustomField || selectedMealType.decrementsStock
 
+        // Capture stock snapshot for undo BEFORE the service decrements.
         let capturedStockMode = stockMode
         let stocksBefore: [(Pet, Int)] = shouldDecrementStock && stockMode == .individual
             ? pets.map { ($0, $0.foodStockCount) }
             : []
         let sharedStockBefore = sharedFoodStock
 
-        var createdEvents: [FeedingEvent] = []
-        var needsSharedLowStockAlert = false
+        let result = FeedingLogService.logFeedingForAll(
+            pets: pets,
+            mealLabel: resolvedMealLabel,
+            deductsStock: shouldDecrementStock,
+            timestamp: showCustomTime ? logDate : .now,
+            notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
+            logger: LoggedBy.current,
+            in: modelContext
+        )
 
-        for pet in pets {
-            let event = FeedingEvent(timestamp: showCustomTime ? logDate : .now, mealType: mealLabel, notes: noteText, loggedBy: logger, pet: pet)
-            modelContext.insert(event)
-            createdEvents.append(event)
-            
-            NotificationManager.shared.scheduleOverdueNotification(for: pet, lastFedDate: event.timestamp)
-
-            if shouldDecrementStock {
-                switch stockMode {
-                case .individual:
-                    pet.decrementStock()
-                    if pet.foodStockCount <= lowStockThreshold {
-                        UINotificationFeedbackGenerator().notificationOccurred(.warning)
-                        if lowStockPushEnabled {
-                            NotificationManager.shared.scheduleLowStockNotification(for: pet)
-                        }
-                    }
-                case .shared:
-                    sharedFoodStock = max(0, sharedFoodStock - 1)
-                    if sharedFoodStock <= lowStockThreshold {
-                        needsSharedLowStockAlert = true
-                    }
-                case .none:
-                    break
-                }
-            }
-        }
-
-        if needsSharedLowStockAlert {
+        if result.didTriggerLowStock {
             UINotificationFeedbackGenerator().notificationOccurred(.warning)
-            if lowStockPushEnabled {
-                NotificationManager.shared.scheduleSharedLowStockNotification(stockCount: sharedFoodStock)
-            }
         }
-
-        if let firstPet = pets.first {
-            NotificationManager.shared.suppressNextUpcomingReminder(
-                reminderMode: reminderMode,
-                for: firstPet,
-                allDogsReminderTimes: allDogsReminderTimes
-            )
-        }
-
-        WidgetDataWriter.write(from: modelContext)
-        WidgetCenter.shared.reloadAllTimelines()
 
         let context = modelContext
+        let createdEvents = result.events
         let undo: () -> Void = {
             for event in createdEvents { context.delete(event) }
             if shouldDecrementStock {
@@ -235,7 +194,6 @@ struct FeedAllDogsSheet: View {
                 }
             }
             WidgetDataWriter.write(from: context)
-            WidgetCenter.shared.reloadAllTimelines()
         }
 
         onLogged?(createdEvents, undo)

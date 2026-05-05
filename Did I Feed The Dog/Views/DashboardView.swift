@@ -183,6 +183,9 @@ struct DashboardView: View {
             WidgetDataWriter.write(from: modelContext)
             NotificationManager.shared.updateBadgeCount(pets: newPets)
             QuickActionManager.shared.update(with: newPets)
+            // Re-register pet vocabulary so Siri/Shortcuts pick up newly added,
+            // renamed, deleted, or iCloud-synced dogs without an app relaunch.
+            DogFoodShortcuts.updateAppShortcutParameters()
         }
         .onChange(of: feedingEvents) { _, newEvents in
             WidgetDataWriter.write(from: modelContext)

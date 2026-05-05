@@ -17,8 +17,6 @@ struct FeedAllDogsIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         let context = sharedModelContainer.mainContext
-        let loggedByName = UserDefaults.standard.string(forKey: "loggedByName") ?? "Family Member"
-
         let allPets = IntentDataAccess.fetchPets(in: context)
         let eligiblePets = allPets.filter { !$0.isFasting }
 
@@ -30,38 +28,20 @@ struct FeedAllDogsIntent: AppIntent {
             }
         }
 
-        let label = mealType?.label ?? "Meal"
-        let shouldDeductStock = mealType?.deductsStock ?? true
-        let stockModeRaw = UserDefaults.standard.string(forKey: "stockMode") ?? ""
-        let stockMode = StockMode(rawValue: stockModeRaw) ?? .none
+        // When the user doesn't specify a meal ("Feed all dogs"), pick a real
+        // preset based on time of day so history rows aren't tagged "Meal"/Custom.
+        let resolvedMeal = mealType ?? MealTypeAppEnum.defaultForCurrentTime()
 
-        for pet in eligiblePets {
-            let event = FeedingEvent(
-                timestamp: .now,
-                mealType: label,
-                notes: "",
-                loggedBy: loggedByName,
-                pet: pet
-            )
-            context.insert(event)
+        let result = FeedingLogService.logFeedingForAll(
+            pets: eligiblePets,
+            mealLabel: resolvedMeal.label,
+            deductsStock: resolvedMeal.deductsStock,
+            logger: LoggedBy.current,
+            in: context
+        )
 
-            if shouldDeductStock && stockMode == .individual {
-                pet.decrementStock()
-            }
-
-            NotificationManager.shared.scheduleOverdueNotification(for: pet, lastFedDate: .now)
-        }
-
-        if shouldDeductStock && stockMode == .shared {
-            let current = UserDefaults.standard.integer(forKey: "sharedFoodStock")
-            UserDefaults.standard.set(max(0, current - eligiblePets.count), forKey: "sharedFoodStock")
-        }
-
-        WidgetDataWriter.write(from: context)
-        try context.save()
-
-        let count = eligiblePets.count
+        let count = result.events.count
         let dogWord = count == 1 ? "dog" : "dogs"
-        return .result(dialog: "Logged \(label) for \(count) \(dogWord).")
+        return .result(dialog: "Logged \(resolvedMeal.label) for \(count) \(dogWord).")
     }
 }

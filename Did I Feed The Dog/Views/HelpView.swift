@@ -236,6 +236,14 @@ struct HelpView: View {
                 answer: "Yes. Say \"Feed all dogs in Fed The Dog?\", \"Mark all dogs as fed in Fed The Dog?\", or \"I fed all the dogs in Fed The Dog?\". Fasting dogs are automatically skipped."
             )
             FAQRow(
+                question: "What meal type does \"Feed all dogs\" use if I don't say one?",
+                answer: "The app picks one based on the time of day — Breakfast before 11 AM, Lunch from 11 AM to 4 PM, Dinner from 4 PM to 11 PM, and Snack overnight. To override, include the meal type in your phrase, like \"Feed all dogs breakfast in Fed The Dog?\"."
+            )
+            FAQRow(
+                question: "Will Siri recognize a new dog I just added?",
+                answer: "Yes. As soon as you save a new dog (or rename one) in the app, Siri's vocabulary refreshes — \"Feed Rex\" works right away. The same applies after iCloud sync brings dogs in on a fresh install or a second device, as long as you open the app once so Siri sees them."
+            )
+            FAQRow(
                 question: "How do I check if my dog has been fed?",
                 answer: "Say \"Did I feed Luna in Fed The Dog?\", \"Has Luna been fed in Fed The Dog?\", \"Is Luna overdue in Fed The Dog?\", or \"When did Luna last eat in Fed The Dog?\" — include the dog's name and Siri answers directly."
             )
@@ -349,6 +357,8 @@ struct HelpView: View {
             .init(section: "Siri & Shortcuts", question: "Can I use the Action Button to log a meal?", answer: "Yes, on iPhone 15 Pro and later. Go to iPhone Settings -> Action Button, choose Shortcuts, then select \"Log Feeding\" under Fed The Dog?. Press the Action Button to log a meal instantly without unlocking your phone."),
             .init(section: "Siri & Shortcuts", question: "How do I log a feeding with Siri?", answer: "Say \"Feed Luna in Fed The Dog?\", \"Mark Luna as fed in Fed The Dog?\", or \"Log Luna's meal in Fed The Dog?\" — Siri will confirm the dog and ask the meal type. Or say \"Log a Fed The Dog? meal\" and Siri will ask for both."),
             .init(section: "Siri & Shortcuts", question: "Can I feed all my dogs at once with Siri?", answer: "Yes. Say \"Feed all dogs in Fed The Dog?\", \"Mark all dogs as fed in Fed The Dog?\", or \"I fed all the dogs in Fed The Dog?\". Fasting dogs are automatically skipped."),
+            .init(section: "Siri & Shortcuts", question: "What meal type does \"Feed all dogs\" use if I don't say one?", answer: "The app picks one based on the time of day — Breakfast before 11 AM, Lunch from 11 AM to 4 PM, Dinner from 4 PM to 11 PM, and Snack overnight. To override, include the meal type in your phrase, like \"Feed all dogs breakfast in Fed The Dog?\"."),
+            .init(section: "Siri & Shortcuts", question: "Will Siri recognize a new dog I just added?", answer: "Yes. As soon as you save a new dog (or rename one) in the app, Siri's vocabulary refreshes — \"Feed Rex\" works right away. The same applies after iCloud sync brings dogs in on a fresh install or a second device, as long as you open the app once so Siri sees them."),
             .init(section: "Siri & Shortcuts", question: "How do I check if my dog has been fed?", answer: "Say \"Did I feed Luna in Fed The Dog?\", \"Has Luna been fed in Fed The Dog?\", \"Is Luna overdue in Fed The Dog?\", or \"When did Luna last eat in Fed The Dog?\" — include the dog's name and Siri answers directly."),
             .init(section: "Siri & Shortcuts", question: "How do I check food stock with Siri?", answer: "Say \"How much food does Luna have in Fed The Dog?\", \"Check Luna's food stock in Fed The Dog?\", or \"Is Luna's food running low in Fed The Dog?\"."),
             .init(section: "Siri & Shortcuts", question: "How do I update food stock with Siri?", answer: "Say \"Restock Luna's food in Fed The Dog?\", \"Refill Luna's food in Fed The Dog?\", or \"I bought more dog food in Fed The Dog?\". Siri will ask how many portions you added and update the count."),
