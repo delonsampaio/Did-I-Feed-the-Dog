@@ -229,19 +229,23 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "How do I log a feeding with Siri?",
-                answer: "Say \"Log a Fed The Dog? meal\" and Siri will ask which dog and meal type. To skip the follow-up question, include the dog's name: \"Log Luna's meal in Fed The Dog?\" or \"Mark Luna as fed in Fed The Dog?\"."
+                answer: "Say \"Feed Luna in Fed The Dog?\", \"Log Luna's meal in Fed The Dog?\", or \"Mark Luna as fed in Fed The Dog?\" — include the dog's name and Siri logs it instantly. Or say \"Log a Fed The Dog? meal\" and Siri will ask which dog and meal type."
             )
             FAQRow(
                 question: "Can I feed all my dogs at once with Siri?",
-                answer: "Yes. Say \"Feed all dogs in Fed The Dog?\" or \"Mark all dogs as fed in Fed The Dog?\". Fasting dogs are automatically skipped."
+                answer: "Yes. Say \"Feed all dogs in Fed The Dog?\", \"Mark all dogs as fed in Fed The Dog?\", or \"I fed all the dogs in Fed The Dog?\". Fasting dogs are automatically skipped."
             )
             FAQRow(
                 question: "How do I check if my dog has been fed?",
-                answer: "Say \"Did I feed Luna in Fed The Dog?\" — include the dog's name in the phrase and Siri will answer directly without asking which dog."
+                answer: "Say \"Did I feed Luna in Fed The Dog?\", \"Has Luna been fed in Fed The Dog?\", \"Is Luna overdue in Fed The Dog?\", or \"When did Luna last eat in Fed The Dog?\" — include the dog's name and Siri answers directly."
+            )
+            FAQRow(
+                question: "How do I check food stock with Siri?",
+                answer: "Say \"How much food does Luna have in Fed The Dog?\", \"Check Luna's food stock in Fed The Dog?\", or \"Is Luna's food running low in Fed The Dog?\"."
             )
             FAQRow(
                 question: "How do I update food stock with Siri?",
-                answer: "Say \"Restock Luna's food in Fed The Dog?\" or \"Add food for Luna in Fed The Dog?\". Siri will ask how many portions you added and update the count."
+                answer: "Say \"Restock Luna's food in Fed The Dog?\", \"Refill Luna's food in Fed The Dog?\", or \"I bought more dog food in Fed The Dog?\". Siri will ask how many portions you added and update the count."
             )
             FAQRow(
                 question: "Can I add these as shortcuts in the Shortcuts app?",
@@ -343,10 +347,11 @@ struct HelpView: View {
             .init(section: "Feeding Reminders", question: "How many reminder times can I set?", answer: "Up to 3 daily reminder times per schedule. Most households need a morning and evening reminder, but a midday one is available too."),
             .init(section: "Feeding Reminders", question: "Will reminders stop firing if I already fed my dog?", answer: "Yes. When you log a feeding, the next scheduled reminder for that dog is automatically cancelled. Any later reminders that day still fire as normal. Reminders are fully restored the next time you open the app."),
             .init(section: "Siri & Shortcuts", question: "Can I use the Action Button to log a meal?", answer: "Yes, on iPhone 15 Pro and later. Go to iPhone Settings -> Action Button, choose Shortcuts, then select \"Log Feeding\" under Fed The Dog?. Press the Action Button to log a meal instantly without unlocking your phone."),
-            .init(section: "Siri & Shortcuts", question: "How do I log a feeding with Siri?", answer: "Say \"Log a Fed The Dog? meal\" and Siri will ask which dog and meal type. To skip the follow-up question, include the dog's name: \"Log Luna's meal in Fed The Dog?\" or \"Mark Luna as fed in Fed The Dog?\"."),
-            .init(section: "Siri & Shortcuts", question: "Can I feed all my dogs at once with Siri?", answer: "Yes. Say \"Feed all dogs in Fed The Dog?\" or \"Mark all dogs as fed in Fed The Dog?\". Fasting dogs are automatically skipped."),
-            .init(section: "Siri & Shortcuts", question: "How do I check if my dog has been fed?", answer: "Say \"Did I feed Luna in Fed The Dog?\" — include the dog's name in the phrase and Siri will answer directly without asking which dog."),
-            .init(section: "Siri & Shortcuts", question: "How do I update food stock with Siri?", answer: "Say \"Restock Luna's food in Fed The Dog?\" or \"Add food for Luna in Fed The Dog?\". Siri will ask how many portions you added and update the count."),
+            .init(section: "Siri & Shortcuts", question: "How do I log a feeding with Siri?", answer: "Say \"Feed Luna in Fed The Dog?\", \"Log Luna's meal in Fed The Dog?\", or \"Mark Luna as fed in Fed The Dog?\" — include the dog's name and Siri logs it instantly. Or say \"Log a Fed The Dog? meal\" and Siri will ask which dog and meal type."),
+            .init(section: "Siri & Shortcuts", question: "Can I feed all my dogs at once with Siri?", answer: "Yes. Say \"Feed all dogs in Fed The Dog?\", \"Mark all dogs as fed in Fed The Dog?\", or \"I fed all the dogs in Fed The Dog?\". Fasting dogs are automatically skipped."),
+            .init(section: "Siri & Shortcuts", question: "How do I check if my dog has been fed?", answer: "Say \"Did I feed Luna in Fed The Dog?\", \"Has Luna been fed in Fed The Dog?\", \"Is Luna overdue in Fed The Dog?\", or \"When did Luna last eat in Fed The Dog?\" — include the dog's name and Siri answers directly."),
+            .init(section: "Siri & Shortcuts", question: "How do I check food stock with Siri?", answer: "Say \"How much food does Luna have in Fed The Dog?\", \"Check Luna's food stock in Fed The Dog?\", or \"Is Luna's food running low in Fed The Dog?\"."),
+            .init(section: "Siri & Shortcuts", question: "How do I update food stock with Siri?", answer: "Say \"Restock Luna's food in Fed The Dog?\", \"Refill Luna's food in Fed The Dog?\", or \"I bought more dog food in Fed The Dog?\". Siri will ask how many portions you added and update the count."),
             .init(section: "Siri & Shortcuts", question: "Can I add these as shortcuts in the Shortcuts app?", answer: "Yes. Open the Shortcuts app, tap the + button, and search for Fed The Dog? to see all available actions. You can also go to iPhone Settings -> Siri & Search -> Fed The Dog? to manage them."),
             .init(section: "Siri & Shortcuts", question: "Do I always have to say \"in Did I Feed the Dog?\" at the end?", answer: "Not forever. After a few uses, Siri learns your patterns and can recognize the intent without the full app name — so \"Did I feed Luna?\" may work on its own. This happens automatically through Siri Suggestions."),
             .init(section: "iCloud Sync", question: "Does my data sync across devices?", answer: "Yes. If everyone in your household is signed into the same iCloud account, feedings, food stock, and dog info stay in sync across all your iPhones automatically. Changes usually appear within about a minute."),
