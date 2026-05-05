@@ -7,8 +7,8 @@ struct LogFeedingIntent: AppIntent {
     static var description = IntentDescription("Quickly log a meal for one of your dogs.")
     static var openAppWhenRun: Bool = false
 
-    @Parameter(title: "Dog")
-    var pet: PetEntity?
+    @Parameter(title: "Dog", requestValueDialog: IntentDialog("Which dog did you feed?"))
+    var pet: PetEntity
 
     @Parameter(title: "Meal Type")
     var mealType: MealTypeAppEnum?
@@ -20,13 +20,11 @@ struct LogFeedingIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         let context = sharedModelContainer.mainContext
-        
-        // Pulling name from storage for the intent process
+
         let loggedByName = UserDefaults.standard.string(forKey: "loggedByName") ?? "Family Member"
-        
-        guard let petEntity = pet,
-              let modelPet = IntentDataAccess.fetchPets(in: context).first(where: { $0.id == petEntity.id }) else {
-            return .result(dialog: "Which dog did you feed?")
+
+        guard let modelPet = IntentDataAccess.fetchPets(in: context).first(where: { $0.id == pet.id }) else {
+            return .result(dialog: "Couldn't find \(pet.name) in the app.")
         }
         
         let label = mealType?.rawValue ?? "Meal"

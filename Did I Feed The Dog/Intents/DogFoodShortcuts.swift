@@ -6,8 +6,10 @@ struct DogFoodShortcuts: AppShortcutsProvider {
             intent: LogFeedingIntent(),
             phrases: [
                 "Log a \(.applicationName) meal",
-                "Log feeding in \(.applicationName)",
-                "I fed the dog in \(.applicationName)"
+                "Log a meal in \(.applicationName)",
+                "Record a feeding in \(.applicationName)",
+                "Mark \(\.$pet) as fed in \(.applicationName)",
+                "Log \(\.$pet)'s meal in \(.applicationName)"
             ],
             shortTitle: "Log Feeding",
             systemImageName: "dog.fill"
