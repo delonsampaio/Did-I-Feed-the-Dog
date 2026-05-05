@@ -30,7 +30,8 @@ struct FeedAllDogsIntent: AppIntent {
             }
         }
 
-        let label = mealType?.rawValue ?? "Meal"
+        let label = mealType?.label ?? "Meal"
+        let shouldDeductStock = mealType?.deductsStock ?? true
         let stockModeRaw = UserDefaults.standard.string(forKey: "stockMode") ?? ""
         let stockMode = StockMode(rawValue: stockModeRaw) ?? .none
 
@@ -44,14 +45,14 @@ struct FeedAllDogsIntent: AppIntent {
             )
             context.insert(event)
 
-            if stockMode == .individual {
+            if shouldDeductStock && stockMode == .individual {
                 pet.decrementStock()
             }
 
             NotificationManager.shared.scheduleOverdueNotification(for: pet, lastFedDate: .now)
         }
 
-        if stockMode == .shared {
+        if shouldDeductStock && stockMode == .shared {
             let current = UserDefaults.standard.integer(forKey: "sharedFoodStock")
             UserDefaults.standard.set(max(0, current - eligiblePets.count), forKey: "sharedFoodStock")
         }

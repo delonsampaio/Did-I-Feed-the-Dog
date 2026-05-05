@@ -10,8 +10,8 @@ struct LogFeedingIntent: AppIntent {
     @Parameter(title: "Dog", requestValueDialog: IntentDialog("Which dog did you feed?"))
     var pet: PetEntity
 
-    @Parameter(title: "Meal Type")
-    var mealType: MealTypeAppEnum?
+    @Parameter(title: "Meal Type", requestValueDialog: IntentDialog("What type of meal?"))
+    var mealType: MealTypeAppEnum
 
     static var parameterSummary: some ParameterSummary {
         Summary("Log \(\.$mealType) for \(\.$pet)")
@@ -31,7 +31,7 @@ struct LogFeedingIntent: AppIntent {
             return .result(dialog: "\(modelPet.name ?? "That dog") is currently fasting and can't be fed.")
         }
 
-        let label = mealType?.rawValue ?? "Meal"
+        let label = mealType.label
 
         let event = FeedingEvent(
             timestamp: .now,
@@ -40,18 +40,20 @@ struct LogFeedingIntent: AppIntent {
             loggedBy: loggedByName,
             pet: modelPet
         )
-        
+
         context.insert(event)
-        
-        let stockModeRaw = UserDefaults.standard.string(forKey: "stockMode") ?? ""
-        switch StockMode(rawValue: stockModeRaw) ?? .none {
-        case .individual:
-            modelPet.decrementStock()
-        case .shared:
-            let current = UserDefaults.standard.integer(forKey: "sharedFoodStock")
-            UserDefaults.standard.set(max(0, current - 1), forKey: "sharedFoodStock")
-        case .none:
-            break
+
+        if mealType.deductsStock {
+            let stockModeRaw = UserDefaults.standard.string(forKey: "stockMode") ?? ""
+            switch StockMode(rawValue: stockModeRaw) ?? .none {
+            case .individual:
+                modelPet.decrementStock()
+            case .shared:
+                let current = UserDefaults.standard.integer(forKey: "sharedFoodStock")
+                UserDefaults.standard.set(max(0, current - 1), forKey: "sharedFoodStock")
+            case .none:
+                break
+            }
         }
 
         NotificationManager.shared.scheduleOverdueNotification(for: modelPet, lastFedDate: .now)
