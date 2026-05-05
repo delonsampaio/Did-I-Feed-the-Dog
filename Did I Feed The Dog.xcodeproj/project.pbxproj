@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		148947642FA04F480031F35C /* DidIFeedTheDogWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1489474A2FA04F460031F35C /* DidIFeedTheDogWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1489474D2FA04F470031F35C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1489474C2FA04F460031F35C /* WidgetKit.framework */; };
 		1489474F2FA04F470031F35C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1489474E2FA04F470031F35C /* SwiftUI.framework */; };
+		148947642FA04F480031F35C /* DidIFeedTheDogWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1489474A2FA04F460031F35C /* DidIFeedTheDogWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -73,9 +73,11 @@
 		1489477F2FA05A810031F35C /* Exceptions for "Did I Feed The Dog" folder in "DidIFeedTheDogWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Assets.xcassets,
 				Models/FeedingEvent.swift,
 				Models/MealType.swift,
 				Models/Pet.swift,
+				Utilities/DefaultAvatars.swift,
 			);
 			target = 148947492FA04F460031F35C /* DidIFeedTheDogWidgetExtension */;
 		};
