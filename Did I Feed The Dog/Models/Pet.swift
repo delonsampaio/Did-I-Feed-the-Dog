@@ -44,24 +44,55 @@ final class Pet {
         (feedingEvents ?? []).max(by: { $0.timestamp < $1.timestamp })
     }
 
-    var isFeedingOverdue: Bool {
-        // Fasting dogs are never marked as overdue
-        if isFasting { return false }
-        
-        let modeRaw = UserDefaults.standard.string(forKey: "reminderMode") ?? ""
+    /// Returns the most recent feedings, newest first. Used by the card's
+    /// 3-row mini history. Pulls from the cached relationship so no fetch
+    /// hits the store; the cost is a single sort over the pet's events.
+    func recentFeedings(limit: Int) -> [FeedingEvent] {
+        let events = feedingEvents ?? []
+        guard events.count > limit else {
+            return events.sorted { $0.timestamp > $1.timestamp }
+        }
+        return Array(events.sorted { $0.timestamp > $1.timestamp }.prefix(limit))
+    }
 
-        if modeRaw == "allDogs" {
-            let raw = UserDefaults.standard.string(forKey: "allDogsReminderTimesRaw") ?? ""
-            let times = raw.split(separator: ",").compactMap { Int($0) }.sorted()
+    /// Snapshot of settings needed to compute `isFeedingOverdue`. Building the
+    /// snapshot once per render and passing it to N pets avoids re-reading
+    /// UserDefaults inside the SwiftData property accessor on every redraw.
+    struct OverdueContext {
+        let reminderMode: ReminderMode
+        let allDogsReminderTimes: [Int]
+        let overdueThresholdHours: Int
+
+        static var current: OverdueContext {
+            OverdueContext(
+                reminderMode: AppSettings.reminderMode,
+                allDogsReminderTimes: AppSettings.allDogsReminderTimes,
+                overdueThresholdHours: AppSettings.overdueThresholdHours
+            )
+        }
+    }
+
+    var isFeedingOverdue: Bool {
+        isFeedingOverdue(using: .current)
+    }
+
+    func isFeedingOverdue(using ctx: OverdueContext) -> Bool {
+        // Fasting dogs are never marked as overdue.
+        if isFasting { return false }
+
+        switch ctx.reminderMode {
+        case .allDogs:
+            let times = ctx.allDogsReminderTimes.sorted()
             if !times.isEmpty { return isOverdueForSchedule(times) }
-        } else if modeRaw == "perDog" {
+        case .perDog:
             let times = feedingScheduleTimes.sorted()
             if !times.isEmpty { return isOverdueForSchedule(times) }
+        case .none:
+            break
         }
 
         guard let last = lastFeedingEvent else { return true }
-        let hours = max(1, UserDefaults.standard.integer(forKey: "overdueThresholdHours"))
-        return Date().timeIntervalSince(last.timestamp) >= Double(hours) * 3600
+        return Date().timeIntervalSince(last.timestamp) >= Double(ctx.overdueThresholdHours) * 3600
     }
 
     private func isOverdueForSchedule(_ times: [Int]) -> Bool {

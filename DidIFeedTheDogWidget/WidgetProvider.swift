@@ -1,14 +1,29 @@
 import WidgetKit
 import Foundation
 
+// Widget-extension-local tuning knobs. Mirrors values in the app's
+// AppConstants — the two targets can't share Swift types without project-file
+// changes, so keep these in lockstep manually.
+enum WidgetTuning {
+    static let refreshInterval: TimeInterval = 3600
+    static let maxFutureEntries = 5
+}
+
 struct Provider: TimelineProvider {
 
     func placeholder(in context: Context) -> WidgetEntry {
-        WidgetEntry(date: .now, pets: [
+        // Prefer the user's actual dogs (gallery preview personalizes nicely);
+        // fall back to a fixed "Max"/"Bailey" pair before any pets are added.
+        let real = Self.fetchPetSnapshots()
+        if !real.isEmpty {
+            return WidgetEntry(date: .now, pets: real)
+        }
+        let now = Date()
+        return WidgetEntry(date: now, pets: [
             PetSnapshot(data: PetWidgetData(id: UUID(), name: "Max", photoData: nil,
-                        lastFedDate: Date().addingTimeInterval(-1800), isFasting: false, scheduleTimes: [], thresholdHours: 12)),
+                        lastFedDate: now.addingTimeInterval(-1800), isFasting: false, scheduleTimes: [], thresholdHours: 12)),
             PetSnapshot(data: PetWidgetData(id: UUID(), name: "Bailey", photoData: nil,
-                        lastFedDate: Date().addingTimeInterval(-32400), isFasting: false, scheduleTimes: [], thresholdHours: 12))
+                        lastFedDate: now.addingTimeInterval(-32400), isFasting: false, scheduleTimes: [], thresholdHours: 12))
         ])
     }
 
@@ -19,24 +34,26 @@ struct Provider: TimelineProvider {
     func getTimeline(in context: Context, completion: @escaping (Timeline<WidgetEntry>) -> Void) {
         let petsData = WidgetDataStore.load()
         let now = Date()
-        
+
         var entries: [WidgetEntry] = []
         entries.append(WidgetEntry(date: now, pets: Self.fetchPetSnapshots(data: petsData, at: now)))
-        
-        // Find future overdue times
+
+        // Schedule extra entries at the moments dogs would flip overdue, so
+        // the widget visually changes state without waiting for the hourly
+        // refresh policy.
         var futureDates = Set<Date>()
         for pet in petsData {
             if let nextDate = PetSnapshot.nextOverdueDate(for: pet, after: now) {
                 futureDates.insert(nextDate)
             }
         }
-        
-        let sortedFutureDates = futureDates.sorted().prefix(5) // Max 5 future entries
+
+        let sortedFutureDates = futureDates.sorted().prefix(WidgetTuning.maxFutureEntries)
         for date in sortedFutureDates {
             entries.append(WidgetEntry(date: date, pets: Self.fetchPetSnapshots(data: petsData, at: date)))
         }
-        
-        let next = Date().addingTimeInterval(3600)
+
+        let next = now.addingTimeInterval(WidgetTuning.refreshInterval)
         completion(Timeline(entries: entries, policy: .after(next)))
     }
 

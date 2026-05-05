@@ -12,8 +12,17 @@ struct CircularWidgetView: View {
             AccessoryWidgetBackground()
             VStack(spacing: 1) {
                 Text("🐾").font(.system(size: 18))
-                Text("\(entry.fedCount)/\(entry.pets.count)")
-                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                if entry.pets.isEmpty {
+                    // "0/0" looks broken — use an em dash placeholder until
+                    // the user actually has dogs.
+                    Text("—")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .accessibilityLabel("No dogs added yet")
+                } else {
+                    Text("\(entry.fedCount)/\(entry.pets.count)")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .accessibilityLabel("\(entry.fedCount) of \(entry.pets.count) dogs fed")
+                }
             }
         }
     }
@@ -24,11 +33,9 @@ struct CircularWidgetView: View {
 struct RectangularWidgetView: View {
     let entry: WidgetEntry
 
-    private let deepLinkBase = "didfeedthedog://log?petId="
-
     var body: some View {
         if let pet = entry.mostOverdue {
-            Link(destination: deepLinkURL(for: pet.id)) {
+            Link(destination: WidgetDeepLink.url(for: pet.id)) {
                 HStack(spacing: 8) {
                     Text("🐾").font(.title3)
                     VStack(alignment: .leading, spacing: 2) {
@@ -50,10 +57,6 @@ struct RectangularWidgetView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
-    }
-
-    private func deepLinkURL(for petId: UUID) -> URL {
-        URL(string: deepLinkBase + petId.uuidString)!
     }
 
     private static let relativeFormatter: RelativeDateTimeFormatter = {

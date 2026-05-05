@@ -5,15 +5,9 @@ import WidgetKit
 struct SmallWidgetView: View {
     let entry: WidgetEntry
 
-    private let deepLinkBase = "didfeedthedog://log?petId="
-
-    private func deepLinkURL(for petId: UUID) -> URL {
-        URL(string: deepLinkBase + petId.uuidString)!
-    }
-
     var body: some View {
         if let pet = entry.mostOverdue {
-            Link(destination: deepLinkURL(for: pet.id)) {
+            Link(destination: WidgetDeepLink.url(for: pet.id)) {
                 filledView(pet: pet)
             }
         } else {

@@ -188,7 +188,7 @@ struct FeedAllDogsSheet: View {
                 case .individual:
                     for (pet, original) in stocksBefore { pet.foodStockCount = original }
                 case .shared:
-                    UserDefaults.standard.set(sharedStockBefore, forKey: "sharedFoodStock")
+                    AppSettings.sharedFoodStock = sharedStockBefore
                 case .none:
                     break
                 }

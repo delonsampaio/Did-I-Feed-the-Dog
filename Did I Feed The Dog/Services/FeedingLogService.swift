@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import SwiftData
 
 // Shared feeding-log path used by the in-app sheets, AppIntents, quick actions,
@@ -9,6 +10,8 @@ import SwiftData
 // "Siri-logged meals don't suppress reminders / don't warn on low stock" bugs.
 @MainActor
 enum FeedingLogService {
+
+    private static let logger = Logger(subsystem: "com.delon.DidIFeedTheDog", category: "FeedingLog")
 
     struct LogResult {
         let event: FeedingEvent
@@ -33,12 +36,15 @@ enum FeedingLogService {
         logger: String,
         in context: ModelContext
     ) -> LogResult {
+        let didDeduct = deductsStock && AppSettings.stockMode != .none
+
         let event = FeedingEvent(
             timestamp: timestamp,
             mealType: mealLabel,
             notes: notes,
             loggedBy: logger,
-            pet: pet
+            pet: pet,
+            didDeductStock: didDeduct
         )
         context.insert(event)
 
@@ -46,8 +52,9 @@ enum FeedingLogService {
         NotificationManager.shared.scheduleOverdueNotification(for: pet, lastFedDate: timestamp)
         suppressNextReminder(for: pet)
 
-        try? context.save()
+        save(context)
         WidgetDataWriter.write(from: context)
+        refreshBadge(in: context)
 
         return LogResult(event: event, didTriggerLowStock: triggered)
     }
@@ -64,7 +71,8 @@ enum FeedingLogService {
         var created: [FeedingEvent] = []
         var sharedTriggered = false
         var anyIndividualTriggered = false
-        let mode = currentStockMode
+        let mode = AppSettings.stockMode
+        let didDeduct = deductsStock && mode != .none
 
         for pet in pets {
             let event = FeedingEvent(
@@ -72,7 +80,8 @@ enum FeedingLogService {
                 mealType: mealLabel,
                 notes: notes,
                 loggedBy: logger,
-                pet: pet
+                pet: pet,
+                didDeductStock: didDeduct
             )
             context.insert(event)
             created.append(event)
@@ -83,32 +92,33 @@ enum FeedingLogService {
             switch mode {
             case .individual:
                 pet.decrementStock()
-                if pet.foodStockCount <= lowStockThreshold {
+                if pet.foodStockCount <= AppSettings.lowStockThreshold {
                     anyIndividualTriggered = true
-                    if lowStockPushEnabled {
+                    if AppSettings.lowStockPushEnabled {
                         NotificationManager.shared.scheduleLowStockNotification(for: pet)
                     }
                 }
             case .shared:
-                let next = max(0, currentSharedStock - 1)
-                UserDefaults.standard.set(next, forKey: "sharedFoodStock")
-                if next <= lowStockThreshold { sharedTriggered = true }
+                let next = max(0, AppSettings.sharedFoodStock - 1)
+                AppSettings.sharedFoodStock = next
+                if next <= AppSettings.lowStockThreshold { sharedTriggered = true }
             case .none:
                 break
             }
         }
 
         // One shared-pool low-stock alert per batch — matches FeedAllDogsSheet.
-        if deductsStock, mode == .shared, sharedTriggered, lowStockPushEnabled {
-            NotificationManager.shared.scheduleSharedLowStockNotification(stockCount: currentSharedStock)
+        if deductsStock, mode == .shared, sharedTriggered, AppSettings.lowStockPushEnabled {
+            NotificationManager.shared.scheduleSharedLowStockNotification(stockCount: AppSettings.sharedFoodStock)
         }
 
         if let first = pets.first {
             suppressNextReminder(for: first)
         }
 
-        try? context.save()
+        save(context)
         WidgetDataWriter.write(from: context)
+        refreshBadge(in: context)
 
         return BatchResult(events: created, didTriggerLowStock: sharedTriggered || anyIndividualTriggered)
     }
@@ -118,19 +128,19 @@ enum FeedingLogService {
     @discardableResult
     private static func applyStockSideEffects(for pet: Pet, deductsStock: Bool) -> Bool {
         guard deductsStock else { return false }
-        switch currentStockMode {
+        switch AppSettings.stockMode {
         case .individual:
             pet.decrementStock()
-            let triggered = pet.foodStockCount <= lowStockThreshold
-            if triggered, lowStockPushEnabled {
+            let triggered = pet.foodStockCount <= AppSettings.lowStockThreshold
+            if triggered, AppSettings.lowStockPushEnabled {
                 NotificationManager.shared.scheduleLowStockNotification(for: pet)
             }
             return triggered
         case .shared:
-            let next = max(0, currentSharedStock - 1)
-            UserDefaults.standard.set(next, forKey: "sharedFoodStock")
-            let triggered = next <= lowStockThreshold
-            if triggered, lowStockPushEnabled {
+            let next = max(0, AppSettings.sharedFoodStock - 1)
+            AppSettings.sharedFoodStock = next
+            let triggered = next <= AppSettings.lowStockThreshold
+            if triggered, AppSettings.lowStockPushEnabled {
                 NotificationManager.shared.scheduleSharedLowStockNotification(stockCount: next)
             }
             return triggered
@@ -140,33 +150,25 @@ enum FeedingLogService {
     }
 
     private static func suppressNextReminder(for pet: Pet) {
-        let modeRaw = UserDefaults.standard.string(forKey: "reminderMode") ?? ""
-        guard let mode = ReminderMode(rawValue: modeRaw) else { return }
-        let times = (UserDefaults.standard.string(forKey: "allDogsReminderTimesRaw") ?? "")
-            .split(separator: ",")
-            .compactMap { Int($0) }
+        let mode = AppSettings.reminderMode
+        guard mode != .none else { return }
         NotificationManager.shared.suppressNextUpcomingReminder(
             reminderMode: mode,
             for: pet,
-            allDogsReminderTimes: times
+            allDogsReminderTimes: AppSettings.allDogsReminderTimes
         )
     }
 
-    private static var currentStockMode: StockMode {
-        StockMode(rawValue: UserDefaults.standard.string(forKey: "stockMode") ?? "") ?? .none
+    private static func save(_ context: ModelContext) {
+        do {
+            try context.save()
+        } catch {
+            logger.error("Failed to save context after feeding log: \(error.localizedDescription, privacy: .public)")
+        }
     }
 
-    private static var currentSharedStock: Int {
-        UserDefaults.standard.integer(forKey: "sharedFoodStock")
-    }
-
-    // Mirrors the @AppStorage default in SettingsView.
-    private static var lowStockThreshold: Int {
-        let stored = UserDefaults.standard.integer(forKey: "lowStockThreshold")
-        return stored == 0 ? 5 : stored
-    }
-
-    private static var lowStockPushEnabled: Bool {
-        UserDefaults.standard.object(forKey: "lowStockPushEnabled") as? Bool ?? true
+    private static func refreshBadge(in context: ModelContext) {
+        let pets = (try? context.fetch(FetchDescriptor<Pet>())) ?? []
+        NotificationManager.shared.updateBadgeCount(pets: pets)
     }
 }

@@ -39,10 +39,21 @@ final class PetTests: XCTestCase {
         XCTAssertEqual(pet.ageString, "2 years")
     }
 
-    func testAgeStringLessThanAMonth() throws {
+    func testAgeStringPuppyForUnderOneYear() throws {
         let birthday = Date(timeIntervalSinceNow: -(3 * 24 * 3600)) // 3 days ago
         let pet = Pet(name: "Max", birthday: birthday)
-        XCTAssertEqual(pet.ageString, "Less than a month")
+        XCTAssertEqual(pet.ageString, "Puppy")
+    }
+
+    func testAgeStringPuppyForElevenMonths() throws {
+        let birthday = Calendar.current.date(byAdding: .month, value: -11, to: .now)!
+        let pet = Pet(name: "Max", birthday: birthday)
+        XCTAssertEqual(pet.ageString, "Puppy")
+    }
+
+    func testAgeStringEmptyWhenNoBirthday() throws {
+        let pet = Pet()
+        XCTAssertEqual(pet.ageString, "")
     }
 
     func testIsFeedingOverdueWhenNeverFed() throws {

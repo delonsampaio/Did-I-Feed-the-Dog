@@ -109,8 +109,13 @@ final class NotificationManager {
     }
 
     func updateBadgeCount(pets: [Pet]) {
-        let enabled = UserDefaults.standard.object(forKey: "badgeEnabled") as? Bool ?? true
-        let count = enabled ? pets.filter { $0.isFeedingOverdue }.count : 0
+        guard AppSettings.badgeEnabled else {
+            Task { try? await UNUserNotificationCenter.current().setBadgeCount(0) }
+            return
+        }
+        // Build the overdue context once and reuse for every pet.
+        let ctx = Pet.OverdueContext.current
+        let count = pets.filter { $0.isFeedingOverdue(using: ctx) }.count
         Task { try? await UNUserNotificationCenter.current().setBadgeCount(count) }
     }
 

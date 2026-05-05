@@ -1,6 +1,6 @@
+import AppIntents
 import SwiftUI
 import SwiftData
-import WidgetKit
 
 struct OnboardingView: View {
     @Environment(\.modelContext) private var modelContext
@@ -9,7 +9,11 @@ struct OnboardingView: View {
     @AppStorage("reminderMode")            private var reminderMode: ReminderMode = .none
     @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
 
-    @State private var step = 0
+    private enum OnboardingStep: Int, CaseIterable {
+        case welcome = 0, addDog, sync, reminder, done
+    }
+
+    @State private var step: OnboardingStep = .welcome
     @State private var dogNames: [String] = [""]
     @State private var reminderEnabled = false
     @State private var reminderTime: Date = {
@@ -28,11 +32,11 @@ struct OnboardingView: View {
 
                 Group {
                     switch step {
-                    case 0: welcomeStep
-                    case 1: addDogStep
-                    case 2: syncStep
-                    case 3: reminderStep
-                    default: doneStep
+                    case .welcome:  welcomeStep
+                    case .addDog:   addDogStep
+                    case .sync:     syncStep
+                    case .reminder: reminderStep
+                    case .done:     doneStep
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -59,15 +63,15 @@ struct OnboardingView: View {
 
     private var progressDots: some View {
         HStack(spacing: 8) {
-            ForEach(0..<5) { i in
+            ForEach(OnboardingStep.allCases, id: \.self) { s in
                 Capsule()
-                    .fill(i == step ? Color.accentColor : Color.secondary.opacity(0.25))
-                    .frame(width: i == step ? 24 : 8, height: 8)
+                    .fill(s == step ? Color.accentColor : Color.secondary.opacity(0.25))
+                    .frame(width: s == step ? 24 : 8, height: 8)
                     .animation(reduceMotion ? nil : .easeInOut(duration: 0.25), value: step)
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Step \(step + 1) of 5")
+        .accessibilityLabel("Step \(step.rawValue + 1) of \(OnboardingStep.allCases.count)")
     }
 
     // MARK: - Steps
@@ -231,7 +235,7 @@ struct OnboardingView: View {
     private var bottomButtons: some View {
         VStack(spacing: 12) {
             Button(action: advance) {
-                Text(step == 4 ? "Get Started" : "Next")
+                Text(step == .done ? "Get Started" : "Next")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
@@ -241,17 +245,19 @@ struct OnboardingView: View {
             }
             .disabled(!canAdvance)
 
-            if step == 3 {
+            if step == .reminder {
                 Button("Skip for now") {
-                    stepAnimate { step = 4 }
+                    stepAnimate { step = .done }
                 }
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             }
 
-            if step > 0 && step < 4 {
+            if step != .welcome && step != .done {
                 Button("Back") {
-                    stepAnimate { step -= 1 }
+                    stepAnimate {
+                        if let prev = OnboardingStep(rawValue: step.rawValue - 1) { step = prev }
+                    }
                 }
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
@@ -288,7 +294,7 @@ struct OnboardingView: View {
     }
 
     private var canAdvance: Bool {
-        if step == 1 {
+        if step == .addDog {
             return dogNames.contains { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
         }
         return true
@@ -300,25 +306,34 @@ struct OnboardingView: View {
 
     private func advance() {
         switch step {
-        case 1:
-            stepAnimate { step = 2 }
-        case 3:
-            stepAnimate { step = 4 }
-        case 4:
+        case .done:
             saveDog()
             saveReminder()
             WidgetDataWriter.write(from: modelContext)
-            WidgetCenter.shared.reloadAllTimelines()
+            // Refresh Siri's pet vocabulary so the dogs created here are
+            // immediately addressable by name.
+            DogFoodShortcuts.updateAppShortcutParameters()
+            // Always request notification authorization once at the end of
+            // onboarding — even if the user skipped the reminder step — so
+            // overdue / low-stock / birthday pushes can fire later.
+            Task { await NotificationManager.shared.requestAuthorization() }
             dismiss()
         default:
-            stepAnimate { step += 1 }
+            stepAnimate {
+                if let next = OnboardingStep(rawValue: step.rawValue + 1) { step = next }
+            }
         }
     }
 
     private func saveDog() {
-        for name in dogNames {
-            let trimmed = name.trimmingCharacters(in: .whitespaces)
+        // Trim, drop empties, dedupe (case-insensitive) so the user can't end
+        // up with two "Buster"s from typo-doubling.
+        var seen = Set<String>()
+        for raw in dogNames {
+            let trimmed = raw.trimmingCharacters(in: .whitespaces)
             guard !trimmed.isEmpty else { continue }
+            let key = trimmed.lowercased()
+            guard seen.insert(key).inserted else { continue }
             modelContext.insert(Pet(name: trimmed))
         }
     }

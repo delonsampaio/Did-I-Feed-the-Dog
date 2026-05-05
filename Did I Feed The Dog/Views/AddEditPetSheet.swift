@@ -1,7 +1,7 @@
+import AppIntents
 import SwiftUI
 import SwiftData
 import PhotosUI
-import WidgetKit
 
 struct AddEditPetSheet: View {
     @Environment(\.modelContext) private var modelContext
@@ -13,13 +13,14 @@ struct AddEditPetSheet: View {
     var pet: Pet?
 
     @State private var name = ""
+    @State private var hasBirthday = false
     @State private var birthday = Date()
     @State private var foodStockCount = 0
     @State private var photoData: Data?
     @State private var selectedAvatarName: String?
     @State private var showAvatarPicker = false
     @State private var feedingTimes: [Date] = []
-    
+
     // Feature #22
     @State private var isFasting = false
 
@@ -28,7 +29,10 @@ struct AddEditPetSheet: View {
             Form {
                 Section("Dog Info") {
                     TextField("Name", text: $name)
-                    DatePicker("Birthday", selection: $birthday, in: ...Date.now, displayedComponents: .date)
+                    Toggle("Add Birthday", isOn: $hasBirthday.animation())
+                    if hasBirthday {
+                        DatePicker("Birthday", selection: $birthday, in: ...Date.now, displayedComponents: .date)
+                    }
                 }
 
                 Section("Photo") {
@@ -162,10 +166,16 @@ struct AddEditPetSheet: View {
     private func prefillIfEditing() {
         guard let pet else { return }
         name = pet.name ?? ""
-        birthday = pet.birthday ?? Date()
+        if let stored = pet.birthday {
+            hasBirthday = true
+            birthday = stored
+        } else {
+            hasBirthday = false
+            birthday = Date()
+        }
         foodStockCount = pet.foodStockCount
         photoData = pet.photoData
-        isFasting = pet.isFasting //
+        isFasting = pet.isFasting
         feedingTimes = pet.feedingScheduleTimes.map { minutes in
             Calendar.current.date(bySettingHour: minutes / 60, minute: minutes % 60, second: 0, of: .now) ?? .now
         }
@@ -182,6 +192,7 @@ struct AddEditPetSheet: View {
 
     private func save() {
         let trimmedName = name.trimmingCharacters(in: .whitespaces)
+        let resolvedBirthday: Date? = hasBirthday ? birthday : nil
         let times = feedingTimes.map { date -> Int in
             let c = Calendar.current.dateComponents([.hour, .minute], from: date)
             return (c.hour ?? 0) * 60 + (c.minute ?? 0)
@@ -189,19 +200,21 @@ struct AddEditPetSheet: View {
 
         if let pet {
             pet.name = trimmedName
-            pet.birthday = birthday
+            pet.birthday = resolvedBirthday
             pet.photoData = photoData
             pet.foodStockCount = foodStockCount
             pet.isFasting = isFasting
             pet.feedingScheduleTimes = times
-            
-            // Cleanup alerts if fasting
+
             if isFasting {
                 NotificationManager.shared.removeOverdueNotification(for: pet)
                 NotificationManager.shared.removePerDogReminders(for: pet)
             }
-            
-            if birthdayPushEnabled {
+
+            // Birthday push only schedules when there IS a birthday and the
+            // user opted into the push. Removing covers the "user cleared
+            // their birthday" case.
+            if birthdayPushEnabled, resolvedBirthday != nil {
                 NotificationManager.shared.scheduleBirthdayNotification(for: pet)
             } else {
                 NotificationManager.shared.removeBirthdayNotification(for: pet)
@@ -210,13 +223,11 @@ struct AddEditPetSheet: View {
                 NotificationManager.shared.schedulePerDogReminders(for: pet, times: times)
             }
         } else {
-            let newPet = Pet(name: trimmedName, birthday: birthday, photoData: photoData, foodStockCount: foodStockCount, isFasting: isFasting)
+            let newPet = Pet(name: trimmedName, birthday: resolvedBirthday, photoData: photoData, foodStockCount: foodStockCount, isFasting: isFasting)
             newPet.feedingScheduleTimes = times
             modelContext.insert(newPet)
-            if birthdayPushEnabled {
+            if birthdayPushEnabled, resolvedBirthday != nil {
                 NotificationManager.shared.scheduleBirthdayNotification(for: newPet)
-            } else {
-                NotificationManager.shared.removeBirthdayNotification(for: newPet)
             }
             if reminderMode == .perDog && !isFasting {
                 NotificationManager.shared.schedulePerDogReminders(for: newPet, times: times)
@@ -224,11 +235,15 @@ struct AddEditPetSheet: View {
         }
         
         WidgetDataWriter.write(from: modelContext)
-        WidgetCenter.shared.reloadAllTimelines()
         // Refresh Siri's pet vocabulary right away — adding/renaming a dog
         // here should let "Feed Rex" work without waiting for the dashboard
         // onChange to fire.
         DogFoodShortcuts.updateAppShortcutParameters()
+        // Re-fetch + refresh reminders so renamed pets, fasting toggles, and
+        // schedule edits propagate to the All-Dogs reminder body and per-dog
+        // schedules.
+        let allPets = (try? modelContext.fetch(FetchDescriptor<Pet>())) ?? []
+        RemindersCoordinator.refresh(pets: allPets)
         dismiss()
     }
 }
@@ -286,25 +301,37 @@ private struct AvatarPickerSheet: View {
 
     private func compressed(_ data: Data) -> Data {
         guard let image = UIImage(data: data) else { return data }
-        let maxDimension: CGFloat = 1024
-        let scale = min(maxDimension / image.size.width, maxDimension / image.size.height, 1.0)
-        let targetSize = CGSize(width: (image.size.width * scale).rounded(), height: (image.size.height * scale).rounded())
+        let maxDim = AppConstants.photoMaxDimensionPoints
+        let scale = min(maxDim / image.size.width, maxDim / image.size.height, 1.0)
+        let targetSize = CGSize(
+            width: (image.size.width * scale).rounded(),
+            height: (image.size.height * scale).rounded()
+        )
         let renderer = UIGraphicsImageRenderer(size: targetSize)
         let resized = renderer.image { _ in image.draw(in: CGRect(origin: .zero, size: targetSize)) }
-        for quality in stride(from: CGFloat(0.8), through: 0.2, by: -0.15) {
-            if let jpeg = resized.jpegData(compressionQuality: quality), jpeg.count <= 500_000 {
+        let qualityFloor = AppConstants.photoJPEGQualityFloor
+        for quality in stride(
+            from: AppConstants.photoJPEGQualityStart,
+            through: qualityFloor,
+            by: -AppConstants.photoJPEGQualityStep
+        ) {
+            if let jpeg = resized.jpegData(compressionQuality: quality),
+               jpeg.count <= AppConstants.photoMaxJPEGBytes {
                 return jpeg
             }
         }
-        return resized.jpegData(compressionQuality: 0.2) ?? data
+        return resized.jpegData(compressionQuality: qualityFloor) ?? data
     }
 
     private func avatarCell(_ name: String) -> some View {
         let isSelected = selectedAvatarName == name
         return Button {
             selectedAvatarName = name
+            // JPEG-compress the asset to keep photoData small. PNGs of stock
+            // avatars were ~200-500KB each; JPEG at 0.8 quality is ~40KB and
+            // visually identical for these flat-illustration avatars.
             if let uiImage = UIImage(named: name) {
-                photoData = uiImage.pngData()
+                photoData = uiImage.jpegData(compressionQuality: AppConstants.photoJPEGQualityStart) ?? uiImage.pngData()
             }
             dismiss()
         } label: {

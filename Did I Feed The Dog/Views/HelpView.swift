@@ -63,7 +63,7 @@ struct HelpView: View {
         Section("Getting Started") {
             FAQRow(
                 question: "How do I add a dog?",
-                answer: "Tap the + button on the dashboard, or go to Settings -> Dogs -> Add Dog. Enter your dog's name, birthday, and an optional photo."
+                answer: "Tap the + button on the dashboard, or go to Settings -> Dogs -> Add Dog. Enter your dog's name. Birthday and photo are optional — flip the Add Birthday toggle only if you want a birthday alert each year."
             )
             FAQRow(
                 question: "How do I log a feeding?",
@@ -295,7 +295,7 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "What is the Birthday Notification?",
-                answer: "A notification sent on your dog's birthday each year, based on the birthday you entered when adding them."
+                answer: "If you set a birthday for your dog, the app sends a celebration alert each year on that day. The field is optional — if you didn't add a birthday, no birthday alert fires."
             )
             FAQRow(
                 question: "What is the In-App Low Stock Banner?",
@@ -315,13 +315,13 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "I'm not receiving notifications. What should I check?",
-                answer: "First, open the app's Settings -> Notifications. If iOS notifications are disabled, an orange warning banner will appear there and the push notification toggles will be greyed out. Tap it or go to iPhone Settings -> Notifications -> Fed The Dog? to re-enable them. Once permission is restored, the toggles will become active again with your previous settings."
+                answer: "Open the app's Settings -> Notifications. If iOS notifications are disabled, an orange warning banner appears at the top of the section — tap it to jump straight to iPhone Settings and re-enable them. The push toggles in our Settings will activate again with your previous values once permission is restored."
             )
         }
     }
 
     private let allFAQs: [FAQItem] = [
-            .init(section: "Getting Started", question: "How do I add a dog?", answer: "Tap the + button on the dashboard, or go to Settings -> Dogs -> Add Dog. Enter your dog's name, birthday, and an optional photo."),
+            .init(section: "Getting Started", question: "How do I add a dog?", answer: "Tap the + button on the dashboard, or go to Settings -> Dogs -> Add Dog. Enter your dog's name. Birthday and photo are optional — flip the Add Birthday toggle only if you want a birthday alert each year."),
             .init(section: "Getting Started", question: "How do I log a feeding?", answer: "Tap the green Log Meal button on any dog's card. Choose the meal type — Breakfast, Lunch, Dinner, Morning, Afternoon, Evening, Snack, Treat, or Custom — and confirm. The card updates immediately."),
             .init(section: "Getting Started", question: "Can I log a meal for a past time?", answer: "Yes. When logging a meal, turn on the 'Set custom time' toggle to choose the exact date and time the feeding happened."),
             .init(section: "Getting Started", question: "Can I log a meal for all dogs at once?", answer: "Yes. When you have 2 or more dogs, a fork icon appears in the top-right of the dashboard next to the + button. Tap it to open the Feed All Dogs sheet and log the same meal for everyone in one tap."),
@@ -369,12 +369,12 @@ struct HelpView: View {
             .init(section: "iCloud Sync", question: "How do I know if the app is syncing?", answer: "A small spinner appears next to the gear icon on the dashboard while iCloud is actively syncing. If a feeding from another device hasn't appeared yet, wait a moment for the spinner to disappear."),
             .init(section: "iCloud Sync", question: "What if two people log a feeding at the same time?", answer: "Both feedings are saved. You may see two entries close together in the history — that's the accurate record of what happened."),
             .init(section: "Notifications", question: "What is the Low Stock Notification?", answer: "A notification sent when a dog's food stock drops to or below the Low Stock Threshold and the app is in the background. When you're actively using the app, the orange banner on the dog's card serves as the in-app warning instead."),
-            .init(section: "Notifications", question: "What is the Birthday Notification?", answer: "A notification sent on your dog's birthday each year, based on the birthday you entered when adding them."),
+            .init(section: "Notifications", question: "What is the Birthday Notification?", answer: "If you set a birthday for your dog, the app sends a celebration alert each year on that day. The field is optional — if you didn't add a birthday, no birthday alert fires."),
             .init(section: "Notifications", question: "What is the In-App Low Stock Banner?", answer: "An orange banner that appears on the dog's card when stock is low. This is separate from the push notification."),
             .init(section: "Notifications", question: "What is the Overdue Notification?", answer: "A notification sent when a dog hasn't been fed past their overdue threshold (default 12 hours). It fires once per feeding window and is automatically cancelled when the next meal is logged. Turn it off in Settings -> Notifications -> Overdue Notification."),
             .init(section: "Notifications", question: "What is the App Icon Badge?", answer: "A number shown on the app icon equal to how many of your dogs are currently overdue for a feeding. It updates automatically when you open the app or log a meal. Turn it off in Settings -> Notifications -> App Icon Badge."),
             .init(section: "Notifications", question: "What is the Water Bowl Cleaning Reminder?", answer: "A weekly notification reminding you to scrub your dog's water bowl to prevent unhealthy biofilm buildup. You can choose the day and time in Settings -> Health & Hygiene."),
-            .init(section: "Notifications", question: "I'm not receiving notifications. What should I check?", answer: "First, open the app's Settings -> Notifications. If iOS notifications are disabled, an orange warning banner will appear there and the push notification toggles will be greyed out. Tap it or go to iPhone Settings -> Notifications -> Fed The Dog? to re-enable them. Once permission is restored, the toggles will become active again with your previous settings."),
+            .init(section: "Notifications", question: "I'm not receiving notifications. What should I check?", answer: "Open the app's Settings -> Notifications. If iOS notifications are disabled, an orange warning banner appears at the top of the section — tap it to jump straight to iPhone Settings and re-enable them. The push toggles in our Settings will activate again with your previous values once permission is restored."),
         ]
 }
 

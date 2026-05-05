@@ -5,8 +5,6 @@ import WidgetKit
 struct MediumWidgetView: View {
     let entry: WidgetEntry
 
-    private let deepLinkBase = "didfeedthedog://log?petId="
-
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
@@ -38,7 +36,7 @@ struct MediumWidgetView: View {
     }
 
     private func petRow(_ pet: PetSnapshot) -> some View {
-        Link(destination: deepLinkURL(for: pet.id)) {
+        Link(destination: WidgetDeepLink.url(for: pet.id)) {
             HStack(spacing: 10) {
                 avatarView(pet: pet)
                 Text(pet.name)
@@ -138,9 +136,5 @@ struct MediumWidgetView: View {
     private func relativeTime(_ date: Date?) -> String {
         guard let date else { return "Never" }
         return Self.relativeFormatter.localizedString(for: date, relativeTo: .now)
-    }
-
-    private func deepLinkURL(for petId: UUID) -> URL {
-        URL(string: deepLinkBase + petId.uuidString)!
     }
 }

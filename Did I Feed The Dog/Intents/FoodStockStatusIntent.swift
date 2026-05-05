@@ -14,16 +14,12 @@ struct FoodStockStatusIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let stockMode = StockMode(
-            rawValue: UserDefaults.standard.string(forKey: "stockMode") ?? ""
-        ) ?? .none
-
-        switch stockMode {
+        switch AppSettings.stockMode {
         case .none:
             return .result(dialog: "Food stock tracking is turned off in the app.")
 
         case .shared:
-            let count = UserDefaults.standard.integer(forKey: "sharedFoodStock")
+            let count = AppSettings.sharedFoodStock
             let portionWord = count == 1 ? "portion" : "portions"
             return .result(dialog: "The shared food pool has \(count) \(portionWord) remaining.")
 

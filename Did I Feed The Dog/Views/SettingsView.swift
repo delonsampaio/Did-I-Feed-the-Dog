@@ -2,7 +2,6 @@ import SwiftUI
 import SwiftData
 import StoreKit
 import UserNotifications
-import WidgetKit
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
@@ -56,10 +55,16 @@ struct SettingsView: View {
         .sheet(isPresented: $showAddPet) {
             AddEditPetSheet()
         }
-        .task {
-            let settings = await UNUserNotificationCenter.current().notificationSettings()
-            notificationsAuthorized = settings.authorizationStatus == .authorized
+        .task { await refreshNotificationAuth() }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            // Re-check after the user toggles iOS settings and returns.
+            Task { await refreshNotificationAuth() }
         }
+    }
+
+    private func refreshNotificationAuth() async {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        notificationsAuthorized = settings.authorizationStatus == .authorized
     }
 
     private var appearanceSection: some View {
@@ -181,20 +186,7 @@ struct SettingsView: View {
     }
 
     private func updateReminders() {
-        switch reminderMode {
-        case .none:
-            NotificationManager.shared.removeAllFeedingReminders(petIds: pets.map(\.id))
-        case .allDogs:
-            NotificationManager.shared.removeAllFeedingReminders(petIds: pets.map(\.id))
-            NotificationManager.shared.scheduleAllDogsReminders(
-                times: allDogsReminderTimes, petNames: pets.map { $0.name ?? "Unknown" }
-            )
-        case .perDog:
-            NotificationManager.shared.removeAllDogsReminders()
-            for pet in pets {
-                NotificationManager.shared.schedulePerDogReminders(for: pet, times: pet.feedingScheduleTimes)
-            }
-        }
+        RemindersCoordinator.refresh(pets: pets)
     }
 
     private var feedingRemindersSection: some View {
@@ -276,15 +268,32 @@ struct SettingsView: View {
     private var notificationsSection: some View {
         Section("Notifications") {
             if !notificationsAuthorized {
-                HStack(spacing: 10) {
-                    Image(systemName: "bell.slash.fill")
-                        .foregroundStyle(.orange)
-                        .accessibilityHidden(true)
-                    Text("Notifications are disabled. Enable them in iOS Settings to receive reminders and alerts.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                Button {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "bell.slash.fill")
+                            .foregroundStyle(.orange)
+                            .accessibilityHidden(true)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Notifications are disabled in iOS")
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(.primary)
+                            Text("Tap to open iOS Settings and re-enable. Until then, alerts won't fire even when toggles look ON.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption).foregroundStyle(.tertiary)
+                            .accessibilityHidden(true)
+                    }
                 }
+                .buttonStyle(.plain)
                 .padding(.vertical, 2)
+                .accessibilityHint("Opens iOS Settings to re-enable notifications")
             }
             Toggle(isOn: $lowStockUIWarning) {
                 VStack(alignment: .leading, spacing: 2) {
@@ -449,12 +458,16 @@ struct SettingsView: View {
                 Label("Help & FAQ", systemImage: "questionmark.circle")
             }
             Button {
+                // iOS rate-limits this prompt to 3 times per 365 days; nothing
+                // happens silently if we're past the cap, which is expected.
                 requestReview()
             } label: {
                 Label("Rate the App", systemImage: "star.fill")
                     .foregroundStyle(.orange)
             }
 
+            // TODO: Replace `id0` with the real App Store ID once the listing
+            // goes live — current URL is a placeholder that 404s for users.
             ShareLink(
                 item: URL(string: "https://apps.apple.com/app/id0")!,
                 message: Text("Track your dog's feedings and keep them safe with Did I Feed the Dog?")
@@ -484,7 +497,6 @@ struct SettingsView: View {
     }
 
     private func deletePets(at offsets: IndexSet) {
-        let deletedIds = Set(offsets.map { pets[$0].id })
         for index in offsets {
             let pet = pets[index]
             NotificationManager.shared.removeBirthdayNotification(for: pet)
@@ -495,18 +507,12 @@ struct SettingsView: View {
             )
             modelContext.delete(pet)
         }
-        if reminderMode == .allDogs {
-            let remainingNames = pets
-                .filter { !deletedIds.contains($0.id) && !$0.isFasting }
-                .compactMap { $0.name }
-            let times = allDogsReminderTimesRaw.split(separator: ",").compactMap { Int($0) }
-            if remainingNames.isEmpty {
-                NotificationManager.shared.removeAllDogsReminders()
-            } else {
-                NotificationManager.shared.scheduleAllDogsReminders(times: times, petNames: remainingNames)
-            }
-        }
+        // Re-fetch survivors instead of filtering the (now-stale) @Query so the
+        // reminder body lists the actual remaining roster, then delegate to
+        // RemindersCoordinator to centralize the scheduling rules.
+        let survivors = (try? modelContext.fetch(FetchDescriptor<Pet>())) ?? []
+        RemindersCoordinator.refresh(pets: survivors)
+        QuickActionManager.shared.update(with: survivors)
         WidgetDataWriter.write(from: modelContext)
-        WidgetCenter.shared.reloadAllTimelines()
     }
 }

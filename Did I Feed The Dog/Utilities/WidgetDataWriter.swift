@@ -1,7 +1,18 @@
 import Foundation
+import OSLog
 import SwiftData
 import WidgetKit
 
+private let widgetLogger = Logger(subsystem: "com.delon.DidIFeedTheDog", category: "WidgetWriter")
+
+// MUST stay byte-compatible with the duplicate definition in
+// `DidIFeedTheDogWidget/WidgetDataStore.swift`. The two targets can't share a
+// type without project-file gymnastics, so the contract is: every field here
+// has the same name + Codable shape as the widget side. The widget side keeps
+// `isFasting`/`scheduleTimes`/`thresholdHours` Optional purely for back-compat
+// with any encoded snapshots from older app versions; the writer never emits
+// nil for them today. If you add a field, mirror it on the widget side and
+// add a round-trip test (FeedingLogServiceTests.testWidgetSnapshotRoundTrip).
 struct PetWidgetData: Codable {
     let id: UUID
     let name: String
@@ -59,9 +70,20 @@ enum WidgetDataWriter {
 
     // Fetches both pets and events explicitly so no stale lazy loads.
     static func write(from context: ModelContext) {
-        try? context.save()
-        let pets = (try? context.fetch(FetchDescriptor<Pet>())) ?? []
-        let events = (try? context.fetch(FetchDescriptor<FeedingEvent>())) ?? []
+        do {
+            try context.save()
+        } catch {
+            widgetLogger.error("Pre-widget-write save failed: \(error.localizedDescription, privacy: .public)")
+        }
+        let pets: [Pet]
+        let events: [FeedingEvent]
+        do {
+            pets = try context.fetch(FetchDescriptor<Pet>())
+            events = try context.fetch(FetchDescriptor<FeedingEvent>())
+        } catch {
+            widgetLogger.error("Pet/event fetch for widget snapshot failed: \(error.localizedDescription, privacy: .public)")
+            return
+        }
         write(pets, events: events)
     }
 

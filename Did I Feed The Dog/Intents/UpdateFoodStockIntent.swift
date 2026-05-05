@@ -25,25 +25,21 @@ struct UpdateFoodStockIntent: AppIntent {
             return .result(dialog: "Please provide a number greater than zero.")
         }
 
-        let stockMode = StockMode(
-            rawValue: UserDefaults.standard.string(forKey: "stockMode") ?? ""
-        ) ?? .none
-
-        switch stockMode {
+        switch AppSettings.stockMode {
         case .none:
             return .result(dialog: "Food stock tracking is turned off in the app. Turn it on in Settings → Food Stock to use this with Siri.")
 
         case .shared:
             // In shared mode, ignore the per-dog parameter — there's one pool.
-            let current = UserDefaults.standard.integer(forKey: "sharedFoodStock")
-            let newTotal = min(9999, current + portionsAdded)
+            let current = AppSettings.sharedFoodStock
+            let newTotal = min(AppConstants.sharedStockCap, current + portionsAdded)
             let actuallyAdded = newTotal - current
-            UserDefaults.standard.set(newTotal, forKey: "sharedFoodStock")
+            AppSettings.sharedFoodStock = newTotal
             WidgetDataWriter.write(from: sharedModelContainer.mainContext)
 
             let portionWord = newTotal == 1 ? "portion" : "portions"
             if actuallyAdded < portionsAdded {
-                return .result(dialog: "I capped the shared food pool at \(newTotal) \(portionWord). The maximum is 9999.")
+                return .result(dialog: "I capped the shared food pool at \(newTotal) \(portionWord). The maximum is \(AppConstants.sharedStockCap).")
             }
             return .result(dialog: "Updated. The shared food pool now has \(newTotal) \(portionWord) remaining.")
 
@@ -54,7 +50,7 @@ struct UpdateFoodStockIntent: AppIntent {
             }
 
             let before = foundPet.foodStockCount
-            let newTotal = min(999, before + portionsAdded)
+            let newTotal = min(AppConstants.perPetStockCap, before + portionsAdded)
             let actuallyAdded = newTotal - before
             foundPet.foodStockCount = newTotal
             try context.save()
@@ -62,7 +58,7 @@ struct UpdateFoodStockIntent: AppIntent {
 
             let portionWord = newTotal == 1 ? "portion" : "portions"
             if actuallyAdded < portionsAdded {
-                return .result(dialog: "I capped \(foundPet.name ?? "their") stock at \(newTotal) \(portionWord). The maximum per dog is 999.")
+                return .result(dialog: "I capped \(foundPet.name ?? "their") stock at \(newTotal) \(portionWord). The maximum per dog is \(AppConstants.perPetStockCap).")
             }
             return .result(dialog: "Updated. \(foundPet.name ?? pet.name) now has \(newTotal) \(portionWord) remaining.")
         }

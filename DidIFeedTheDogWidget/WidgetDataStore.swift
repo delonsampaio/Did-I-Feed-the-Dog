@@ -1,5 +1,10 @@
 import Foundation
 
+// MUST stay byte-compatible with the duplicate definition in
+// `Did I Feed The Dog/Utilities/WidgetDataWriter.swift`. The optional fields
+// here exist only for graceful decode of snapshots written by older app
+// versions; the current writer always emits non-nil values. Read the comment
+// on the writer-side struct for the full contract.
 struct PetWidgetData: Codable {
     let id: UUID
     let name: String

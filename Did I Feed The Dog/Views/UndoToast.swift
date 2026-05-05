@@ -5,7 +5,7 @@ struct UndoToast: View {
     let onUndo: () -> Void
     let onDismiss: () -> Void
 
-    private let duration: Double = 4.0
+    private let duration: Double = AppConstants.undoToastSeconds
     @State private var progress: CGFloat = 1.0
 
     var body: some View {
@@ -40,14 +40,17 @@ struct UndoToast: View {
         .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 2)
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+        // .task auto-cancels when this view leaves the hierarchy, so
+        // background/manual-dismiss/foreground transitions don't fire onDismiss
+        // after the toast is gone. Replaces the old DispatchQueue.asyncAfter
+        // pattern that leaked timers.
+        .task {
+            withAnimation(.linear(duration: duration)) { progress = 0.0 }
+            do {
+                try await Task.sleep(for: .seconds(duration))
                 onDismiss()
-            }
-            DispatchQueue.main.async {
-                withAnimation(.linear(duration: duration)) {
-                    progress = 0.0
-                }
+            } catch {
+                // Cancelled — view disappeared, no-op.
             }
         }
     }

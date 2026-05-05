@@ -7,7 +7,6 @@ struct DashboardView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Pet.name) private var pets: [Pet]
-    @Query private var feedingEvents: [FeedingEvent]
 
     @AppStorage("reminderMode")            private var reminderMode: ReminderMode = .none
     @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
@@ -69,8 +68,8 @@ struct DashboardView: View {
                 .padding(.vertical, 12)
             }
             .refreshable {
-                WidgetDataWriter.write(pets, events: feedingEvents)
-                try? await Task.sleep(for: .milliseconds(600))
+                WidgetDataWriter.write(from: modelContext)
+                try? await Task.sleep(for: .milliseconds(AppConstants.pullToRefreshSettleMilliseconds))
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("My Dogs")
@@ -99,6 +98,11 @@ struct DashboardView: View {
                             ProgressView()
                                 .scaleEffect(0.8)
                                 .accessibilityLabel("Syncing with iCloud")
+                        } else if syncMonitor.lastError != nil {
+                            Image(systemName: "exclamationmark.icloud")
+                                .font(.subheadline)
+                                .foregroundStyle(.orange)
+                                .accessibilityLabel("iCloud sync issue — your data may not be up to date")
                         }
                     }
                 }
@@ -186,11 +190,12 @@ struct DashboardView: View {
             // Re-register pet vocabulary so Siri/Shortcuts pick up newly added,
             // renamed, deleted, or iCloud-synced dogs without an app relaunch.
             DogFoodShortcuts.updateAppShortcutParameters()
+            // Refresh All-Dogs reminder body so it names the current roster.
+            RemindersCoordinator.refresh(pets: newPets)
         }
-        .onChange(of: feedingEvents) { _, newEvents in
-            WidgetDataWriter.write(from: modelContext)
-            NotificationManager.shared.updateBadgeCount(pets: pets)
-        }
+        // Widget refresh + badge update on feeding changes is now driven from
+        // FeedingLogService directly — no separate @Query needed (loading
+        // every event into memory just to fire a side effect was wasteful).
     }
 
     private func triggerToast(message: String, undo: @escaping () -> Void) {

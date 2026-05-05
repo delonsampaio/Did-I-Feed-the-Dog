@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import WidgetKit
 
 struct PetDetailView: View {
     @Environment(\.modelContext) private var modelContext
@@ -68,7 +67,7 @@ struct PetDetailView: View {
                                 } label: {
                                     Label("Delete", systemImage: "trash")
                                 }
-                                if stockMode != .none && eventDecrementsStock(event) {
+                                if stockMode != .none && event.actuallyDeductedStock {
                                     Button {
                                         deleteEvent(event, restoreStock: true)
                                     } label: {
@@ -129,22 +128,22 @@ struct PetDetailView: View {
         return Self.sectionDateFormatter.string(from: date)
     }
 
-    private func eventDecrementsStock(_ event: FeedingEvent) -> Bool {
-        event.resolvedMealType.decrementsStock
-    }
-
     private func deleteEvent(_ event: FeedingEvent, restoreStock: Bool) {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        if restoreStock {
+        // Only credit a portion if this event actually deducted one when it
+        // was logged — guarded against double-credit on custom no-deduct meals.
+        if restoreStock, event.actuallyDeductedStock {
             switch stockMode {
-            case .individual: pet.foodStockCount += 1
-            case .shared:     sharedFoodStock += 1
-            case .none:       break
+            case .individual:
+                pet.foodStockCount = min(AppConstants.perPetStockCap, pet.foodStockCount + 1)
+            case .shared:
+                sharedFoodStock = min(AppConstants.sharedStockCap, sharedFoodStock + 1)
+            case .none:
+                break
             }
         }
         modelContext.delete(event)
         WidgetDataWriter.write(from: modelContext)
-        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private func deleteEvents(_ events: [FeedingEvent], at offsets: IndexSet) {
@@ -153,7 +152,6 @@ struct PetDetailView: View {
             modelContext.delete(events[index])
         }
         WidgetDataWriter.write(from: modelContext)
-        WidgetCenter.shared.reloadAllTimelines()
     }
 
 

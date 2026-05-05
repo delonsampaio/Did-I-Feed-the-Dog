@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import WidgetKit
 
 struct PetCard: View {
     @AppStorage("lowStockUIWarning") private var lowStockUIWarning = true
@@ -18,10 +17,7 @@ struct PetCard: View {
     @State private var showSharedStockSheet = false
 
     private var recentEvents: [FeedingEvent] {
-        (pet.feedingEvents ?? [])
-            .sorted { $0.timestamp > $1.timestamp }
-            .prefix(3)
-            .map { $0 }
+        pet.recentFeedings(limit: 3)
     }
 
     private var lastFedBadgeColor: Color {
@@ -92,47 +88,47 @@ struct PetCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: .black.opacity(0.07), radius: 8, x: 0, y: 2)
         
-        // --- NEW: Context Menu for fast toggling ---
         .contextMenu {
             Button(role: pet.isFasting ? .none : .destructive) {
                 pet.isFasting.toggle()
                 if pet.isFasting {
-                    // Immediately clear alerts for the fasting dog
                     NotificationManager.shared.removeOverdueNotification(for: pet)
                     NotificationManager.shared.removePerDogReminders(for: pet)
                 }
-                // Force a reminder refresh to handle "All Dogs" mode
-                UserDefaults.standard.set(true, forKey: "needsReminderReschedule")
+                // Triggers RemindersCoordinator on next dashboard appearance
+                // so "All Dogs" reminder body excludes the fasting pet.
+                AppSettings.needsReminderReschedule = true
                 WidgetDataWriter.write(from: modelContext)
-                WidgetCenter.shared.reloadAllTimelines()
             } label: {
-                Label(pet.isFasting ? "End Fasting" : "Start Fasting", 
+                Label(pet.isFasting ? "End Fasting" : "Start Fasting",
                       systemImage: pet.isFasting ? "fork.knife" : "exclamationmark.octagon")
             }
-            
+
             Button {
                 showEditSheet = true
             } label: {
                 Label("Edit Dog", systemImage: "pencil")
             }
         }
-        // -------------------------------------------
         
         .sheet(isPresented: $showFeedSheet) {
             LogFeedingSheet(pet: pet, onLogged: { event in
+                // Restore only what was actually deducted — not whatever the
+                // meal type would notionally deduct. Custom meals with the
+                // "Deduct a portion" toggle off must NOT credit a portion.
+                let didDeduct = event.actuallyDeductedStock
                 let undo: () -> Void = {
-                    if event.resolvedMealType.decrementsStock {
+                    if didDeduct {
                         switch stockMode {
-                        case .individual: pet.foodStockCount += 1
+                        case .individual:
+                            pet.foodStockCount = min(AppConstants.perPetStockCap, pet.foodStockCount + 1)
                         case .shared:
-                            let current = UserDefaults.standard.integer(forKey: "sharedFoodStock")
-                            UserDefaults.standard.set(current + 1, forKey: "sharedFoodStock")
+                            AppSettings.sharedFoodStock = min(AppConstants.sharedStockCap, AppSettings.sharedFoodStock + 1)
                         case .none: break
                         }
                     }
                     modelContext.delete(event)
                     WidgetDataWriter.write(from: modelContext)
-                    WidgetCenter.shared.reloadAllTimelines()
                 }
                 onFed?(event, undo)
             })
@@ -321,7 +317,10 @@ struct PetCard: View {
         Button {
             showFeedSheet = true
         } label: {
-            Label("Log Meal", systemImage: "fork.knife")
+            Label(
+                pet.isFasting ? "Fasting" : "Log Meal",
+                systemImage: pet.isFasting ? "exclamationmark.octagon" : "fork.knife"
+            )
                 .font(.headline)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
