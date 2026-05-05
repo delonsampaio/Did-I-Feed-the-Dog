@@ -32,10 +32,9 @@ enum WidgetDataWriter {
     static func write(_ pets: [Pet], events: [FeedingEvent]? = nil) {
         let snapshots: [PetWidgetData]
         
-        let modeRaw = UserDefaults.standard.string(forKey: "reminderMode") ?? ""
-        let allDogsTimes = (UserDefaults.standard.string(forKey: "allDogsReminderTimesRaw") ?? "")
-            .split(separator: ",").compactMap { Int($0) }.sorted()
-        let threshold = max(1, UserDefaults.standard.integer(forKey: "overdueThresholdHours"))
+        let modeRaw = AppSettings.reminderMode.rawValue
+        let allDogsTimes = AppSettings.allDogsReminderTimes.sorted()
+        let threshold = AppSettings.overdueThresholdHours
 
         if let events = events {
             let byPetId = Dictionary(grouping: events, by: { $0.pet?.id ?? UUID() })

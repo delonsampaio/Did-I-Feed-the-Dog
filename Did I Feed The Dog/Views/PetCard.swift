@@ -2,11 +2,11 @@ import SwiftUI
 import SwiftData
 
 struct PetCard: View {
-    @AppStorage("lowStockUIWarning") private var lowStockUIWarning = true
-    @AppStorage("lowStockThreshold") private var lowStockThreshold = 5
-    @AppStorage("stockMode")         private var stockMode: StockMode = .individual
-    @AppStorage("sharedFoodStock")   private var sharedFoodStock = 0
-    @AppStorage("reminderMode")      private var reminderMode: ReminderMode = .none
+    @AppStorage("lowStockUIWarning", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var lowStockUIWarning = true
+    @AppStorage("lowStockThreshold", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var lowStockThreshold = 5
+    @AppStorage("stockMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))         private var stockMode: StockMode = .individual
+    @AppStorage("sharedFoodStock", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))   private var sharedFoodStock = 0
+    @AppStorage("reminderMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))      private var reminderMode: ReminderMode = .none
 
     @Environment(\.modelContext) private var modelContext
 
@@ -14,7 +14,7 @@ struct PetCard: View {
     var onFed: ((FeedingEvent, @escaping () -> Void) -> Void)? = nil
     @State private var showFeedSheet = false
     @State private var showEditSheet = false
-    @State private var showSharedStockSheet = false
+    @State private var showQuickStockSheet = false
 
     private var recentEvents: [FeedingEvent] {
         pet.recentFeedings(limit: 3)
@@ -51,7 +51,7 @@ struct PetCard: View {
 
             if isLowStock {
                 Button {
-                    if stockMode == .shared { showSharedStockSheet = true } else { showEditSheet = true }
+                    showQuickStockSheet = true
                 } label: { lowStockBanner }
                 .buttonStyle(.plain)
             }
@@ -136,8 +136,15 @@ struct PetCard: View {
         .sheet(isPresented: $showEditSheet) {
             AddEditPetSheet(pet: pet)
         }
-        .sheet(isPresented: $showSharedStockSheet) {
-            SharedStockSheet(sharedFoodStock: $sharedFoodStock)
+        .sheet(isPresented: $showQuickStockSheet) {
+            if stockMode == .shared {
+                QuickStockSheet(stockCount: $sharedFoodStock, title: "Shared Food Stock")
+            } else {
+                QuickStockSheet(stockCount: Binding(
+                    get: { pet.foodStockCount },
+                    set: { pet.foodStockCount = $0 }
+                ), title: "\(pet.name ?? "Dog")'s Stock")
+            }
         }
     }
 
@@ -231,7 +238,7 @@ struct PetCard: View {
             HStack(spacing: 12) {
                 if stockMode != .none {
                     Button {
-                        if stockMode == .shared { showSharedStockSheet = true } else { showEditSheet = true }
+                        showQuickStockSheet = true
                     } label: {
                         statCell(
                             title: stockMode == .shared ? "House Stock" : "Food Stock",
@@ -340,15 +347,16 @@ struct PetCard: View {
     }
 }
 
-private struct SharedStockSheet: View {
+private struct QuickStockSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @Binding var sharedFoodStock: Int
+    @Binding var stockCount: Int
+    let title: String
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 32) {
                 VStack(spacing: 8) {
-                    Text("\(sharedFoodStock)")
+                    Text("\(stockCount)")
                         .font(.system(size: 72, weight: .bold, design: .rounded))
                         .foregroundStyle(.primary)
                     Text("portions remaining")
@@ -357,7 +365,7 @@ private struct SharedStockSheet: View {
 
                 HStack(spacing: 24) {
                     Button {
-                        if sharedFoodStock > 0 { sharedFoodStock -= 1 }
+                        if stockCount > 0 { stockCount -= 1 }
                     } label: {
                         Image(systemName: "minus.circle.fill")
                             .font(.system(size: 44))
@@ -365,7 +373,7 @@ private struct SharedStockSheet: View {
                     }
                     .accessibilityLabel("Decrease stock by 1")
                     Button {
-                        if sharedFoodStock < 9999 { sharedFoodStock += 1 }
+                        if stockCount < 9999 { stockCount += 1 }
                     } label: {
                         Image(systemName: "plus.circle.fill")
                             .font(.system(size: 44))
@@ -374,14 +382,14 @@ private struct SharedStockSheet: View {
                     .accessibilityLabel("Increase stock by 1")
                 }
 
-                Stepper("Adjust by 10", value: $sharedFoodStock, in: 0...9999, step: 10)
+                Stepper("Adjust by 10", value: $stockCount, in: 0...9999, step: 10)
                     .labelsHidden()
                     .padding(.horizontal, 40)
 
                 Spacer()
             }
             .padding(.top, 40)
-            .navigationTitle("Shared Food Stock")
+            .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

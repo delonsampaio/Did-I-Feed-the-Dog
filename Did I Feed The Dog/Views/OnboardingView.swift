@@ -6,8 +6,8 @@ struct OnboardingView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @AppStorage("reminderMode")            private var reminderMode: ReminderMode = .none
-    @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
+    @AppStorage("reminderMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))            private var reminderMode: ReminderMode = .none
+    @AppStorage("allDogsReminderTimesRaw", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var allDogsReminderTimesRaw = ""
 
     private enum OnboardingStep: Int, CaseIterable {
         case welcome = 0, addDog, sync, reminder, done

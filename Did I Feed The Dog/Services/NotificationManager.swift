@@ -30,10 +30,9 @@ final class NotificationManager {
         
         // Suppress if fasting
         guard !pet.isFasting else { return }
-        guard UserDefaults.standard.object(forKey: "overduePushEnabled") as? Bool ?? true else { return }
+        guard AppSettings.overduePushEnabled else { return }
 
-        let hours = UserDefaults.standard.integer(forKey: "overdueThresholdHours")
-        let thresholdHours = hours == 0 ? 12 : max(1, hours)
+        let thresholdHours = AppSettings.overdueThresholdHours
         let triggerDate = lastFedDate.addingTimeInterval(TimeInterval(thresholdHours * 3600))
 
         guard triggerDate > Date() else { return }
@@ -176,7 +175,7 @@ final class NotificationManager {
                 .min(by: { $0.element < $1.element })?.offset else { break }
             UNUserNotificationCenter.current()
                 .removePendingNotificationRequests(withIdentifiers: ["feeding-all-\(index)"])
-            UserDefaults.standard.set(true, forKey: "needsReminderReschedule")
+            AppSettings.needsReminderReschedule = true
         case .perDog:
             let times = pet.feedingScheduleTimes
             guard let index = times
@@ -185,13 +184,13 @@ final class NotificationManager {
                 .min(by: { $0.element < $1.element })?.offset else { break }
             UNUserNotificationCenter.current()
                 .removePendingNotificationRequests(withIdentifiers: ["feeding-\(pet.id.uuidString)-\(index)"])
-            UserDefaults.standard.set(true, forKey: "needsReminderReschedule")
+            AppSettings.needsReminderReschedule = true
         }
     }
 
     func rescheduleIfNeeded(reminderMode: ReminderMode, allDogsReminderTimes: [Int], pets: [Pet]) {
-        guard UserDefaults.standard.bool(forKey: "needsReminderReschedule") else { return }
-        UserDefaults.standard.set(false, forKey: "needsReminderReschedule")
+        guard AppSettings.needsReminderReschedule else { return }
+        AppSettings.needsReminderReschedule = false
         switch reminderMode {
         case .none:
             break

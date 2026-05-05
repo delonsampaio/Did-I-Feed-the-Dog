@@ -7,8 +7,8 @@ struct FeedAllDogsSheet: View {
 
     // Retained only for the undo path — we need to know which counter to
     // restore. The service owns the live decrement.
-    @AppStorage("stockMode")        private var stockMode: StockMode = .individual
-    @AppStorage("sharedFoodStock")  private var sharedFoodStock = 0
+    @AppStorage("stockMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))        private var stockMode: StockMode = .individual
+    @AppStorage("sharedFoodStock", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))  private var sharedFoodStock = 0
 
     let pets: [Pet]
     var onLogged: (([FeedingEvent], @escaping () -> Void) -> Void)? = nil

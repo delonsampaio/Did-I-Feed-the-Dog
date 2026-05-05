@@ -8,9 +8,9 @@ struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Pet.name) private var pets: [Pet]
 
-    @AppStorage("reminderMode")            private var reminderMode: ReminderMode = .none
-    @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
-    @AppStorage("appearanceMode")          private var appearanceMode: AppearanceMode = .system
+    @AppStorage("reminderMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))            private var reminderMode: ReminderMode = .none
+    @AppStorage("allDogsReminderTimesRaw", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var allDogsReminderTimesRaw = ""
+    @AppStorage("appearanceMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))          private var appearanceMode: AppearanceMode = .system
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.accessibilityReduceMotion) private var reduceMotion

@@ -9,22 +9,22 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \Pet.name) private var pets: [Pet]
 
-    @AppStorage("lowStockUIWarning")       private var lowStockUIWarning = true
-    @AppStorage("lowStockPushEnabled")     private var lowStockPushEnabled = true
-    @AppStorage("birthdayPushEnabled")     private var birthdayPushEnabled = true
-    @AppStorage("badgeEnabled")            private var badgeEnabled = true
-    @AppStorage("overduePushEnabled")      private var overduePushEnabled = true
-    @AppStorage("waterBowlReminderEnabled") private var waterBowlReminderEnabled = false
-    @AppStorage("waterBowlReminderWeekday") private var waterBowlReminderWeekday = 1
-    @AppStorage("waterBowlReminderTime")   private var waterBowlReminderTime = 600
-    @AppStorage("lowStockThreshold")       private var lowStockThreshold = 5
-    @AppStorage("stockMode")              private var stockMode: StockMode = .individual
-    @AppStorage("sharedFoodStock")         private var sharedFoodStock = 0
-    @AppStorage("reminderMode")            private var reminderMode: ReminderMode = .none
-    @AppStorage("allDogsReminderTimesRaw") private var allDogsReminderTimesRaw = ""
-    @AppStorage("overdueThresholdHours")   private var overdueThresholdHours = 12
-    @AppStorage(LoggedBy.storageKey)       private var loggedByName = ""
-    @AppStorage("appearanceMode")          private var appearanceMode: AppearanceMode = .system
+    @AppStorage("lowStockUIWarning", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))       private var lowStockUIWarning = true
+    @AppStorage("lowStockPushEnabled", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))     private var lowStockPushEnabled = true
+    @AppStorage("birthdayPushEnabled", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))     private var birthdayPushEnabled = true
+    @AppStorage("badgeEnabled", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))            private var badgeEnabled = true
+    @AppStorage("overduePushEnabled", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))      private var overduePushEnabled = true
+    @AppStorage("waterBowlReminderEnabled", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var waterBowlReminderEnabled = false
+    @AppStorage("waterBowlReminderWeekday", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var waterBowlReminderWeekday = 1
+    @AppStorage("waterBowlReminderTime", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))   private var waterBowlReminderTime = 600
+    @AppStorage("lowStockThreshold", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))       private var lowStockThreshold = 5
+    @AppStorage("stockMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))              private var stockMode: StockMode = .individual
+    @AppStorage("sharedFoodStock", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))         private var sharedFoodStock = 0
+    @AppStorage("reminderMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))            private var reminderMode: ReminderMode = .none
+    @AppStorage("allDogsReminderTimesRaw", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var allDogsReminderTimesRaw = ""
+    @AppStorage("overdueThresholdHours", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))   private var overdueThresholdHours = 12
+    @AppStorage(LoggedBy.storageKey, store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))       private var loggedByName = ""
+    @AppStorage("appearanceMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))          private var appearanceMode: AppearanceMode = .system
 
     @State private var editingPet: Pet?
     @State private var showAddPet = false

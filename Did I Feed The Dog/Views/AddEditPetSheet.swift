@@ -6,9 +6,9 @@ import PhotosUI
 struct AddEditPetSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("birthdayPushEnabled") private var birthdayPushEnabled = true
-    @AppStorage("stockMode")           private var stockMode: StockMode = .individual
-    @AppStorage("reminderMode")        private var reminderMode: ReminderMode = .none
+    @AppStorage("birthdayPushEnabled", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var birthdayPushEnabled = true
+    @AppStorage("stockMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))           private var stockMode: StockMode = .individual
+    @AppStorage("reminderMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))        private var reminderMode: ReminderMode = .none
 
     var pet: Pet?
 
