@@ -36,9 +36,7 @@ struct UpdateFoodStockIntent: AppIntent {
             let portionWord = total == 1 ? "portion" : "portions"
             return .result(dialog: "Updated. The shared pool now has \(total) \(portionWord) remaining.")
         case .individual:
-            guard let context = IntentDataAccess.makeContext() else {
-                return .result(dialog: "Could not access app data.")
-            }
+            let context = sharedModelContainer.mainContext
             let pets = IntentDataAccess.fetchPets(in: context)
             guard let foundPet = pets.first(where: { $0.id == pet.id }) else {
                 return .result(dialog: "Could not find \(pet.name).")
