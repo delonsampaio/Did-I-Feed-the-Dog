@@ -484,10 +484,27 @@ struct SettingsView: View {
     }
 
     private func deletePets(at offsets: IndexSet) {
+        let deletedIds = Set(offsets.map { pets[$0].id })
         for index in offsets {
             let pet = pets[index]
             NotificationManager.shared.removeBirthdayNotification(for: pet)
+            NotificationManager.shared.removeOverdueNotification(for: pet)
+            NotificationManager.shared.removePerDogReminders(for: pet)
+            UNUserNotificationCenter.current().removePendingNotificationRequests(
+                withIdentifiers: [NotificationManager.shared.lowStockIdentifier(for: pet)]
+            )
             modelContext.delete(pet)
+        }
+        if reminderMode == .allDogs {
+            let remainingNames = pets
+                .filter { !deletedIds.contains($0.id) && !$0.isFasting }
+                .compactMap { $0.name }
+            let times = allDogsReminderTimesRaw.split(separator: ",").compactMap { Int($0) }
+            if remainingNames.isEmpty {
+                NotificationManager.shared.removeAllDogsReminders()
+            } else {
+                NotificationManager.shared.scheduleAllDogsReminders(times: times, petNames: remainingNames)
+            }
         }
         WidgetDataWriter.write(from: modelContext)
         WidgetCenter.shared.reloadAllTimelines()
