@@ -80,7 +80,7 @@ struct DashboardView: View {
                     }
                     .accessibilityLabel("Add dog")
                 }
-                if pets.count >= 2 {
+                if pets.filter({ !$0.isFasting }).count >= 2 {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button { showFeedAll = true } label: {
                             Image(systemName: "fork.knife.circle.fill").font(.title3)
@@ -114,7 +114,7 @@ struct DashboardView: View {
                     .presentationSizing(.page)
             }
             .sheet(isPresented: $showFeedAll) {
-                FeedAllDogsSheet(pets: pets, onLogged: { _, undo in
+                    FeedAllDogsSheet(pets: pets.filter { !$0.isFasting }, onLogged: { _, undo in
                     triggerToast(message: "All dogs fed", undo: undo)
                 })
             }
