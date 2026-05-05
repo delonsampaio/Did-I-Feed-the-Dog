@@ -41,6 +41,8 @@ enum DefaultAvatars {
     ]
 
     static func defaultFor(id: UUID) -> String {
-        all[abs(id.hashValue) % all.count]
+        let firstChunk = id.uuidString.prefix(8)
+        let stableHash = Int(firstChunk, radix: 16) ?? 0
+        return all[stableHash % all.count]
     }
 }
