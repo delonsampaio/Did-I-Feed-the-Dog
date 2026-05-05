@@ -59,7 +59,7 @@ final class NotificationManager {
         let count = stockCount ?? pet.foodStockCount
         let name = pet.name ?? "your dog"
         let content = UNMutableNotificationContent()
-        content.title = "🦴 Time to Restock \(name)'s Food"
+        content.title = "🦴 Low Food: \(name)"
         content.body = count == 0
             ? "\(name) is out of food — time to restock!"
             : "Only \(count) portion\(count == 1 ? "" : "s") remaining for \(name)."
@@ -74,7 +74,7 @@ final class NotificationManager {
 
     func scheduleSharedLowStockNotification(stockCount: Int) {
         let content = UNMutableNotificationContent()
-        content.title = "🦴 Time to Restock the Food"
+        content.title = "🦴 Low Food: Shared"
         content.body = stockCount == 0
             ? "You're out of food — time to restock!"
             : "Only \(stockCount) portion\(stockCount == 1 ? "" : "s") of food remaining."

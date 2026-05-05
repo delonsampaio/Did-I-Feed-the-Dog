@@ -24,7 +24,7 @@ struct SmallWidgetView: View {
     private func filledView(pet: PetSnapshot) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top) {
-                avatarView(photoData: pet.photoData)
+                avatarView(pet: pet)
                 Spacer()
                 lastFedBadge(pet: pet)
             }
@@ -57,16 +57,13 @@ struct SmallWidgetView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private func avatarView(photoData: Data?) -> some View {
+    private func avatarView(pet: PetSnapshot) -> some View {
         Group {
-            if let data = photoData, let uiImage = UIImage(data: data) {
+            if let data = pet.photoData, let uiImage = UIImage(data: data) {
                 Image(uiImage: uiImage).resizable().scaledToFill()
             } else {
-                Image(systemName: "pawprint.fill")
-                    .font(.system(size: 14))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.accentColor.gradient)
+                Image(DefaultAvatars.defaultFor(id: pet.id))
+                    .resizable().scaledToFill()
             }
         }
         .frame(width: 36, height: 36)

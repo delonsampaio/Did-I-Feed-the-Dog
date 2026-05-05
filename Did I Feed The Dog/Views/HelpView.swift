@@ -70,6 +70,10 @@ struct HelpView: View {
                 answer: "Tap the green Log Meal button on any dog's card. Choose the meal type — Breakfast, Lunch, Dinner, Morning, Afternoon, Evening, Snack, Treat, or Custom — and confirm. The card updates immediately."
             )
             FAQRow(
+                question: "Can I log a meal for a past time?",
+                answer: "Yes. When logging a meal, turn on the 'Set custom time' toggle to choose the exact date and time the feeding happened."
+            )
+            FAQRow(
                 question: "Can I log a meal for all dogs at once?",
                 answer: "Yes. When you have 2 or more dogs, a fork icon appears in the top-right of the dashboard next to the + button. Tap it to open the Feed All Dogs sheet and log the same meal for everyone in one tap."
             )
@@ -138,6 +142,10 @@ struct HelpView: View {
             FAQRow(
                 question: "Can I see when the next meal is due?",
                 answer: "Yes, if you have feeding reminders set up. In Per Dog mode, each card shows a 'Next meal' row with the upcoming scheduled time. In All Dogs mode, a single line appears above all cards on the dashboard."
+            )
+            FAQRow(
+                question: "What is Fasting Mode?",
+                answer: "Fasting mode is used when your dog shouldn't eat (e.g., before a vet visit or due to illness). It displays a warning, prevents accidental logging, and pauses all feeding reminders. You can turn it on by long-pressing a dog's card on the dashboard or in Settings -> Dogs."
             )
         }
     }
@@ -299,6 +307,7 @@ struct HelpView: View {
     private let allFAQs: [FAQItem] = [
             .init(section: "Getting Started", question: "How do I add a dog?", answer: "Tap the + button on the dashboard, or go to Settings -> Dogs -> Add Dog. Enter your dog's name, birthday, and an optional photo."),
             .init(section: "Getting Started", question: "How do I log a feeding?", answer: "Tap the green Log Meal button on any dog's card. Choose the meal type — Breakfast, Lunch, Dinner, Morning, Afternoon, Evening, Snack, Treat, or Custom — and confirm. The card updates immediately."),
+            .init(section: "Getting Started", question: "Can I log a meal for a past time?", answer: "Yes. When logging a meal, turn on the 'Set custom time' toggle to choose the exact date and time the feeding happened."),
             .init(section: "Getting Started", question: "Can I log a meal for all dogs at once?", answer: "Yes. When you have 2 or more dogs, a fork icon appears in the top-right of the dashboard next to the + button. Tap it to open the Feed All Dogs sheet and log the same meal for everyone in one tap."),
             .init(section: "Getting Started", question: "Can I undo a meal I just logged?", answer: "Yes. After logging a meal, an Undo banner appears at the bottom of the screen with a shrinking green bar showing how much time you have left. Tap Undo before the bar runs out to remove the entry and restore any food portion that was deducted."),
             .init(section: "Getting Started", question: "How do I use the Home Screen widget?", answer: "Long-press your iPhone's home screen, tap the + button, and search for 'Fed The Dog?'. You can add the widget to see the feeding status of your dogs at a glance."),
@@ -314,6 +323,7 @@ struct HelpView: View {
             .init(section: "Feeding Status", question: "How far back does the history go?", answer: "All feeding events are kept forever. The card shows the 3 most recent feedings. Tap the dog's name or photo to see the full history."),
             .init(section: "Feeding Status", question: "Can I delete a feeding entry?", answer: "Yes. Tap a dog's card header to open their history, then swipe left on any entry. You'll see two options — Delete removes the entry only, and Delete & Restore Portion removes the entry and adds one portion back to the food stock."),
             .init(section: "Feeding Status", question: "Can I see when the next meal is due?", answer: "Yes, if you have feeding reminders set up. In Per Dog mode, each card shows a 'Next meal' row with the upcoming scheduled time. In All Dogs mode, a single line appears above all cards on the dashboard."),
+            .init(section: "Feeding Status", question: "What is Fasting Mode?", answer: "Fasting mode is used when your dog shouldn't eat (e.g., before a vet visit or due to illness). It displays a warning, prevents accidental logging, and pauses all feeding reminders. You can turn it on by long-pressing a dog's card on the dashboard or in Settings -> Dogs."),
             .init(section: "Feeding Notes", question: "Can I add a note when logging a feeding?", answer: "Yes. The Log Meal sheet has an optional notes field below the meal picker. Use it for anything useful — gave medication, only ate half, used a different food, etc."),
             .init(section: "Feeding Notes", question: "Where do I see the notes I added?", answer: "Notes appear in italic under the meal type in the feeding history. Tap a dog's card header to open their history."),
             .init(section: "Feeding Notes", question: "Can I edit a note after saving?", answer: "Yes. Tap any row in the feeding history to open the Edit Note sheet. The existing note is pre-filled -- update it and tap Save."),

@@ -40,7 +40,7 @@ struct MediumWidgetView: View {
     private func petRow(_ pet: PetSnapshot) -> some View {
         Link(destination: deepLinkURL(for: pet.id)) {
             HStack(spacing: 10) {
-                avatarView(photoData: pet.photoData)
+                avatarView(pet: pet)
                 Text(pet.name)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(.white)
@@ -82,16 +82,13 @@ struct MediumWidgetView: View {
         }
     }
 
-    private func avatarView(photoData: Data?) -> some View {
+    private func avatarView(pet: PetSnapshot) -> some View {
         Group {
-            if let data = photoData, let uiImage = UIImage(data: data) {
+            if let data = pet.photoData, let uiImage = UIImage(data: data) {
                 Image(uiImage: uiImage).resizable().scaledToFill()
             } else {
-                Image(systemName: "pawprint.fill")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.accentColor.gradient)
+                Image(DefaultAvatars.defaultFor(id: pet.id))
+                    .resizable().scaledToFill()
             }
         }
         .frame(width: 30, height: 30)
