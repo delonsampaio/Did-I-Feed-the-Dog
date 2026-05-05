@@ -148,13 +148,17 @@ struct DashboardView: View {
         }
         .onChange(of: deepLinkPetId) { _, newId in
             guard let id = newId else { return }
-            deepLinkFeedingPet = pets.first { $0.id == id }
+            if let pet = pets.first(where: { $0.id == id }), !pet.isFasting {
+                deepLinkFeedingPet = pet
+            }
             deepLinkPetId = nil
         }
         .onReceive(NotificationCenter.default.publisher(for: .quickActionTriggered)) { notification in
             guard let petIdString = notification.userInfo?["petId"] as? String,
                   let petId = UUID(uuidString: petIdString) else { return }
-            deepLinkFeedingPet = pets.first { $0.id == petId }
+            if let pet = pets.first(where: { $0.id == petId }), !pet.isFasting {
+                deepLinkFeedingPet = pet
+            }
         }
         .onAppear {
             NotificationManager.shared.rescheduleIfNeeded(
@@ -169,7 +173,9 @@ struct DashboardView: View {
             
             if let pendingIdString = QuickActionManager.shared.pendingPetId,
                let pendingId = UUID(uuidString: pendingIdString) {
-                deepLinkFeedingPet = pets.first { $0.id == pendingId }
+                if let pet = pets.first(where: { $0.id == pendingId }), !pet.isFasting {
+                    deepLinkFeedingPet = pet
+                }
                 QuickActionManager.shared.pendingPetId = nil
             }
         }
