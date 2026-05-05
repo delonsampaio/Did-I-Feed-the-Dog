@@ -10,9 +10,7 @@ struct DogFoodShortcuts: AppShortcutsProvider {
                 "Record a feeding in \(.applicationName)",
                 "Feed \(\.$pet) in \(.applicationName)",
                 "Mark \(\.$pet) as fed in \(.applicationName)",
-                "Log \(\.$pet)'s meal in \(.applicationName)",
-                "Feed \(\.$pet) \(\.$mealType) in \(.applicationName)",
-                "Log \(\.$pet)'s \(\.$mealType) in \(.applicationName)"
+                "Log \(\.$pet)'s meal in \(.applicationName)"
             ],
             shortTitle: "Log Feeding",
             systemImageName: "dog.fill"
