@@ -114,7 +114,7 @@ final class NotificationManager {
             return
         }
         // Build the overdue context once and reuse for every pet.
-        let ctx = Pet.OverdueContext.current
+        let ctx = OverdueContext.current
         let count = pets.filter { $0.isFeedingOverdue(using: ctx) }.count
         Task { try? await UNUserNotificationCenter.current().setBadgeCount(count) }
     }
