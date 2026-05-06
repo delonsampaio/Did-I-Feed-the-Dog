@@ -34,6 +34,7 @@ struct DashboardView: View {
     @State private var undoAction: (() -> Void)? = nil
     @State private var toastMessage = "Meal logged"
     @State private var toastId = UUID()
+    @State private var showSyncError = false
 
     private var allDogsReminderTimes: [Int] {
         allDogsReminderTimesRaw.split(separator: ",").compactMap { Int($0) }
@@ -98,11 +99,20 @@ struct DashboardView: View {
                             ProgressView()
                                 .scaleEffect(0.8)
                                 .accessibilityLabel("Syncing with iCloud")
-                        } else if syncMonitor.lastError != nil {
-                            Image(systemName: "exclamationmark.icloud")
-                                .font(.subheadline)
-                                .foregroundStyle(.orange)
-                                .accessibilityLabel("iCloud sync issue — your data may not be up to date")
+                        } else if let error = syncMonitor.lastError {
+                            Button {
+                                showSyncError = true
+                            } label: {
+                                Image(systemName: "exclamationmark.icloud")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.orange)
+                            }
+                            .accessibilityLabel("iCloud sync issue — your data may not be up to date")
+                            .alert("iCloud Sync Error", isPresented: $showSyncError) {
+                                Button("OK", role: .cancel) { }
+                            } message: {
+                                Text(String(describing: error))
+                            }
                         }
                     }
                 }
