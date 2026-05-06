@@ -223,7 +223,7 @@
     </details>
     <details>
       <summary>What is Not Tracked?</summary>
-      <p>Food stock tracking is turned off. No counts are shown and nothing is decremented when you log a meal.</p>
+      <p>Food stock tracking is turned off. No counts are shown and nothing is subtracted when you log a meal.</p>
     </details>
     <details>
       <summary>Do Snack or Treat meals count against the food stock?</summary>
@@ -275,7 +275,7 @@
     </details>
     <details>
       <summary>Why does Siri ask which dog instead of just doing what I said?</summary>
-      <p>For accuracy. Earlier versions tried to extract the dog's name from your voice ("Feed Cooper"), but iOS sometimes matched the wrong dog — logging breakfast for the wrong one. Siri now asks "Which dog?" so you confirm the right one. Single-dog households are auto-resolved, so the prompt only appears when you have multiple dogs.</p>
+      <p>For accuracy. Siri now asks "Which dog?" so you can confirm the right one. If you only have one dog, Siri handles it automatically, so you'll only be asked if you have multiple dogs.</p>
     </details>
     <details>
       <summary>Does Siri ask me which meal type when I log a feeding?</summary>
@@ -283,7 +283,7 @@
     </details>
     <details>
       <summary>Will Siri recognize a new dog I just added?</summary>
-      <p>Yes. As soon as you save a new dog (or rename one) in the app, Siri's vocabulary refreshes — the new dog appears in the picker the next time Siri asks "Which dog?". The same applies after iCloud sync brings dogs in on a fresh install or a second device, as long as you open the app once so Siri sees them.</p>
+      <p>Yes. As soon as you save or rename a dog, Siri learns their name and will show them as an option the next time you ask. The same applies if a family member adds a dog to your shared home, as long as you open the app once so Siri sees them.</p>
     </details>
     <details>
       <summary>How do I check if my dog has been fed?</summary>
@@ -310,20 +310,40 @@
   <section>
     <h2>iCloud Sync &amp; Family</h2>
     <details>
+      <summary>How do I invite a family member?</summary>
+      <p>Go to Settings → Family Sharing and tap "Invite Family Member." Send the link via Messages or Email. Once they open it, your dogs will appear on their phone automatically.</p>
+    </details>
+    <details>
+      <summary>What can family members see and do?</summary>
+      <p>Family members can do everything you can do! They can log meals, undo mistakes, update the food stock, edit feeding schedules, and see the complete feeding history. Everyone shares the same up-to-date information.</p>
+    </details>
+    <details>
+      <summary>How do I remove someone from my household?</summary>
+      <p>Go to Settings → Family Sharing and tap "Manage Shared Dogs." Tap the person's name you want to remove, and select "Remove Access." The shared dogs will instantly disappear from their app.</p>
+    </details>
+    <details>
       <summary>Does my data sync across devices?</summary>
-      <p>Yes. If everyone in your household is signed into the same iCloud account, feedings, food stock, and dog info stay in sync across all iPhones automatically. Changes usually appear within about a minute.</p>
+      <p>Yes. If everyone in your household is signed into the same iCloud account, feedings, food stock, and dog info stay updated across all iPhones automatically. Changes usually appear within about a minute.</p>
     </details>
     <details>
       <summary>How do I know which family member fed the dog?</summary>
       <p>Each feeding in the history shows the name of the person who logged it, next to the time. Make sure everyone sets their name in Settings → Your Name so feedings are clearly attributed.</p>
     </details>
     <details>
-      <summary>How do I know if the app is syncing?</summary>
-      <p>A small spinner appears next to the gear icon on the dashboard while iCloud is actively syncing. If a feeding from another device hasn't appeared yet, wait a moment for the spinner to disappear.</p>
+      <summary>How do I know if my family's changes are updating?</summary>
+      <p>A small spinner appears next to the gear icon on the dashboard while the app is updating data. If a feeding from a family member hasn't appeared yet, just wait a moment for the spinner to disappear.</p>
     </details>
     <details>
-      <summary>What if two people log a feeding at the same time?</summary>
-      <p>Both feedings are saved. You may see two entries close together in the history — that's the accurate record of what happened.</p>
+      <summary>What happens if two people log a meal at the same time?</summary>
+      <p>Both meals will be saved! If you and a family member both tap "Log Meal" at the exact same moment, you'll see two entries in the feeding history. Just swipe left on the extra entry to delete it.</p>
+    </details>
+    <details>
+      <summary>What happens if I cancel my iCloud storage?</summary>
+      <p>The app uses your Apple account to share data. If your iCloud storage is full or cancelled, the app will continue to work normally on your phone, but it will pause sharing new feedings with your family until space is freed up.</p>
+    </details>
+    <details>
+      <summary>Does sharing the app cost extra?</summary>
+      <p>No! Family Sharing uses your existing Apple account. As long as you have a little bit of free iCloud space available, you can share your feeding logs with your family at no extra cost.</p>
     </details>
   </section>
 
@@ -331,7 +351,7 @@
     <h2>Notifications</h2>
     <details>
       <summary>What is the Low Stock Notification?</summary>
-      <p>A notification sent when a dog's food stock drops to or below the Low Stock Threshold and the app is in the background. When you're actively using the app, the orange banner on the dog's card serves as the in-app warning instead.</p>
+      <p>An alert sent to your phone when a dog's food stock drops to or below your warning level. If you have the app open, you'll see an orange warning on the dog's card instead.</p>
     </details>
     <details>
       <summary>What is the Birthday Notification?</summary>
@@ -343,11 +363,11 @@
     </details>
     <details>
       <summary>What is the Overdue Notification?</summary>
-      <p>A notification sent when a dog hasn't been fed past their overdue threshold (default 12 hours). It fires once per feeding window and is automatically cancelled when the next meal is logged. Turn it off in Settings → Notifications → Overdue Notification.</p>
+      <p>An alert sent when a dog hasn't been fed and is past due (default 12 hours). It only alerts you once, and goes away automatically when you log a meal. Turn it off in Settings → Notifications → Overdue Notification.</p>
     </details>
     <details>
       <summary>What is the App Icon Badge?</summary>
-      <p>A number shown on the app icon equal to how many of your dogs are currently overdue for a feeding. It updates automatically when you open the app or log a meal. Turn it off in Settings → Notifications → App Icon Badge.</p>
+      <p>The red number shown on the app's icon on your home screen. It shows how many of your dogs are currently overdue for a meal. It updates automatically when you open the app or log a feeding. Turn it off in Settings → Notifications → App Icon Badge.</p>
     </details>
     <details>
       <summary>How do I set up a Water Bowl Cleaning Reminder?</summary>
@@ -355,7 +375,7 @@
     </details>
     <details>
       <summary>I'm not receiving notifications. What should I check?</summary>
-      <p>Open the app's Settings → Notifications. If iOS notifications are disabled, an orange warning banner appears at the top of the section — tap it to jump straight to iPhone Settings and re-enable them. The push toggles in our Settings will activate again with your previous values once permission is restored.</p>
+      <p>Open the app's Settings → Notifications. If your phone's notifications are disabled, an orange warning banner appears — tap it to jump straight to your iPhone Settings and turn them on. Your preferences inside the app will automatically turn back on once permission is restored.</p>
     </details>
   </section>
 

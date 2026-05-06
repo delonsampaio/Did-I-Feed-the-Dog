@@ -278,10 +278,10 @@ struct SettingsView: View {
                             .foregroundStyle(.orange)
                             .accessibilityHidden(true)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Notifications are disabled in iOS")
+                            Text("Notifications are disabled on your iPhone")
                                 .font(.footnote.weight(.semibold))
                                 .foregroundStyle(.primary)
-                            Text("Tap to open iOS Settings and re-enable. Until then, alerts won't fire even when toggles look ON.")
+                            Text("Tap to open Settings and turn them on. Until then, you won't receive alerts.")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -293,7 +293,7 @@ struct SettingsView: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.vertical, 2)
-                .accessibilityHint("Opens iOS Settings to re-enable notifications")
+                .accessibilityHint("Opens iPhone Settings to turn on notifications")
             }
             Toggle(isOn: $lowStockUIWarning) {
                 VStack(alignment: .leading, spacing: 2) {
@@ -306,7 +306,7 @@ struct SettingsView: View {
             Toggle(isOn: $lowStockPushEnabled) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Low Stock Notification")
-                    Text("Sends a push notification when food is low.")
+                    Text("Sends an alert to your phone when food is low.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -324,7 +324,7 @@ struct SettingsView: View {
             Toggle(isOn: $overduePushEnabled) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Overdue Notification")
-                    Text("Alerts you if a dog misses their feeding window.")
+                    Text("Alerts you if a dog misses their meal.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -333,7 +333,7 @@ struct SettingsView: View {
             Toggle(isOn: $badgeEnabled) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("App Icon Badge")
-                    Text("Shows the number of overdue dogs on your home screen.")
+                    Text("Shows a red number on the app icon when a dog needs feeding.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -384,7 +384,7 @@ struct SettingsView: View {
             Toggle(isOn: $waterBowlReminderEnabled) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Water Bowl Cleaning Reminder")
-                    Text("Weekly nudge to scrub the bowl and prevent biofilm buildup.")
+                    Text("Weekly nudge to wash the bowl and keep their water fresh and clean.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

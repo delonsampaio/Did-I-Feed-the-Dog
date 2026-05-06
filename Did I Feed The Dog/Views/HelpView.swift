@@ -216,7 +216,7 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "What is Not Tracked?",
-                answer: "Food stock tracking is turned off. No counts are shown and nothing is decremented when you log a meal."
+                answer: "Food stock tracking is turned off. No counts are shown and nothing is subtracted when you log a meal."
             )
             FAQRow(
                 question: "Do Snack or Treat meals count against the food stock?",
@@ -245,7 +245,7 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "Why does Siri ask which dog instead of just doing what I said?",
-                answer: "For accuracy. Earlier versions tried to extract the dog's name from your voice (\"Feed Cooper\"), but iOS sometimes matched the wrong dog — logging breakfast for the wrong one. Siri now asks \"Which dog?\" so you confirm the right one. Single-dog households are auto-resolved, so the prompt only appears when you have multiple dogs."
+                answer: "For accuracy. Siri now asks \"Which dog?\" so you can confirm the right one. If you only have one dog, Siri handles it automatically, so you'll only be asked if you have multiple dogs."
             )
             FAQRow(
                 question: "Does Siri ask me which meal type when I log a feeding?",
@@ -253,7 +253,7 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "Will Siri recognize a new dog I just added?",
-                answer: "Yes. As soon as you save a new dog (or rename one) in the app, Siri's vocabulary refreshes — the new dog appears in the picker the next time Siri asks \"Which dog?\". The same applies after iCloud sync brings dogs in on a fresh install or a second device, as long as you open the app once so Siri sees them."
+                answer: "Yes. As soon as you save or rename a dog, Siri learns their name and will show them as an option the next time you ask. The same applies if a family member adds a dog to your shared home, as long as you open the app once so Siri sees them."
             )
             FAQRow(
                 question: "How do I check if my dog has been fed?",
@@ -282,15 +282,15 @@ struct HelpView: View {
         Section("iCloud Sync & Family") {
             FAQRow(
                 question: "Does my data sync across devices?",
-                answer: "Yes. If everyone in your household is signed into the same iCloud account, feedings, food stock, and dog info stay in sync across all iPhones automatically. Changes usually appear within about a minute."
+                answer: "Yes. If everyone in your household is signed into the same iCloud account, feedings, food stock, and dog info stay updated across all iPhones automatically. Changes usually appear within about a minute."
             )
             FAQRow(
                 question: "How do I know which family member fed the dog?",
                 answer: "Each feeding in the history shows the name of the person who logged it, next to the time. Make sure everyone in your household sets their name in Settings -> Your Name so their feedings are clearly attributed."
             )
             FAQRow(
-                question: "How do I know if the app is syncing?",
-                answer: "A small spinner appears next to the gear icon on the dashboard while iCloud is actively syncing. If a feeding from another device hasn't appeared yet, wait a moment for the spinner to disappear."
+                question: "How do I know if my family's changes are updating?",
+                answer: "A small spinner appears next to the gear icon on the dashboard while the app is updating data. If a feeding from a family member hasn't appeared yet, just wait a moment for the spinner to disappear."
             )
             FAQRow(
                 question: "What if two people log a feeding at the same time?",
@@ -303,7 +303,7 @@ struct HelpView: View {
         Section("Notifications") {
             FAQRow(
                 question: "What is the Low Stock Notification?",
-                answer: "A notification sent when a dog's food stock drops to or below the Low Stock Threshold and the app is in the background. When you're actively using the app, the orange banner on the dog's card serves as the in-app warning instead."
+                answer: "An alert sent to your phone when a dog's food stock drops to or below your warning level. If you have the app open, you'll see an orange warning on the dog's card instead."
             )
             FAQRow(
                 question: "What is the Birthday Notification?",
@@ -315,11 +315,11 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "What is the Overdue Notification?",
-                answer: "A notification sent when a dog hasn't been fed past their overdue threshold (default 12 hours). It fires once per feeding window and is automatically cancelled when the next meal is logged. Turn it off in Settings -> Notifications -> Overdue Notification."
+                answer: "An alert sent when a dog hasn't been fed and is past due (default 12 hours). It only alerts you once, and goes away automatically when you log a meal. Turn it off in Settings -> Notifications -> Overdue Notification."
             )
             FAQRow(
                 question: "What is the App Icon Badge?",
-                answer: "A number shown on the app icon equal to how many of your dogs are currently overdue for a feeding. It updates automatically when you open the app or log a meal. Turn it off in Settings -> Notifications -> App Icon Badge."
+                answer: "The red number shown on the app's icon on your home screen. It shows how many of your dogs are currently overdue for a meal. It updates automatically when you open the app or log a feeding. Turn it off in Settings -> Notifications -> App Icon Badge."
             )
             FAQRow(
                 question: "How do I set up a Water Bowl Cleaning Reminder?",
@@ -327,7 +327,7 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "I'm not receiving notifications. What should I check?",
-                answer: "Open the app's Settings -> Notifications. If iOS notifications are disabled, an orange warning banner appears at the top of the section — tap it to jump straight to iPhone Settings and re-enable them. The push toggles in our Settings will activate again with your previous values once permission is restored."
+                answer: "Open the app's Settings -> Notifications. If your phone's notifications are disabled, an orange warning banner appears — tap it to jump straight to your iPhone Settings and turn them on. Your preferences inside the app will automatically turn back on once permission is restored."
             )
         }
     }
@@ -360,7 +360,7 @@ struct HelpView: View {
             .init(section: "Food Stock", question: "How do I track food portions?", answer: "Go to Settings -> Food Stock and choose a tracking mode: Per Dog, Shared Pool, or Not Tracked. Portions decrease automatically when you log a meal."),
             .init(section: "Food Stock", question: "What is Per Dog mode?", answer: "Each dog has their own food count. Every time you log a meal for a dog, their count decreases by one portion. Snack and Treat meals are the exception — they don't reduce the count. Set each dog's starting count in Settings -> Food Stock or by tapping the food stock cell on their card."),
             .init(section: "Food Stock", question: "What is Shared Pool mode?", answer: "One bag of food shared across all dogs. The pool decreases by one portion each time any dog is fed a meal. Snack and Treat logs do not reduce the shared count. Set the starting count in Settings -> Food Stock."),
-            .init(section: "Food Stock", question: "What is Not Tracked?", answer: "Food stock tracking is turned off. No counts are shown and nothing is decremented when you log a meal."),
+            .init(section: "Food Stock", question: "What is Not Tracked?", answer: "Food stock tracking is turned off. No counts are shown and nothing is subtracted when you log a meal."),
             .init(section: "Food Stock", question: "Do Snack or Treat meals count against the food stock?", answer: "Snack and Treat do not reduce the portion count. All standard meal types (Morning, Breakfast, Lunch, Afternoon, Dinner, Evening) reduce the count by one. Custom meals reduce the count by default — but you can turn off the \"Deduct a portion\" toggle when logging a custom meal (e.g. Medication or Water) to skip the deduction."),
             .init(section: "Food Stock", question: "How do I restock?", answer: "Tap the Food Stock cell or the Low Food Stock banner on any dog's card to open the edit sheet and update the count directly."),
             .init(section: "Food Stock", question: "What is the Low Stock Threshold?", answer: "When a dog's stock drops to or below this number, a warning banner appears on their card and a push notification is sent (if enabled). Adjust it in Settings -> Notifications."),
@@ -371,25 +371,25 @@ struct HelpView: View {
             .init(section: "Feeding Reminders", question: "Will reminders stop firing if I already fed my dog?", answer: "Yes. When you log a feeding, the next scheduled reminder for that dog is automatically cancelled. Any later reminders that day still fire as normal. Reminders are fully restored the next time you open the app."),
             .init(section: "Siri & Shortcuts", question: "How do I log a feeding with Siri?", answer: "Say \"Log a meal in Fed The Dog?\", \"I fed the dog in Fed The Dog?\", or \"Feed my dog in Fed The Dog?\". With one dog, Siri logs for them automatically. With multiple dogs, Siri asks which one. Then Siri asks the meal type — say or tap your choice. Siri will tell you the remaining food stock afterward."),
             .init(section: "Siri & Shortcuts", question: "Can I feed all my dogs at once with Siri?", answer: "Yes. Say \"Feed all dogs in Fed The Dog?\", \"Mark all dogs as fed in Fed The Dog?\", or \"I fed all the dogs in Fed The Dog?\". Fasting dogs are automatically skipped."),
-            .init(section: "Siri & Shortcuts", question: "Why does Siri ask which dog instead of just doing what I said?", answer: "For accuracy. Earlier versions tried to extract the dog's name from your voice (\"Feed Cooper\"), but iOS sometimes matched the wrong dog — logging breakfast for the wrong one. Siri now asks \"Which dog?\" so you confirm the right one. Single-dog households are auto-resolved, so the prompt only appears when you have multiple dogs."),
+            .init(section: "Siri & Shortcuts", question: "Why does Siri ask which dog instead of just doing what I said?", answer: "For accuracy. Siri now asks \"Which dog?\" so you can confirm the right one. If you only have one dog, Siri handles it automatically, so you'll only be asked if you have multiple dogs."),
             .init(section: "Siri & Shortcuts", question: "Does Siri ask me which meal type when I log a feeding?", answer: "Yes. After Siri picks the dog (or asks which one), it asks \"What type of meal is this?\" and presents all the options — Breakfast, Lunch, Dinner, Morning, Afternoon, Evening, Snack, and Treat. Just say or tap the one you want."),
-            .init(section: "Siri & Shortcuts", question: "Will Siri recognize a new dog I just added?", answer: "Yes. As soon as you save a new dog (or rename one) in the app, Siri's vocabulary refreshes — the new dog appears in the picker the next time Siri asks \"Which dog?\". The same applies after iCloud sync brings dogs in on a fresh install or a second device, as long as you open the app once so Siri sees them."),
+            .init(section: "Siri & Shortcuts", question: "Will Siri recognize a new dog I just added?", answer: "Yes. As soon as you save or rename a dog, Siri learns their name and will show them as an option the next time you ask. The same applies if a family member adds a dog to your shared home, as long as you open the app once so Siri sees them."),
             .init(section: "Siri & Shortcuts", question: "How do I check if my dog has been fed?", answer: "Say \"Did I feed the dog in Fed The Dog?\", \"Has the dog been fed in Fed The Dog?\", or \"When was my dog last fed in Fed The Dog?\". With one dog, Siri answers right away. With multiple, Siri asks which one."),
             .init(section: "Siri & Shortcuts", question: "How do I check food stock with Siri?", answer: "Say \"Check food stock in Fed The Dog?\", \"How much dog food is left in Fed The Dog?\", or \"Is my dog's food running low in Fed The Dog?\". With multiple dogs in individual stock mode, Siri asks which dog."),
             .init(section: "Siri & Shortcuts", question: "How do I update food stock with Siri?", answer: "Say \"Add dog food in Fed The Dog?\", \"I bought more dog food in Fed The Dog?\", or \"Update food stock in Fed The Dog?\". Siri asks which dog (in individual mode) and how many portions you added."),
             .init(section: "Siri & Shortcuts", question: "Can I add these as shortcuts in the Shortcuts app?", answer: "Yes. Open the Shortcuts app, tap the + button, and search for Fed The Dog? to see all available actions. You can also go to iPhone Settings -> Apps -> Fed The Dog? to manage them."),
             .init(section: "Siri & Shortcuts", question: "Do I always have to say the full app name with Siri?", answer: "Yes — include \"in Fed The Dog?\" so Siri knows which app to use. With repeated use, Siri Suggestions may surface the shortcut on your lock screen or Spotlight for a quick tap, but spoken commands should always include the app name."),
-            .init(section: "iCloud Sync & Family", question: "Does my data sync across devices?", answer: "Yes. If everyone in your household is signed into the same iCloud account, feedings, food stock, and dog info stay in sync across all iPhones automatically. Changes usually appear within about a minute."),
+            .init(section: "iCloud Sync & Family", question: "Does my data sync across devices?", answer: "Yes. If everyone in your household is signed into the same iCloud account, feedings, food stock, and dog info stay updated across all iPhones automatically. Changes usually appear within about a minute."),
             .init(section: "iCloud Sync & Family", question: "How do I know which family member fed the dog?", answer: "Each feeding in the history shows the name of the person who logged it, next to the time. Make sure everyone in your household sets their name in Settings -> Your Name so their feedings are clearly attributed."),
-            .init(section: "iCloud Sync & Family", question: "How do I know if the app is syncing?", answer: "A small spinner appears next to the gear icon on the dashboard while iCloud is actively syncing. If a feeding from another device hasn't appeared yet, wait a moment for the spinner to disappear."),
+            .init(section: "iCloud Sync & Family", question: "How do I know if my family's changes are updating?", answer: "A small spinner appears next to the gear icon on the dashboard while the app is updating data. If a feeding from a family member hasn't appeared yet, just wait a moment for the spinner to disappear."),
             .init(section: "iCloud Sync & Family", question: "What if two people log a feeding at the same time?", answer: "Both feedings are saved. You may see two entries close together in the history — that's the accurate record of what happened."),
-            .init(section: "Notifications", question: "What is the Low Stock Notification?", answer: "A notification sent when a dog's food stock drops to or below the Low Stock Threshold and the app is in the background. When you're actively using the app, the orange banner on the dog's card serves as the in-app warning instead."),
+            .init(section: "Notifications", question: "What is the Low Stock Notification?", answer: "An alert sent to your phone when a dog's food stock drops to or below your warning level. If you have the app open, you'll see an orange warning on the dog's card instead."),
             .init(section: "Notifications", question: "What is the Birthday Notification?", answer: "If you set a birthday for your dog, the app sends a celebration alert each year on that day. The field is optional — if you didn't add a birthday, no birthday alert fires."),
             .init(section: "Notifications", question: "What is the In-App Low Stock Banner?", answer: "An orange banner that appears on the dog's card when stock is low. This is separate from the push notification — it shows while you're actively using the app."),
-            .init(section: "Notifications", question: "What is the Overdue Notification?", answer: "A notification sent when a dog hasn't been fed past their overdue threshold (default 12 hours). It fires once per feeding window and is automatically cancelled when the next meal is logged. Turn it off in Settings -> Notifications -> Overdue Notification."),
-            .init(section: "Notifications", question: "What is the App Icon Badge?", answer: "A number shown on the app icon equal to how many of your dogs are currently overdue for a feeding. It updates automatically when you open the app or log a meal. Turn it off in Settings -> Notifications -> App Icon Badge."),
+            .init(section: "Notifications", question: "What is the Overdue Notification?", answer: "An alert sent when a dog hasn't been fed and is past due (default 12 hours). It only alerts you once, and goes away automatically when you log a meal. Turn it off in Settings -> Notifications -> Overdue Notification."),
+            .init(section: "Notifications", question: "What is the App Icon Badge?", answer: "The red number shown on the app's icon on your home screen. It shows how many of your dogs are currently overdue for a meal. It updates automatically when you open the app or log a feeding. Turn it off in Settings -> Notifications -> App Icon Badge."),
             .init(section: "Notifications", question: "How do I set up a Water Bowl Cleaning Reminder?", answer: "Go to Settings -> Health & Hygiene and enable the Water Bowl Reminder. You can choose the day of the week and time you'd like to be reminded to clean and refill the bowl. The reminder fires weekly."),
-            .init(section: "Notifications", question: "I'm not receiving notifications. What should I check?", answer: "Open the app's Settings -> Notifications. If iOS notifications are disabled, an orange warning banner appears at the top of the section — tap it to jump straight to iPhone Settings and re-enable them. The push toggles in our Settings will activate again with your previous values once permission is restored."),
+            .init(section: "Notifications", question: "I'm not receiving notifications. What should I check?", answer: "Open the app's Settings -> Notifications. If your phone's notifications are disabled, an orange warning banner appears — tap it to jump straight to your iPhone Settings and turn them on. Your preferences inside the app will automatically turn back on once permission is restored."),
         ]
 }
 
