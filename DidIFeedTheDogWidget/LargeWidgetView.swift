@@ -117,6 +117,7 @@ struct LargeWidgetView: View {
         return HStack(spacing: 4) {
             Image(systemName: icon)
             Text(relativeTime(pet.lastFedDate))
+                .lineLimit(1)
         }
         .font(.system(size: 11, weight: .semibold))
         .foregroundStyle(color)
@@ -124,6 +125,7 @@ struct LargeWidgetView: View {
         .padding(.vertical, 3)
         .background(color.opacity(0.2))
         .clipShape(RoundedRectangle(cornerRadius: 7))
+        .fixedSize(horizontal: true, vertical: false)
     }
 
     private func badgeDetails(for pet: PetSnapshot) -> (icon: String, text: String, color: Color) {

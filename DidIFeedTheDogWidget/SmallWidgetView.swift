@@ -73,11 +73,13 @@ struct SmallWidgetView: View {
             Text(relativeTime(pet.lastFedDate))
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.white)
+                .lineLimit(1)
         }
         .padding(.horizontal, 7)
         .padding(.vertical, 4)
         .background(color.opacity(0.2))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+        .fixedSize(horizontal: true, vertical: false)
     }
 
     private func badgeDetails(for pet: PetSnapshot) -> (icon: String, text: String, color: Color) {
