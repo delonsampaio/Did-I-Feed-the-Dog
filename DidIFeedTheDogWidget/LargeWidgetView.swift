@@ -41,6 +41,7 @@ struct LargeWidgetView: View {
         .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(WidgetColors.background)
+        .dynamicTypeSize(...DynamicTypeSize.xLarge)
     }
 
     private var header: some View {
@@ -104,7 +105,8 @@ struct LargeWidgetView: View {
 
     private func avatarView(pet: PetSnapshot) -> some View {
         Group {
-            if let data = pet.photoData, let uiImage = UIImage(data: data) {
+            if let data = pet.photoData,
+               let uiImage = WidgetImage.downsample(data: data, toPointSize: CGSize(width: 30, height: 30)) {
                 Image(uiImage: uiImage).resizable().scaledToFill()
             } else {
                 Image(DefaultAvatars.defaultFor(id: pet.id))
