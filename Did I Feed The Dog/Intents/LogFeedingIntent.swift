@@ -10,15 +10,11 @@ struct LogFeedingIntent: AppIntent {
     @Parameter(title: "Dog", requestValueDialog: IntentDialog("Which dog did you feed?"))
     var pet: PetEntity
 
-    @Parameter(title: "Meal Type")
-    var mealType: MealTypeAppEnum?
+    @Parameter(title: "Meal Type", requestValueDialog: IntentDialog("What type of meal is this?"))
+    var mealType: MealTypeAppEnum
 
     static var parameterSummary: some ParameterSummary {
-        When(\.$mealType, .hasAnyValue) {
-            Summary("Log \(\.$mealType) for \(\.$pet)")
-        } otherwise: {
-            Summary("Log feeding for \(\.$pet)")
-        }
+        Summary("Log \(\.$mealType) for \(\.$pet)")
     }
 
     @MainActor
@@ -33,21 +29,19 @@ struct LogFeedingIntent: AppIntent {
             return .result(dialog: "\(modelPet.name ?? "That dog") is currently fasting and can't be fed.")
         }
 
-        let resolvedMeal = mealType ?? MealTypeAppEnum.defaultForCurrentTime()
-
         let result = FeedingLogService.logFeeding(
             for: modelPet,
-            mealLabel: resolvedMeal.label,
-            deductsStock: resolvedMeal.deductsStock,
+            mealLabel: mealType.label,
+            deductsStock: mealType.deductsStock,
             logger: LoggedBy.current,
             in: context
         )
 
-        var dialogMessage = "Logged \(resolvedMeal.label) for \(modelPet.name ?? "your dog")."
-        
+        var dialogMessage = "Logged \(mealType.label) for \(modelPet.name ?? "your dog")."
+
         if result.didTriggerLowStock {
             dialogMessage += " Note, food stock is running low!"
-        } else if AppSettings.stockMode != .none && resolvedMeal.deductsStock {
+        } else if AppSettings.stockMode != .none && mealType.deductsStock {
             let remaining = AppSettings.stockMode == .shared ? AppSettings.sharedFoodStock : modelPet.foodStockCount
             dialogMessage += " \(remaining) portion\(remaining == 1 ? "" : "s") remaining."
         }

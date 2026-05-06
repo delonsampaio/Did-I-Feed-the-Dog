@@ -237,15 +237,15 @@ struct HelpView: View {
         Section("Siri & Shortcuts") {
             FAQRow(
                 question: "How do I log a feeding with Siri?",
-                answer: "Say \"Feed Luna in Fed The Dog?\", \"Mark Luna as fed in Fed The Dog?\", or \"Log Luna's meal in Fed The Dog?\". You can also include the meal type directly — \"Feed Luna Breakfast in Fed The Dog?\" or \"Log Dinner for Luna in Fed The Dog?\". Siri will even tell you your remaining food stock afterward."
+                answer: "Say \"Feed Luna in Fed The Dog?\", \"Mark Luna as fed in Fed The Dog?\", or \"Log Luna's meal in Fed The Dog?\". Siri will then ask which meal type — just say or tap the one you want. Siri will even tell you your remaining food stock afterward."
             )
             FAQRow(
                 question: "Can I feed all my dogs at once with Siri?",
                 answer: "Yes. Say \"Feed all dogs in Fed The Dog?\", \"Mark all dogs as fed in Fed The Dog?\", or \"I fed all the dogs in Fed The Dog?\". Fasting dogs are automatically skipped."
             )
             FAQRow(
-                question: "What meal type does Siri use if I don't say one?",
-                answer: "If you don't specify a meal type, the app picks one based on the time of day — Breakfast before 11 AM, Lunch from 11 AM to 4 PM, Dinner from 4 PM to 11 PM, and Snack overnight. To choose a specific type, just say it in the command: \"Feed Luna Breakfast in Fed The Dog?\"."
+                question: "Does Siri ask me which meal type when I log a feeding?",
+                answer: "Yes. After you name the dog, Siri asks \"What type of meal is this?\" and presents all the options — Breakfast, Lunch, Dinner, Morning, Afternoon, Evening, Snack, and Treat. Just say or tap the one you want."
             )
             FAQRow(
                 question: "Will Siri recognize a new dog I just added?",
@@ -365,9 +365,9 @@ struct HelpView: View {
             .init(section: "Feeding Reminders", question: "What is Per Dog mode?", answer: "Each dog has their own reminder schedule. Tap the dog's name in Settings -> Feeding Reminders (or tap the dog's name in Settings -> Dogs) to set their individual times."),
             .init(section: "Feeding Reminders", question: "How many reminder times can I set?", answer: "Up to 3 daily reminder times per schedule. Most households need a morning and evening reminder, but a midday one is available too."),
             .init(section: "Feeding Reminders", question: "Will reminders stop firing if I already fed my dog?", answer: "Yes. When you log a feeding, the next scheduled reminder for that dog is automatically cancelled. Any later reminders that day still fire as normal. Reminders are fully restored the next time you open the app."),
-            .init(section: "Siri & Shortcuts", question: "How do I log a feeding with Siri?", answer: "Say \"Feed Luna in Fed The Dog?\", \"Mark Luna as fed in Fed The Dog?\", or \"Log Luna's meal in Fed The Dog?\". You can also include the meal type directly — \"Feed Luna Breakfast in Fed The Dog?\" or \"Log Dinner for Luna in Fed The Dog?\". Siri will even tell you your remaining food stock afterward."),
+            .init(section: "Siri & Shortcuts", question: "How do I log a feeding with Siri?", answer: "Say \"Feed Luna in Fed The Dog?\", \"Mark Luna as fed in Fed The Dog?\", or \"Log Luna's meal in Fed The Dog?\". Siri will then ask which meal type — just say or tap the one you want. Siri will even tell you your remaining food stock afterward."),
             .init(section: "Siri & Shortcuts", question: "Can I feed all my dogs at once with Siri?", answer: "Yes. Say \"Feed all dogs in Fed The Dog?\", \"Mark all dogs as fed in Fed The Dog?\", or \"I fed all the dogs in Fed The Dog?\". Fasting dogs are automatically skipped."),
-            .init(section: "Siri & Shortcuts", question: "What meal type does Siri use if I don't say one?", answer: "If you don't specify a meal type, the app picks one based on the time of day — Breakfast before 11 AM, Lunch from 11 AM to 4 PM, Dinner from 4 PM to 11 PM, and Snack overnight. To choose a specific type, just say it in the command: \"Feed Luna Breakfast in Fed The Dog?\"."),
+            .init(section: "Siri & Shortcuts", question: "Does Siri ask me which meal type when I log a feeding?", answer: "Yes. After you name the dog, Siri asks \"What type of meal is this?\" and presents all the options — Breakfast, Lunch, Dinner, Morning, Afternoon, Evening, Snack, and Treat. Just say or tap the one you want."),
             .init(section: "Siri & Shortcuts", question: "Will Siri recognize a new dog I just added?", answer: "Yes. As soon as you save a new dog (or rename one) in the app, Siri's vocabulary refreshes — \"Feed Rex\" works right away. The same applies after iCloud sync brings dogs in on a fresh install or a second device, as long as you open the app once so Siri sees them."),
             .init(section: "Siri & Shortcuts", question: "How do I check if my dog has been fed?", answer: "Say \"Did I feed Luna in Fed The Dog?\", \"Has Luna been fed in Fed The Dog?\", \"Is Luna overdue in Fed The Dog?\", or \"When did Luna last eat in Fed The Dog?\" — include the dog's name and Siri answers directly."),
             .init(section: "Siri & Shortcuts", question: "How do I check food stock with Siri?", answer: "Say \"How much food does Luna have in Fed The Dog?\", \"Check Luna's food stock in Fed The Dog?\", or \"Is Luna's food running low in Fed The Dog?\"."),
