@@ -25,7 +25,7 @@ struct LargeWidgetView: View {
             } else {
                 ForEach(Array(entry.pets.prefix(6).enumerated()), id: \.offset) { index, pet in
                     if index > 0 { divider }
-                    petRow(pet, badgeTextWidth: maxBadgeTextWidth)
+                    petRow(pet)
                 }
             }
             Spacer(minLength: 0)
@@ -47,7 +47,7 @@ struct LargeWidgetView: View {
         .padding(.bottom, 10)
     }
 
-    private func petRow(_ pet: PetSnapshot, badgeTextWidth: CGFloat) -> some View {
+    private func petRow(_ pet: PetSnapshot) -> some View {
         Link(destination: URL(string: deepLinkBase + pet.id.uuidString)!) {
             HStack(spacing: 10) {
                 avatarView(pet: pet)
@@ -61,8 +61,7 @@ struct LargeWidgetView: View {
                         .font((pet.isFasting || pet.isFeedingOverdue) ? .caption.bold() : .caption)
                         .foregroundStyle(statusColor(for: pet))
                         .lineLimit(1)
-                        .fixedSize(horizontal: true, vertical: false)
-                    lastFedBadge(pet: pet, textWidth: badgeTextWidth)
+                    lastFedBadge(pet: pet)
                 }
             }
             .padding(.vertical, 6)
@@ -119,13 +118,12 @@ struct LargeWidgetView: View {
         .clipShape(Circle())
     }
 
-    private func lastFedBadge(pet: PetSnapshot, textWidth: CGFloat) -> some View {
+    private func lastFedBadge(pet: PetSnapshot) -> some View {
         let (icon, _, color) = badgeDetails(for: pet)
         return HStack(spacing: 4) {
             Image(systemName: icon)
             Text(relativeTime(pet.lastFedDate))
                 .lineLimit(1)
-                .frame(width: textWidth, alignment: .center)
         }
         .font(.system(size: 11, weight: .semibold))
         .foregroundStyle(color)
@@ -133,7 +131,6 @@ struct LargeWidgetView: View {
         .padding(.vertical, 3)
         .background(color.opacity(0.2))
         .clipShape(RoundedRectangle(cornerRadius: 7))
-        .fixedSize(horizontal: true, vertical: false)
     }
 
     private func badgeDetails(for pet: PetSnapshot) -> (icon: String, text: String, color: Color) {
