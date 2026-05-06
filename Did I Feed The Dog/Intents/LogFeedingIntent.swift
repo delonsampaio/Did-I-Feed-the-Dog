@@ -14,7 +14,11 @@ struct LogFeedingIntent: AppIntent {
     var mealType: MealTypeAppEnum?
 
     static var parameterSummary: some ParameterSummary {
-        Summary("Log feeding for \(\.$pet)")
+        When(\.$mealType, .hasAnyValue) {
+            Summary("Log \(\.$mealType) for \(\.$pet)")
+        } otherwise: {
+            Summary("Log feeding for \(\.$pet)")
+        }
     }
 
     @MainActor

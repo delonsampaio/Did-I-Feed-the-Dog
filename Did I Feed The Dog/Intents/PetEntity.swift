@@ -22,6 +22,11 @@ struct PetEntity: AppEntity {
 
 struct PetQuery: EntityQuery, EntityStringQuery {
     @MainActor
+    func defaultResult() async -> PetEntity? {
+        return nil
+    }
+
+    @MainActor
     func entities(for identifiers: [UUID]) async throws -> [PetEntity] {
         let context = sharedModelContainer.mainContext
         
@@ -60,7 +65,7 @@ struct PetQuery: EntityQuery, EntityStringQuery {
         let pets = try context.fetch(descriptor)
 
         let scored: [(PetEntity, Int)] = pets.compactMap { pet in
-            let name = pet.name ?? ""
+            let name = (pet.name ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
             guard !name.isEmpty else { return nil }
             let score: Int
             if name.compare(needle, options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame {
