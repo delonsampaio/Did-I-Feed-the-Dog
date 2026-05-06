@@ -11,11 +11,7 @@ struct FeedAllDogsIntent: AppIntent {
     var mealType: MealTypeAppEnum?
 
     static var parameterSummary: some ParameterSummary {
-        When(\.$mealType, .hasValue) {
-            Summary("Log \(\.$mealType) for all dogs")
-        } otherwise: {
-            Summary("Log feeding for all dogs")
-        }
+        Summary("Log feeding for all dogs")
     }
 
     @MainActor
