@@ -7,24 +7,33 @@ struct LargeWidgetView: View {
 
     private let deepLinkBase = "didfeedthedog://log?petId="
 
-    // DIAGNOSTIC: Large widget shows iOS's redacted skeleton on home screen
-    // even though the gallery preview renders the real layout fine. To isolate
-    // whether this is a content/view issue vs. a widget-configuration issue,
-    // the body is reduced to the bare minimum. If this minimal body renders
-    // on the home screen, the bug is in our complex layout — restore real
-    // content incrementally until it breaks. If even this still gets redacted,
-    // the bug is at the iOS/widget-runtime level (not our view code).
+    // BISECT STEP 2: minimal body confirmed Large widget runtime works (8
+    // pets loaded successfully on home screen). Now restoring full content,
+    // but skipping the maxStatusTextWidth column — top suspect because it
+    // adds a per-row .frame(width:) constraint, and 6 rows of that may
+    // exceed SwiftUI's layout-solver budget. Medium works with 3 rows of
+    // the same constraints. Status text now sizes naturally (ragged left
+    // edge will return — that's fine for diagnostic). If this build renders
+    // on home screen, status width measurement is confirmed as the cause
+    // and we'll find an alternative implementation. If still redacted, bug
+    // is elsewhere — bisect another change.
     var body: some View {
-        VStack {
-            Text("Large widget test")
-                .font(.title2.bold())
-                .foregroundStyle(.primary)
-            Text("Pets loaded: \(entry.pets.count)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 0) {
+            header
+            if entry.pets.isEmpty {
+                emptyRow
+            } else {
+                ForEach(Array(entry.pets.prefix(6).enumerated()), id: \.offset) { index, pet in
+                    if index > 0 { divider }
+                    petRow(pet, badgeTextWidth: maxBadgeTextWidth)
+                }
+            }
+            Spacer(minLength: 0)
+            footer
         }
+        .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.blue.opacity(0.3))
+        .background(WidgetColors.background)
     }
 
     private var header: some View {
@@ -38,7 +47,7 @@ struct LargeWidgetView: View {
         .padding(.bottom, 10)
     }
 
-    private func petRow(_ pet: PetSnapshot, badgeTextWidth: CGFloat, statusTextWidth: CGFloat) -> some View {
+    private func petRow(_ pet: PetSnapshot, badgeTextWidth: CGFloat) -> some View {
         Link(destination: URL(string: deepLinkBase + pet.id.uuidString)!) {
             HStack(spacing: 10) {
                 avatarView(pet: pet)
@@ -52,7 +61,7 @@ struct LargeWidgetView: View {
                         .font((pet.isFasting || pet.isFeedingOverdue) ? .caption.bold() : .caption)
                         .foregroundStyle(statusColor(for: pet))
                         .lineLimit(1)
-                        .frame(width: statusTextWidth, alignment: .leading)
+                        .fixedSize(horizontal: true, vertical: false)
                     lastFedBadge(pet: pet, textWidth: badgeTextWidth)
                 }
             }
@@ -168,19 +177,4 @@ struct LargeWidgetView: View {
         return ceil(widths.max() ?? 0)
     }
 
-    // Same idea for status text. Bold weight is used for Overdue/Fasting
-    // and regular for Fed, so each row is measured against its own actual
-    // font weight before we take the max — otherwise a bold "Fasting"
-    // would be undersized when measured with the regular font.
-    private static let statusFontRegular = UIFont.systemFont(ofSize: 12, weight: .regular)
-    private static let statusFontBold = UIFont.systemFont(ofSize: 12, weight: .bold)
-
-    private var maxStatusTextWidth: CGFloat {
-        let widths = entry.pets.prefix(6).map { pet -> CGFloat in
-            let font = (pet.isFasting || pet.isFeedingOverdue) ? Self.statusFontBold : Self.statusFontRegular
-            return (statusText(for: pet) as NSString)
-                .size(withAttributes: [.font: font]).width
-        }
-        return ceil(widths.max() ?? 0)
-    }
 }
