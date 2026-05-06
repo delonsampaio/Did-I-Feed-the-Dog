@@ -383,7 +383,6 @@ private struct QuickStockSheet: View {
                 }
 
                 Stepper("Adjust by 10", value: $stockCount, in: 0...9999, step: 10)
-                    .labelsHidden()
                     .padding(.horizontal, 40)
 
                 Spacer()

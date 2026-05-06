@@ -11,7 +11,11 @@ struct FeedAllDogsIntent: AppIntent {
     var mealType: MealTypeAppEnum?
 
     static var parameterSummary: some ParameterSummary {
-        Summary("Log \(\.$mealType) for all dogs")
+        When(\.$mealType, .hasValue) {
+            Summary("Log \(\.$mealType) for all dogs")
+        } otherwise: {
+            Summary("Log feeding for all dogs")
+        }
     }
 
     @MainActor
@@ -42,6 +46,15 @@ struct FeedAllDogsIntent: AppIntent {
 
         let count = result.events.count
         let dogWord = count == 1 ? "dog" : "dogs"
-        return .result(dialog: "Logged \(resolvedMeal.label) for \(count) \(dogWord).")
+        var dialogMessage = "Logged \(resolvedMeal.label) for \(count) \(dogWord)."
+
+        if result.didTriggerLowStock {
+            dialogMessage += " Note, food stock is running low!"
+        } else if AppSettings.stockMode == .shared && resolvedMeal.deductsStock {
+            let remaining = AppSettings.sharedFoodStock
+            dialogMessage += " The shared pool has \(remaining) portion\(remaining == 1 ? "" : "s") remaining."
+        }
+
+        return .result(dialog: IntentDialog(stringLiteral: dialogMessage))
     }
 }

@@ -22,7 +22,7 @@ struct HomeScreenWidget: Widget {
         }
         .configurationDisplayName("Dog Feeding Status")
         .description("See which dogs have been fed and tap to log a feeding.")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }
 
@@ -34,6 +34,7 @@ struct HomeScreenWidgetEntryView: View {
         switch family {
         case .systemSmall:  SmallWidgetView(entry: entry)
         case .systemMedium: MediumWidgetView(entry: entry)
+        case .systemLarge:  LargeWidgetView(entry: entry)
         default:            SmallWidgetView(entry: entry)
         }
     }

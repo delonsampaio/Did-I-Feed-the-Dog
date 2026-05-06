@@ -6,14 +6,14 @@ enum MealTypeAppEnum: String, AppEnum {
 
     static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Meal")
     static var caseDisplayRepresentations: [MealTypeAppEnum: DisplayRepresentation] = [
-        .morning:   "Morning",
-        .afternoon: "Afternoon",
-        .evening:   "Evening",
-        .breakfast: "Breakfast",
-        .lunch:     "Lunch",
-        .dinner:    "Dinner",
-        .snack:     "Snack",
-        .treat:     "Treat"
+        .morning:   DisplayRepresentation(title: "Morning", synonyms: ["the morning", "morning meal"]),
+        .afternoon: DisplayRepresentation(title: "Afternoon", synonyms: ["the afternoon", "midday"]),
+        .evening:   DisplayRepresentation(title: "Evening", synonyms: ["the evening", "night"]),
+        .breakfast: DisplayRepresentation(title: "Breakfast", synonyms: ["brekkie"]),
+        .lunch:     DisplayRepresentation(title: "Lunch", synonyms: ["a lunch"]),
+        .dinner:    DisplayRepresentation(title: "Dinner", synonyms: ["supper", "din din"]),
+        .snack:     DisplayRepresentation(title: "Snack", synonyms: ["a snack", "snacks"]),
+        .treat:     DisplayRepresentation(title: "Treat", synonyms: ["a treat", "treats", "bone"])
     ]
 
     var label: String {

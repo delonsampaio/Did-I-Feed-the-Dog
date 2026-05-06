@@ -10,7 +10,13 @@ struct PetEntity: AppEntity {
     var name: String
 
     var displayRepresentation: DisplayRepresentation {
-        DisplayRepresentation(title: "\(name)")
+        DisplayRepresentation(
+            title: "\(name)",
+            synonyms: [
+                "\(name)'s",
+                "\(name)’s"
+            ]
+        )
     }
 }
 
@@ -36,7 +42,12 @@ struct PetQuery: EntityQuery, EntityStringQuery {
     // "Daisy May" when both exist.
     @MainActor
     func entities(matching string: String) async throws -> [PetEntity] {
-        let needle = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Siri often accidentally includes the possessive 's in the search string.
+        let needle = string
+            .replacingOccurrences(of: "'s", with: "", options: [.caseInsensitive])
+            .replacingOccurrences(of: "’s", with: "", options: [.caseInsensitive])
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
         guard !needle.isEmpty else { return [] }
 
         let context = sharedModelContainer.mainContext
@@ -53,6 +64,9 @@ struct PetQuery: EntityQuery, EntityStringQuery {
                 score = 1
             } else if name.range(of: needle, options: [.caseInsensitive, .diacriticInsensitive]) != nil {
                 score = 2
+            // Reverse check: if Siri captured "Luna Bear" but the dog's name is just "Luna"
+            } else if needle.range(of: name, options: [.anchored, .caseInsensitive, .diacriticInsensitive]) != nil {
+                score = 3
             } else {
                 return nil
             }

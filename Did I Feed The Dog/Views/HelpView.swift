@@ -120,7 +120,7 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "What widget sizes are available?",
-                answer: "There are five layouts: Small (shows your most-overdue dog), Medium (shows up to 3 dogs side by side), and three Lock Screen variants — Circular (fed count out of total), Rectangular (most-overdue dog with relative time), and Inline (a short summary line). Long-press your Lock Screen and tap Customize to add the lock screen widgets."
+                answer: "There are six layouts: Small (shows your most-overdue dog), Medium (shows up to 3 dogs side by side), Large (shows up to 6 dogs in a list), and three Lock Screen variants — Circular (fed count out of total), Rectangular (most-overdue dog with relative time), and Inline (a short summary line). Long-press your Lock Screen and tap Customize to add the lock screen widgets."
             )
         }
     }
@@ -229,15 +229,15 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "How do I log a feeding with Siri?",
-                answer: "Say \"Feed Luna in Fed The Dog?\", \"Mark Luna as fed in Fed The Dog?\", or \"Log Luna's meal in Fed The Dog?\" — Siri will confirm the dog and ask the meal type. Or say \"Log a Fed The Dog? meal\" and Siri will ask for both."
+                answer: "Say \"Feed Luna in Fed The Dog?\", \"Mark Luna as fed in Fed The Dog?\", or \"Log Luna's meal in Fed The Dog?\". If you don't say the meal type, Siri will automatically guess it based on the time of day! You can also say it all in one breath: \"Feed Luna a snack in Fed The Dog?\". Siri will even tell you your remaining food stock afterward."
             )
             FAQRow(
                 question: "Can I feed all my dogs at once with Siri?",
                 answer: "Yes. Say \"Feed all dogs in Fed The Dog?\", \"Mark all dogs as fed in Fed The Dog?\", or \"I fed all the dogs in Fed The Dog?\". Fasting dogs are automatically skipped."
             )
             FAQRow(
-                question: "What meal type does \"Feed all dogs\" use if I don't say one?",
-                answer: "The app picks one based on the time of day — Breakfast before 11 AM, Lunch from 11 AM to 4 PM, Dinner from 4 PM to 11 PM, and Snack overnight. To override, include the meal type in your phrase, like \"Feed all dogs breakfast in Fed The Dog?\"."
+                question: "What meal type does Siri use if I don't say one?",
+                answer: "The app automatically picks one based on the time of day — Breakfast before 11 AM, Lunch from 11 AM to 4 PM, Dinner from 4 PM to 11 PM, and Snack overnight. To override this, just include the meal type in your phrase, like \"Feed Luna breakfast in Fed The Dog?\"."
             )
             FAQRow(
                 question: "Will Siri recognize a new dog I just added?",
@@ -334,7 +334,7 @@ struct HelpView: View {
             .init(section: "Getting Started", question: "How do I delete a dog?", answer: "In Settings -> Dogs, swipe left on the dog's name and tap Delete. This also removes all of their feeding history."),
             .init(section: "Widgets", question: "Can I tap the widget to log a meal?", answer: "Yes. Tapping any dog on the small or medium widget opens the Log Meal sheet for that dog directly. You don't need to navigate to the dashboard first."),
             .init(section: "Widgets", question: "Why isn't my widget updating?", answer: "The widget refreshes automatically every hour and immediately any time you log a meal inside the app. If it looks stale, open the app and log a feeding — the widget will update right away."),
-            .init(section: "Widgets", question: "What widget sizes are available?", answer: "There are five layouts: Small (shows your most-overdue dog), Medium (shows up to 3 dogs side by side), and three Lock Screen variants — Circular (fed count out of total), Rectangular (most-overdue dog with relative time), and Inline (a short summary line). Long-press your Lock Screen and tap Customize to add the lock screen widgets."),
+            .init(section: "Widgets", question: "What widget sizes are available?", answer: "There are six layouts: Small (shows your most-overdue dog), Medium (shows up to 3 dogs side by side), Large (shows up to 6 dogs in a list), and three Lock Screen variants — Circular (fed count out of total), Rectangular (most-overdue dog with relative time), and Inline (a short summary line). Long-press your Lock Screen and tap Customize to add the lock screen widgets."),
             .init(section: "Feeding Status", question: "What does overdue mean?", answer: "A dog is marked overdue — their Last Fed badge turns red — when they're past due for a feeding. If you have a feeding reminder schedule set up, overdue is based on your schedule: a dog is overdue as soon as a scheduled meal time has passed without a feeding logged since then. If reminders are off, you can set a manual time limit in Settings -> Notifications -> Overdue After (default 12 hours)."),
             .init(section: "Feeding Status", question: "How far back does the history go?", answer: "All feeding events are kept forever. The card shows the 3 most recent feedings. Tap the dog's name or photo to see the full history."),
             .init(section: "Feeding Status", question: "Can I delete a feeding entry?", answer: "Yes. Tap a dog's card header to open their history, then swipe left on any entry. You'll see two options — Delete removes the entry only, and Delete & Restore Portion removes the entry and adds one portion back to the food stock."),
@@ -355,9 +355,9 @@ struct HelpView: View {
             .init(section: "Feeding Reminders", question: "How many reminder times can I set?", answer: "Up to 3 daily reminder times per schedule. Most households need a morning and evening reminder, but a midday one is available too."),
             .init(section: "Feeding Reminders", question: "Will reminders stop firing if I already fed my dog?", answer: "Yes. When you log a feeding, the next scheduled reminder for that dog is automatically cancelled. Any later reminders that day still fire as normal. Reminders are fully restored the next time you open the app."),
             .init(section: "Siri & Shortcuts", question: "Can I use the Action Button to log a meal?", answer: "Yes, on iPhone 15 Pro and later. Go to iPhone Settings -> Action Button, choose Shortcuts, then select \"Log Feeding\" under Fed The Dog?. Press the Action Button to log a meal instantly without unlocking your phone."),
-            .init(section: "Siri & Shortcuts", question: "How do I log a feeding with Siri?", answer: "Say \"Feed Luna in Fed The Dog?\", \"Mark Luna as fed in Fed The Dog?\", or \"Log Luna's meal in Fed The Dog?\" — Siri will confirm the dog and ask the meal type. Or say \"Log a Fed The Dog? meal\" and Siri will ask for both."),
+            .init(section: "Siri & Shortcuts", question: "How do I log a feeding with Siri?", answer: "Say \"Feed Luna in Fed The Dog?\", \"Mark Luna as fed in Fed The Dog?\", or \"Log Luna's meal in Fed The Dog?\". If you don't say the meal type, Siri will automatically guess it based on the time of day! You can also say it all in one breath: \"Feed Luna a snack in Fed The Dog?\". Siri will even tell you your remaining food stock afterward."),
             .init(section: "Siri & Shortcuts", question: "Can I feed all my dogs at once with Siri?", answer: "Yes. Say \"Feed all dogs in Fed The Dog?\", \"Mark all dogs as fed in Fed The Dog?\", or \"I fed all the dogs in Fed The Dog?\". Fasting dogs are automatically skipped."),
-            .init(section: "Siri & Shortcuts", question: "What meal type does \"Feed all dogs\" use if I don't say one?", answer: "The app picks one based on the time of day — Breakfast before 11 AM, Lunch from 11 AM to 4 PM, Dinner from 4 PM to 11 PM, and Snack overnight. To override, include the meal type in your phrase, like \"Feed all dogs breakfast in Fed The Dog?\"."),
+            .init(section: "Siri & Shortcuts", question: "What meal type does Siri use if I don't say one?", answer: "The app automatically picks one based on the time of day — Breakfast before 11 AM, Lunch from 11 AM to 4 PM, Dinner from 4 PM to 11 PM, and Snack overnight. To override this, just include the meal type in your phrase, like \"Feed Luna breakfast in Fed The Dog?\"."),
             .init(section: "Siri & Shortcuts", question: "Will Siri recognize a new dog I just added?", answer: "Yes. As soon as you save a new dog (or rename one) in the app, Siri's vocabulary refreshes — \"Feed Rex\" works right away. The same applies after iCloud sync brings dogs in on a fresh install or a second device, as long as you open the app once so Siri sees them."),
             .init(section: "Siri & Shortcuts", question: "How do I check if my dog has been fed?", answer: "Say \"Did I feed Luna in Fed The Dog?\", \"Has Luna been fed in Fed The Dog?\", \"Is Luna overdue in Fed The Dog?\", or \"When did Luna last eat in Fed The Dog?\" — include the dog's name and Siri answers directly."),
             .init(section: "Siri & Shortcuts", question: "How do I check food stock with Siri?", answer: "Say \"How much food does Luna have in Fed The Dog?\", \"Check Luna's food stock in Fed The Dog?\", or \"Is Luna's food running low in Fed The Dog?\"."),

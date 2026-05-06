@@ -25,6 +25,15 @@ struct ContentView: View {
                     await NotificationManager.shared.requestAuthorization()
                 }
             }
+            .onChange(of: pets) { _, newPets in
+                // If CloudKit syncs dogs from another device while the onboarding
+                // screen is showing, automatically dismiss it and jump to the dashboard.
+                if showOnboarding && !newPets.isEmpty {
+                    showOnboarding = false
+                    hasCompletedFirstLaunch = true
+                    Task { await NotificationManager.shared.requestAuthorization() }
+                }
+            }
             .fullScreenCover(isPresented: $showOnboarding, onDismiss: {
                 hasCompletedFirstLaunch = true
             }) {

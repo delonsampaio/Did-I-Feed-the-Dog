@@ -2,6 +2,11 @@ import CoreData
 import Foundation
 import CloudKit
 
+struct DetailedSyncError: Error, CustomStringConvertible {
+    let message: String
+    var description: String { message }
+}
+
 @Observable
 final class CloudKitSyncMonitor {
     private(set) var isSyncing = false
@@ -29,7 +34,9 @@ final class CloudKitSyncMonitor {
                        let realError = partialErrors.values.first {
                         self?.lastError = realError
                     } else {
-                        self?.lastError = error
+                        // Force the deep dictionary to be visible in the alert
+                        let nsError = error as NSError
+                        self?.lastError = DetailedSyncError(message: "\(nsError.domain) Code \(nsError.code)\n\n\(nsError.userInfo)")
                     }
                     print("CloudKit Sync Error: \(error.localizedDescription)")
                 } else if event.succeeded {
