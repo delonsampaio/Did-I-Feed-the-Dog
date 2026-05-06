@@ -7,26 +7,24 @@ struct LargeWidgetView: View {
 
     private let deepLinkBase = "didfeedthedog://log?petId="
 
+    // DIAGNOSTIC: Large widget shows iOS's redacted skeleton on home screen
+    // even though the gallery preview renders the real layout fine. To isolate
+    // whether this is a content/view issue vs. a widget-configuration issue,
+    // the body is reduced to the bare minimum. If this minimal body renders
+    // on the home screen, the bug is in our complex layout — restore real
+    // content incrementally until it breaks. If even this still gets redacted,
+    // the bug is at the iOS/widget-runtime level (not our view code).
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            header
-            if entry.pets.isEmpty {
-                emptyRow
-            } else {
-                // A Large widget can comfortably fit 6 dogs.
-                // moreRow temporarily removed to isolate a redacted-rendering
-                // bug — restore once root cause is identified.
-                ForEach(Array(entry.pets.prefix(6).enumerated()), id: \.offset) { index, pet in
-                    if index > 0 { divider }
-                    petRow(pet, badgeTextWidth: maxBadgeTextWidth, statusTextWidth: maxStatusTextWidth)
-                }
-            }
-            Spacer(minLength: 0)
-            footer
+        VStack {
+            Text("Large widget test")
+                .font(.title2.bold())
+                .foregroundStyle(.primary)
+            Text("Pets loaded: \(entry.pets.count)")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
-        .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(WidgetColors.background)
+        .background(Color.blue.opacity(0.3))
     }
 
     private var header: some View {
