@@ -94,7 +94,7 @@ struct SmallWidgetView: View {
 
     private func statusText(for pet: PetSnapshot) -> String {
         if pet.isFasting { return "Fasting" }
-        return pet.isFeedingOverdue ? "Needs feeding" : "Fed recently"
+        return pet.isFeedingOverdue ? "Overdue" : "Fed"
     }
 
     private func statusColor(for pet: PetSnapshot) -> Color {

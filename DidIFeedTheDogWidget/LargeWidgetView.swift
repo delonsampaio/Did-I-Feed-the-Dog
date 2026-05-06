@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import WidgetKit
 
 struct LargeWidgetView: View {
@@ -15,7 +16,7 @@ struct LargeWidgetView: View {
                 // A Large widget can comfortably fit 6 dogs
                 ForEach(Array(entry.pets.prefix(6).enumerated()), id: \.offset) { index, pet in
                     if index > 0 { divider }
-                    petRow(pet)
+                    petRow(pet, badgeTextWidth: maxBadgeTextWidth)
                 }
                 
                 // If they have more than 6, show a quick summary at the bottom
@@ -43,7 +44,7 @@ struct LargeWidgetView: View {
         .padding(.bottom, 10)
     }
 
-    private func petRow(_ pet: PetSnapshot) -> some View {
+    private func petRow(_ pet: PetSnapshot, badgeTextWidth: CGFloat) -> some View {
         Link(destination: URL(string: deepLinkBase + pet.id.uuidString)!) {
             HStack(spacing: 10) {
                 avatarView(pet: pet)
@@ -56,7 +57,7 @@ struct LargeWidgetView: View {
                     .foregroundStyle(statusColor(for: pet))
                     .lineLimit(1)
                 Spacer(minLength: 4)
-                lastFedBadge(pet: pet)
+                lastFedBadge(pet: pet, textWidth: badgeTextWidth)
             }
             .padding(.vertical, 6)
         }
@@ -112,12 +113,13 @@ struct LargeWidgetView: View {
         .clipShape(Circle())
     }
 
-    private func lastFedBadge(pet: PetSnapshot) -> some View {
+    private func lastFedBadge(pet: PetSnapshot, textWidth: CGFloat) -> some View {
         let (icon, _, color) = badgeDetails(for: pet)
         return HStack(spacing: 4) {
             Image(systemName: icon)
             Text(relativeTime(pet.lastFedDate))
                 .lineLimit(1)
+                .frame(width: textWidth, alignment: .center)
         }
         .font(.system(size: 11, weight: .semibold))
         .foregroundStyle(color)
@@ -136,7 +138,7 @@ struct LargeWidgetView: View {
 
     private func statusText(for pet: PetSnapshot) -> String {
         if pet.isFasting { return "Fasting" }
-        return pet.isFeedingOverdue ? "Needs feeding" : "Fed recently"
+        return pet.isFeedingOverdue ? "Overdue" : "Fed"
     }
 
     private func statusColor(for pet: PetSnapshot) -> Color {
@@ -153,5 +155,18 @@ struct LargeWidgetView: View {
     private func relativeTime(_ date: Date?) -> String {
         guard let date else { return "Never" }
         return Self.relativeFormatter.localizedString(for: date, relativeTo: .now)
+    }
+
+    // Measures the widest time string across the currently-shown pets so
+    // every badge can be sized to that width — keeps badges visually
+    // aligned regardless of whether the times are "5m ago" or "12mo ago".
+    private static let badgeFont = UIFont.systemFont(ofSize: 11, weight: .semibold)
+
+    private var maxBadgeTextWidth: CGFloat {
+        let widths = entry.pets.prefix(6).map {
+            (relativeTime($0.lastFedDate) as NSString)
+                .size(withAttributes: [.font: Self.badgeFont]).width
+        }
+        return ceil(widths.max() ?? 0)
     }
 }
