@@ -24,9 +24,14 @@ struct PetQuery: EntityQuery, EntityStringQuery {
     @MainActor
     func entities(for identifiers: [UUID]) async throws -> [PetEntity] {
         let context = sharedModelContainer.mainContext
-        let descriptor = FetchDescriptor<Pet>(predicate: #Predicate { identifiers.contains($0.id) })
-        let pets = try context.fetch(descriptor)
-        return pets.map { PetEntity(id: $0.id, name: $0.name ?? "Unknown") }
+        
+        // SwiftData predicates using `.contains` are notoriously buggy and often return all records.
+        // Fetching all and filtering in-memory guarantees we only return the exact dog Siri asked for.
+        let descriptor = FetchDescriptor<Pet>()
+        let allPets = try context.fetch(descriptor)
+        return allPets
+            .filter { identifiers.contains($0.id) }
+            .map { PetEntity(id: $0.id, name: $0.name ?? "Unknown") }
     }
 
     @MainActor
