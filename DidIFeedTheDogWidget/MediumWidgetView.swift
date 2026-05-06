@@ -44,12 +44,15 @@ struct MediumWidgetView: View {
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(.white)
                     .lineLimit(1)
-                Text(statusText(for: pet))
-                    .font(pet.isFasting ? .caption.bold() : .caption)
-                    .foregroundStyle(statusColor(for: pet))
-                    .lineLimit(1)
                 Spacer(minLength: 4)
-                lastFedBadge(pet: pet, textWidth: badgeTextWidth)
+                HStack(spacing: 6) {
+                    Text(statusText(for: pet))
+                        .font(pet.isFasting ? .caption.bold() : .caption)
+                        .foregroundStyle(statusColor(for: pet))
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                    lastFedBadge(pet: pet, textWidth: badgeTextWidth)
+                }
             }
             .padding(.vertical, 4)
         }
@@ -128,6 +131,7 @@ struct MediumWidgetView: View {
 
     private func statusColor(for pet: PetSnapshot) -> Color {
         if pet.isFasting { return .orange }
+        if pet.isFeedingOverdue { return .red }
         return .white.opacity(0.55)
     }
 

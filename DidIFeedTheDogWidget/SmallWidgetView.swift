@@ -99,6 +99,7 @@ struct SmallWidgetView: View {
 
     private func statusColor(for pet: PetSnapshot) -> Color {
         if pet.isFasting { return .orange }
+        if pet.isFeedingOverdue { return .red }
         return .white.opacity(0.55)
     }
 
