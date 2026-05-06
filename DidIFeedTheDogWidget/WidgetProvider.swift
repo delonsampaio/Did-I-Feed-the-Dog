@@ -62,11 +62,18 @@ struct Provider: TimelineProvider {
         return pets
             .map { PetSnapshot(data: $0, at: date) }
             .sorted { a, b in
+                // Surface the most critical dogs first: Overdue → Fasting →
+                // Fed. Within a category, oldest lastFedDate first so users
+                // see the longest-untended dog at the top.
+                let aCategory = a.isFeedingOverdue ? 0 : (a.isFasting ? 1 : 2)
+                let bCategory = b.isFeedingOverdue ? 0 : (b.isFasting ? 1 : 2)
+                if aCategory != bCategory { return aCategory < bCategory }
+
                 switch (a.lastFedDate, b.lastFedDate) {
                 case (nil, nil): return a.name < b.name
                 case (nil, _): return true
                 case (_, nil): return false
-                case let (d1?, d2?): 
+                case let (d1?, d2?):
                     if d1 == d2 { return a.name < b.name }
                     return d1 < d2
                 }

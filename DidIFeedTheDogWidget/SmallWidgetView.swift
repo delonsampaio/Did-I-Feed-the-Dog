@@ -1,5 +1,6 @@
 // DidIFeedTheDogWidget/SmallWidgetView.swift
 import SwiftUI
+import UIKit
 import WidgetKit
 
 struct SmallWidgetView: View {
@@ -25,19 +26,19 @@ struct SmallWidgetView: View {
             Spacer()
             Text(pet.name)
                 .font(.system(size: 20, weight: .heavy, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(.primary)
                 .lineLimit(1)
             Text(statusText(for: pet))
-                .font(pet.isFasting ? .caption.bold() : .caption2)
+                .font((pet.isFasting || pet.isFeedingOverdue) ? .caption.bold() : .caption2)
                 .foregroundStyle(statusColor(for: pet))
             Spacer()
             Text("Fed The Dog?")
                 .font(.system(size: 9, weight: .medium))
-                .foregroundStyle(.white.opacity(0.3))
+                .foregroundStyle(.tertiary)
         }
         .padding(14)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(red: 0.11, green: 0.11, blue: 0.12))
+        .background(WidgetColors.background)
     }
 
     private var emptyView: some View {
@@ -72,7 +73,7 @@ struct SmallWidgetView: View {
                 .foregroundStyle(color)
             Text(relativeTime(pet.lastFedDate))
                 .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(color)
                 .lineLimit(1)
         }
         .padding(.horizontal, 7)
@@ -100,7 +101,7 @@ struct SmallWidgetView: View {
     private func statusColor(for pet: PetSnapshot) -> Color {
         if pet.isFasting { return .orange }
         if pet.isFeedingOverdue { return .red }
-        return .white.opacity(0.55)
+        return .secondary
     }
 
     private static let relativeFormatter: RelativeDateTimeFormatter = {
