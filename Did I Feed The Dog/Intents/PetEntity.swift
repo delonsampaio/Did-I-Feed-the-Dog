@@ -23,28 +23,35 @@ struct PetEntity: AppEntity {
 struct PetQuery: EntityQuery, EntityStringQuery {
     @MainActor
     func defaultResult() async -> PetEntity? {
+        print("[SiriDebug] defaultResult() called -> returning nil")
         return nil
     }
 
     @MainActor
     func entities(for identifiers: [UUID]) async throws -> [PetEntity] {
+        print("[SiriDebug] entities(for:) called with identifiers: \(identifiers)")
         let context = sharedModelContainer.mainContext
-        
+
         // SwiftData predicates using `.contains` are notoriously buggy and often return all records.
         // Fetching all and filtering in-memory guarantees we only return the exact dog Siri asked for.
         let descriptor = FetchDescriptor<Pet>()
         let allPets = try context.fetch(descriptor)
-        return allPets
+        let result = allPets
             .filter { identifiers.contains($0.id) }
             .map { PetEntity(id: $0.id, name: $0.name ?? "Unknown") }
+        print("[SiriDebug] entities(for:) returning: \(result.map { $0.name })")
+        return result
     }
 
     @MainActor
     func suggestedEntities() async throws -> [PetEntity] {
+        print("[SiriDebug] suggestedEntities() called")
         let context = sharedModelContainer.mainContext
         let descriptor = FetchDescriptor<Pet>(sortBy: [SortDescriptor(\.name)])
         let pets = try context.fetch(descriptor)
-        return pets.map { PetEntity(id: $0.id, name: $0.name ?? "Unknown") }
+        let result = pets.map { PetEntity(id: $0.id, name: $0.name ?? "Unknown") }
+        print("[SiriDebug] suggestedEntities() returning: \(result.map { $0.name })")
+        return result
     }
 
     // Ranks exact match > prefix match > substring match so misheard short
@@ -52,13 +59,18 @@ struct PetQuery: EntityQuery, EntityStringQuery {
     // "Daisy May" when both exist.
     @MainActor
     func entities(matching string: String) async throws -> [PetEntity] {
+        print("[SiriDebug] entities(matching:) called with raw string: '\(string)'")
         // Siri often accidentally includes the possessive 's in the search string.
         let needle = string
             .replacingOccurrences(of: "'s", with: "", options: [.caseInsensitive])
             .replacingOccurrences(of: "’s", with: "", options: [.caseInsensitive])
             .trimmingCharacters(in: .whitespacesAndNewlines)
+        print("[SiriDebug] entities(matching:) normalized needle: '\(needle)'")
 
-        guard !needle.isEmpty else { return [] }
+        guard !needle.isEmpty else {
+            print("[SiriDebug] entities(matching:) returning [] (empty needle)")
+            return []
+        }
 
         let context = sharedModelContainer.mainContext
         let descriptor = FetchDescriptor<Pet>(sortBy: [SortDescriptor(\.name)])
@@ -83,8 +95,10 @@ struct PetQuery: EntityQuery, EntityStringQuery {
             return (PetEntity(id: pet.id, name: name), score)
         }
 
-        return scored
+        let result = scored
             .sorted { $0.1 < $1.1 }
             .map { $0.0 }
+        print("[SiriDebug] entities(matching:) returning: \(result.map { $0.name }) (from needle '\(needle)')")
+        return result
     }
 }
