@@ -237,39 +237,43 @@ struct HelpView: View {
         Section("Siri & Shortcuts") {
             FAQRow(
                 question: "How do I log a feeding with Siri?",
-                answer: "Say \"Feed Luna in Fed The Dog?\", \"Mark Luna as fed in Fed The Dog?\", or \"Log Luna's meal in Fed The Dog?\". Siri will then ask which meal type — just say or tap the one you want. Siri will even tell you your remaining food stock afterward."
+                answer: "Say \"Log a meal in Fed The Dog?\", \"I fed the dog in Fed The Dog?\", or \"Feed my dog in Fed The Dog?\". With one dog, Siri logs for them automatically. With multiple dogs, Siri asks which one. Then Siri asks the meal type — say or tap your choice. Siri will tell you the remaining food stock afterward."
             )
             FAQRow(
                 question: "Can I feed all my dogs at once with Siri?",
                 answer: "Yes. Say \"Feed all dogs in Fed The Dog?\", \"Mark all dogs as fed in Fed The Dog?\", or \"I fed all the dogs in Fed The Dog?\". Fasting dogs are automatically skipped."
             )
             FAQRow(
+                question: "Why does Siri ask which dog instead of just doing what I said?",
+                answer: "For accuracy. Earlier versions tried to extract the dog's name from your voice (\"Feed Cooper\"), but iOS sometimes matched the wrong dog — logging breakfast for the wrong one. Siri now asks \"Which dog?\" so you confirm the right one. Single-dog households are auto-resolved, so the prompt only appears when you have multiple dogs."
+            )
+            FAQRow(
                 question: "Does Siri ask me which meal type when I log a feeding?",
-                answer: "Yes. After you name the dog, Siri asks \"What type of meal is this?\" and presents all the options — Breakfast, Lunch, Dinner, Morning, Afternoon, Evening, Snack, and Treat. Just say or tap the one you want."
+                answer: "Yes. After Siri picks the dog (or asks which one), it asks \"What type of meal is this?\" and presents all the options — Breakfast, Lunch, Dinner, Morning, Afternoon, Evening, Snack, and Treat. Just say or tap the one you want."
             )
             FAQRow(
                 question: "Will Siri recognize a new dog I just added?",
-                answer: "Yes. As soon as you save a new dog (or rename one) in the app, Siri's vocabulary refreshes — \"Feed Rex\" works right away. The same applies after iCloud sync brings dogs in on a fresh install or a second device, as long as you open the app once so Siri sees them."
+                answer: "Yes. As soon as you save a new dog (or rename one) in the app, Siri's vocabulary refreshes — the new dog appears in the picker the next time Siri asks \"Which dog?\". The same applies after iCloud sync brings dogs in on a fresh install or a second device, as long as you open the app once so Siri sees them."
             )
             FAQRow(
                 question: "How do I check if my dog has been fed?",
-                answer: "Say \"Did I feed Luna in Fed The Dog?\", \"Has Luna been fed in Fed The Dog?\", \"Is Luna overdue in Fed The Dog?\", or \"When did Luna last eat in Fed The Dog?\" — include the dog's name and Siri answers directly."
+                answer: "Say \"Did I feed the dog in Fed The Dog?\", \"Has the dog been fed in Fed The Dog?\", or \"When was my dog last fed in Fed The Dog?\". With one dog, Siri answers right away. With multiple, Siri asks which one."
             )
             FAQRow(
                 question: "How do I check food stock with Siri?",
-                answer: "Say \"How much food does Luna have in Fed The Dog?\", \"Check Luna's food stock in Fed The Dog?\", or \"Is Luna's food running low in Fed The Dog?\"."
+                answer: "Say \"Check food stock in Fed The Dog?\", \"How much dog food is left in Fed The Dog?\", or \"Is my dog's food running low in Fed The Dog?\". With multiple dogs in individual stock mode, Siri asks which dog."
             )
             FAQRow(
                 question: "How do I update food stock with Siri?",
-                answer: "Say \"Restock Luna's food in Fed The Dog?\", \"Refill Luna's food in Fed The Dog?\", or \"I bought more dog food in Fed The Dog?\". Siri will ask how many portions you added and update the count."
+                answer: "Say \"Add dog food in Fed The Dog?\", \"I bought more dog food in Fed The Dog?\", or \"Update food stock in Fed The Dog?\". Siri asks which dog (in individual mode) and how many portions you added."
             )
             FAQRow(
                 question: "Can I add these as shortcuts in the Shortcuts app?",
-                answer: "Yes. Open the Shortcuts app, tap the + button, and search for Fed The Dog? to see all available actions. You can also go to iPhone Settings -> Siri & Search -> Fed The Dog? to manage them."
+                answer: "Yes. Open the Shortcuts app, tap the + button, and search for Fed The Dog? to see all available actions. You can also go to iPhone Settings -> Apps -> Fed The Dog? to manage them."
             )
             FAQRow(
                 question: "Do I always have to say the full app name with Siri?",
-                answer: "Not forever. After a few uses, Siri learns your patterns and can recognize the intent without the full app name — so \"Did I feed Luna?\" may work on its own. This happens automatically through Siri Suggestions."
+                answer: "Yes — include \"in Fed The Dog?\" so Siri knows which app to use. With repeated use, Siri Suggestions may surface the shortcut on your lock screen or Spotlight for a quick tap, but spoken commands should always include the app name."
             )
         }
     }
@@ -365,15 +369,16 @@ struct HelpView: View {
             .init(section: "Feeding Reminders", question: "What is Per Dog mode?", answer: "Each dog has their own reminder schedule. Tap the dog's name in Settings -> Feeding Reminders (or tap the dog's name in Settings -> Dogs) to set their individual times."),
             .init(section: "Feeding Reminders", question: "How many reminder times can I set?", answer: "Up to 3 daily reminder times per schedule. Most households need a morning and evening reminder, but a midday one is available too."),
             .init(section: "Feeding Reminders", question: "Will reminders stop firing if I already fed my dog?", answer: "Yes. When you log a feeding, the next scheduled reminder for that dog is automatically cancelled. Any later reminders that day still fire as normal. Reminders are fully restored the next time you open the app."),
-            .init(section: "Siri & Shortcuts", question: "How do I log a feeding with Siri?", answer: "Say \"Feed Luna in Fed The Dog?\", \"Mark Luna as fed in Fed The Dog?\", or \"Log Luna's meal in Fed The Dog?\". Siri will then ask which meal type — just say or tap the one you want. Siri will even tell you your remaining food stock afterward."),
+            .init(section: "Siri & Shortcuts", question: "How do I log a feeding with Siri?", answer: "Say \"Log a meal in Fed The Dog?\", \"I fed the dog in Fed The Dog?\", or \"Feed my dog in Fed The Dog?\". With one dog, Siri logs for them automatically. With multiple dogs, Siri asks which one. Then Siri asks the meal type — say or tap your choice. Siri will tell you the remaining food stock afterward."),
             .init(section: "Siri & Shortcuts", question: "Can I feed all my dogs at once with Siri?", answer: "Yes. Say \"Feed all dogs in Fed The Dog?\", \"Mark all dogs as fed in Fed The Dog?\", or \"I fed all the dogs in Fed The Dog?\". Fasting dogs are automatically skipped."),
-            .init(section: "Siri & Shortcuts", question: "Does Siri ask me which meal type when I log a feeding?", answer: "Yes. After you name the dog, Siri asks \"What type of meal is this?\" and presents all the options — Breakfast, Lunch, Dinner, Morning, Afternoon, Evening, Snack, and Treat. Just say or tap the one you want."),
-            .init(section: "Siri & Shortcuts", question: "Will Siri recognize a new dog I just added?", answer: "Yes. As soon as you save a new dog (or rename one) in the app, Siri's vocabulary refreshes — \"Feed Rex\" works right away. The same applies after iCloud sync brings dogs in on a fresh install or a second device, as long as you open the app once so Siri sees them."),
-            .init(section: "Siri & Shortcuts", question: "How do I check if my dog has been fed?", answer: "Say \"Did I feed Luna in Fed The Dog?\", \"Has Luna been fed in Fed The Dog?\", \"Is Luna overdue in Fed The Dog?\", or \"When did Luna last eat in Fed The Dog?\" — include the dog's name and Siri answers directly."),
-            .init(section: "Siri & Shortcuts", question: "How do I check food stock with Siri?", answer: "Say \"How much food does Luna have in Fed The Dog?\", \"Check Luna's food stock in Fed The Dog?\", or \"Is Luna's food running low in Fed The Dog?\"."),
-            .init(section: "Siri & Shortcuts", question: "How do I update food stock with Siri?", answer: "Say \"Restock Luna's food in Fed The Dog?\", \"Refill Luna's food in Fed The Dog?\", or \"I bought more dog food in Fed The Dog?\". Siri will ask how many portions you added and update the count."),
-            .init(section: "Siri & Shortcuts", question: "Can I add these as shortcuts in the Shortcuts app?", answer: "Yes. Open the Shortcuts app, tap the + button, and search for Fed The Dog? to see all available actions. You can also go to iPhone Settings -> Siri & Search -> Fed The Dog? to manage them."),
-            .init(section: "Siri & Shortcuts", question: "Do I always have to say the full app name with Siri?", answer: "Not forever. After a few uses, Siri learns your patterns and can recognize the intent without the full app name — so \"Did I feed Luna?\" may work on its own. This happens automatically through Siri Suggestions."),
+            .init(section: "Siri & Shortcuts", question: "Why does Siri ask which dog instead of just doing what I said?", answer: "For accuracy. Earlier versions tried to extract the dog's name from your voice (\"Feed Cooper\"), but iOS sometimes matched the wrong dog — logging breakfast for the wrong one. Siri now asks \"Which dog?\" so you confirm the right one. Single-dog households are auto-resolved, so the prompt only appears when you have multiple dogs."),
+            .init(section: "Siri & Shortcuts", question: "Does Siri ask me which meal type when I log a feeding?", answer: "Yes. After Siri picks the dog (or asks which one), it asks \"What type of meal is this?\" and presents all the options — Breakfast, Lunch, Dinner, Morning, Afternoon, Evening, Snack, and Treat. Just say or tap the one you want."),
+            .init(section: "Siri & Shortcuts", question: "Will Siri recognize a new dog I just added?", answer: "Yes. As soon as you save a new dog (or rename one) in the app, Siri's vocabulary refreshes — the new dog appears in the picker the next time Siri asks \"Which dog?\". The same applies after iCloud sync brings dogs in on a fresh install or a second device, as long as you open the app once so Siri sees them."),
+            .init(section: "Siri & Shortcuts", question: "How do I check if my dog has been fed?", answer: "Say \"Did I feed the dog in Fed The Dog?\", \"Has the dog been fed in Fed The Dog?\", or \"When was my dog last fed in Fed The Dog?\". With one dog, Siri answers right away. With multiple, Siri asks which one."),
+            .init(section: "Siri & Shortcuts", question: "How do I check food stock with Siri?", answer: "Say \"Check food stock in Fed The Dog?\", \"How much dog food is left in Fed The Dog?\", or \"Is my dog's food running low in Fed The Dog?\". With multiple dogs in individual stock mode, Siri asks which dog."),
+            .init(section: "Siri & Shortcuts", question: "How do I update food stock with Siri?", answer: "Say \"Add dog food in Fed The Dog?\", \"I bought more dog food in Fed The Dog?\", or \"Update food stock in Fed The Dog?\". Siri asks which dog (in individual mode) and how many portions you added."),
+            .init(section: "Siri & Shortcuts", question: "Can I add these as shortcuts in the Shortcuts app?", answer: "Yes. Open the Shortcuts app, tap the + button, and search for Fed The Dog? to see all available actions. You can also go to iPhone Settings -> Apps -> Fed The Dog? to manage them."),
+            .init(section: "Siri & Shortcuts", question: "Do I always have to say the full app name with Siri?", answer: "Yes — include \"in Fed The Dog?\" so Siri knows which app to use. With repeated use, Siri Suggestions may surface the shortcut on your lock screen or Spotlight for a quick tap, but spoken commands should always include the app name."),
             .init(section: "iCloud Sync & Family", question: "Does my data sync across devices?", answer: "Yes. If everyone in your household is signed into the same iCloud account, feedings, food stock, and dog info stay in sync across all iPhones automatically. Changes usually appear within about a minute."),
             .init(section: "iCloud Sync & Family", question: "How do I know which family member fed the dog?", answer: "Each feeding in the history shows the name of the person who logged it, next to the time. Make sure everyone in your household sets their name in Settings -> Your Name so their feedings are clearly attributed."),
             .init(section: "iCloud Sync & Family", question: "How do I know if the app is syncing?", answer: "A small spinner appears next to the gear icon on the dashboard while iCloud is actively syncing. If a feeding from another device hasn't appeared yet, wait a moment for the spinner to disappear."),

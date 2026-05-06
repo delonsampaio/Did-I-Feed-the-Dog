@@ -21,9 +21,19 @@ struct PetEntity: AppEntity {
 }
 
 struct PetQuery: EntityQuery, EntityStringQuery {
+    // Single-pet households auto-resolve to the only dog so Siri doesn't ask
+    // "Which dog?" when there's literally only one option. Multi-pet households
+    // get nil here, which forces Siri to prompt via the picker.
     @MainActor
     func defaultResult() async -> PetEntity? {
-        print("[SiriDebug] defaultResult() called -> returning nil")
+        let context = sharedModelContainer.mainContext
+        let descriptor = FetchDescriptor<Pet>()
+        let pets = (try? context.fetch(descriptor)) ?? []
+        if pets.count == 1, let only = pets.first {
+            print("[SiriDebug] defaultResult() -> auto-returning only pet '\(only.name ?? "Unknown")'")
+            return PetEntity(id: only.id, name: only.name ?? "Unknown")
+        }
+        print("[SiriDebug] defaultResult() -> returning nil (\(pets.count) pets, will prompt)")
         return nil
     }
 
