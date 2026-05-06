@@ -13,16 +13,12 @@ struct LargeWidgetView: View {
             if entry.pets.isEmpty {
                 emptyRow
             } else {
-                // A Large widget can comfortably fit 6 dogs
+                // A Large widget can comfortably fit 6 dogs.
+                // moreRow temporarily removed to isolate a redacted-rendering
+                // bug — restore once root cause is identified.
                 ForEach(Array(entry.pets.prefix(6).enumerated()), id: \.offset) { index, pet in
                     if index > 0 { divider }
                     petRow(pet, badgeTextWidth: maxBadgeTextWidth, statusTextWidth: maxStatusTextWidth)
-                }
-
-                // If they have more than 6, show a quick summary at the bottom
-                if entry.pets.count > 6 {
-                    divider
-                    moreRow(count: entry.pets.count - 6)
                 }
             }
             Spacer(minLength: 0)
