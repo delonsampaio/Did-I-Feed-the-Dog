@@ -1,5 +1,6 @@
 import CoreData
 import Foundation
+import CloudKit
 
 @Observable
 final class CloudKitSyncMonitor {
@@ -21,7 +22,15 @@ final class CloudKitSyncMonitor {
             
             if event.endDate != nil {
                 if let error = event.error {
-                    self?.lastError = error
+                    // Extract the meaningful underlying error if it's a Code 2 (Partial Failure)
+                    if let ckError = error as? CKError,
+                       ckError.code == .partialFailure,
+                       let partialErrors = ckError.userInfo[CKPartialErrorsByItemIDKey] as? [AnyHashable: Error],
+                       let realError = partialErrors.values.first {
+                        self?.lastError = realError
+                    } else {
+                        self?.lastError = error
+                    }
                     print("CloudKit Sync Error: \(error.localizedDescription)")
                 } else if event.succeeded {
                     self?.lastError = nil
