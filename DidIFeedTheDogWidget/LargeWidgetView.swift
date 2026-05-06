@@ -1,22 +1,29 @@
+// DidIFeedTheDogWidget/LargeWidgetView.swift
 import SwiftUI
 import UIKit
 import WidgetKit
 
+// BISECT STEP 4: Large widget redacts on home screen even after every
+// per-row layout constraint was removed (commit a068c70). Medium widget
+// renders fine with all the same constraints + width measurements, so
+// the difference must be one of:
+//   1. prefix(6) vs prefix(3) — too many rows
+//   2. .padding(.vertical, 6) vs Medium's 4 — too much vertical space
+//   3. URL force-unwrap vs Medium's WidgetDeepLink helper
+//
+// This file is now a verbatim copy of MediumWidgetView with three diffs:
+//   - struct name + the literal "3" replaced with "6"
+//   - .padding(.vertical) value matched to Medium's 4 (was 6)
+//   - URL construction matched to Medium's WidgetDeepLink helper
+//
+// If this build renders on home screen → all of #2 and #3 (and any
+// subtle difference) are eliminated, but it just confirms prefix(6)
+// works. If still redacted → prefix(6) itself is the cause and we'll
+// need to render fewer rows or use Grid layout.
+
 struct LargeWidgetView: View {
     let entry: WidgetEntry
 
-    private let deepLinkBase = "didfeedthedog://log?petId="
-
-    // BISECT STEP 2: minimal body confirmed Large widget runtime works (8
-    // pets loaded successfully on home screen). Now restoring full content,
-    // but skipping the maxStatusTextWidth column — top suspect because it
-    // adds a per-row .frame(width:) constraint, and 6 rows of that may
-    // exceed SwiftUI's layout-solver budget. Medium works with 3 rows of
-    // the same constraints. Status text now sizes naturally (ragged left
-    // edge will return — that's fine for diagnostic). If this build renders
-    // on home screen, status width measurement is confirmed as the cause
-    // and we'll find an alternative implementation. If still redacted, bug
-    // is elsewhere — bisect another change.
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
@@ -25,7 +32,7 @@ struct LargeWidgetView: View {
             } else {
                 ForEach(Array(entry.pets.prefix(6).enumerated()), id: \.offset) { index, pet in
                     if index > 0 { divider }
-                    petRow(pet)
+                    petRow(pet, badgeTextWidth: maxBadgeTextWidth, statusTextWidth: maxStatusTextWidth)
                 }
             }
             Spacer(minLength: 0)
@@ -47,8 +54,8 @@ struct LargeWidgetView: View {
         .padding(.bottom, 10)
     }
 
-    private func petRow(_ pet: PetSnapshot) -> some View {
-        Link(destination: URL(string: deepLinkBase + pet.id.uuidString)!) {
+    private func petRow(_ pet: PetSnapshot, badgeTextWidth: CGFloat, statusTextWidth: CGFloat) -> some View {
+        Link(destination: WidgetDeepLink.url(for: pet.id)) {
             HStack(spacing: 10) {
                 avatarView(pet: pet)
                 Text(pet.name)
@@ -61,10 +68,11 @@ struct LargeWidgetView: View {
                         .font((pet.isFasting || pet.isFeedingOverdue) ? .caption.bold() : .caption)
                         .foregroundStyle(statusColor(for: pet))
                         .lineLimit(1)
-                    lastFedBadge(pet: pet)
+                        .frame(width: statusTextWidth, alignment: .leading)
+                    lastFedBadge(pet: pet, textWidth: badgeTextWidth)
                 }
             }
-            .padding(.vertical, 6)
+            .padding(.vertical, 4)
         }
     }
 
@@ -83,17 +91,6 @@ struct LargeWidgetView: View {
             Spacer()
         }
         .padding(.vertical, 8)
-    }
-
-    private func moreRow(count: Int) -> some View {
-        HStack {
-            Text("+\(count) more dog\(count == 1 ? "" : "s")")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(.secondary)
-                .padding(.leading, 40)
-            Spacer()
-        }
-        .padding(.vertical, 6)
     }
 
     private var footer: some View {
@@ -118,24 +115,30 @@ struct LargeWidgetView: View {
         .clipShape(Circle())
     }
 
-    private func lastFedBadge(pet: PetSnapshot) -> some View {
+    private func lastFedBadge(pet: PetSnapshot, textWidth: CGFloat) -> some View {
         let (icon, _, color) = badgeDetails(for: pet)
         return HStack(spacing: 4) {
             Image(systemName: icon)
             Text(relativeTime(pet.lastFedDate))
                 .lineLimit(1)
+                .frame(width: textWidth, alignment: .center)
         }
-        .font(.system(size: 11, weight: .semibold))
-        .foregroundStyle(color)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 3)
-        .background(color.opacity(0.2))
-        .clipShape(RoundedRectangle(cornerRadius: 7))
+            .font(.system(size: 11, weight: .semibold))
+            .foregroundStyle(color)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(color.opacity(0.2))
+            .clipShape(RoundedRectangle(cornerRadius: 7))
+            .fixedSize(horizontal: true, vertical: false)
     }
 
     private func badgeDetails(for pet: PetSnapshot) -> (icon: String, text: String, color: Color) {
-        if pet.isFasting { return ("exclamationmark.octagon.fill", "Fasting", .orange) }
-        if pet.isFeedingOverdue { return ("exclamationmark.triangle.fill", "Overdue", .red) }
+        if pet.isFasting {
+            return ("exclamationmark.octagon.fill", "Fasting", .orange)
+        }
+        if pet.isFeedingOverdue {
+            return ("exclamationmark.triangle.fill", "Overdue", .red)
+        }
         return ("checkmark.circle.fill", "Fed", .green)
     }
 
@@ -174,4 +177,19 @@ struct LargeWidgetView: View {
         return ceil(widths.max() ?? 0)
     }
 
+    // Same idea for status text. Bold weight is used for Overdue/Fasting
+    // and regular for Fed, so each row is measured against its own actual
+    // font weight before we take the max — otherwise a bold "Fasting"
+    // would be undersized when measured with the regular font.
+    private static let statusFontRegular = UIFont.systemFont(ofSize: 12, weight: .regular)
+    private static let statusFontBold = UIFont.systemFont(ofSize: 12, weight: .bold)
+
+    private var maxStatusTextWidth: CGFloat {
+        let widths = entry.pets.prefix(6).map { pet -> CGFloat in
+            let font = (pet.isFasting || pet.isFeedingOverdue) ? Self.statusFontBold : Self.statusFontRegular
+            return (statusText(for: pet) as NSString)
+                .size(withAttributes: [.font: font]).width
+        }
+        return ceil(widths.max() ?? 0)
+    }
 }
