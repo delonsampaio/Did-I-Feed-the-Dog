@@ -1,6 +1,6 @@
 import Foundation
 
-enum MealType: Equatable {
+enum MealType: Hashable {
     case morning, evening, breakfast, lunch, afternoon, dinner, snack, treat, custom(String)
 
     var label: String {
