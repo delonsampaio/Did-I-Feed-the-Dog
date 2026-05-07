@@ -22,6 +22,7 @@ struct SettingsView: View {
 
     @State private var editingPet: Pet?
     @State private var showAddPet = false
+    @State private var notificationsAuthorized = true
 
     var body: some View {
         Form {
@@ -48,6 +49,15 @@ struct SettingsView: View {
         .sheet(isPresented: $showAddPet) {
             AddEditPetSheet()
         }
+        .task { await refreshNotificationAuth() }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            Task { await refreshNotificationAuth() }
+        }
+    }
+
+    private func refreshNotificationAuth() async {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        notificationsAuthorized = settings.authorizationStatus == .authorized
     }
 
     private var appearanceSection: some View {
