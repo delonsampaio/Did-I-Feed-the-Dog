@@ -187,6 +187,7 @@ struct SettingsView: View {
 
     private func updateReminders() {
         RemindersCoordinator.refresh(pets: pets)
+        WidgetDataWriter.write(from: modelContext)
     }
 
     private var feedingRemindersSection: some View {
@@ -374,6 +375,9 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                             .monospacedDigit()
                     }
+                }
+                .onChange(of: overdueThresholdHours) { _, _ in
+                    WidgetDataWriter.write(from: modelContext)
                 }
             }
         }
