@@ -75,6 +75,12 @@ struct PetDetailView: View {
                                     }
                                     .tint(.blue)
                                 }
+                                Button {
+                                    editingEvent = event
+                                } label: {
+                                    Label("Edit", systemImage: "pencil")
+                                }
+                                .tint(.orange)
                             }
                         }
                         .onDelete { offsets in
@@ -88,7 +94,7 @@ struct PetDetailView: View {
         .navigationBarTitleDisplayMode(.large)
         .toolbar { EditButton() }
         .sheet(item: $editingEvent) { event in
-            EditNoteSheet(event: event)
+            EditEventSheet(event: event)
         }
     }
 
@@ -157,27 +163,41 @@ struct PetDetailView: View {
 
 }
 
-private struct EditNoteSheet: View {
+private struct EditEventSheet: View {
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     let event: FeedingEvent
 
     @State private var noteText = ""
+    @State private var mealType: MealType = .custom("")
+    @State private var customMealText = ""
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 16) {
-                Text(event.mealType ?? "Feeding")
-                    .font(.headline)
-                    .accessibilityAddTraits(.isHeader)
-                    .padding(.horizontal)
-                TextField("Note (optional)", text: $noteText, axis: .vertical)
-                    .textFieldStyle(.roundedBorder)
-                    .lineLimit(3...6)
-                    .padding(.horizontal)
-                Spacer()
+            Form {
+                Section("Meal Type") {
+                    Picker("Meal", selection: $mealType) {
+                        ForEach(MealType.presets, id: \.label) { type in
+                            Text(type.label).tag(type)
+                        }
+                        Text("Custom").tag(MealType.custom(customMealText))
+                    }
+                    .pickerStyle(.menu)
+
+                    if case .custom = mealType {
+                        TextField("Custom Meal Name", text: $customMealText)
+                            .onChange(of: customMealText) { _, newText in
+                                mealType = .custom(newText)
+                            }
+                    }
+                }
+
+                Section("Notes") {
+                    TextField("Add a note (optional)", text: $noteText, axis: .vertical)
+                        .lineLimit(3...6)
+                }
             }
-            .padding(.top, 24)
-            .navigationTitle("Edit Note")
+            .navigationTitle("Edit Feeding")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -185,13 +205,26 @@ private struct EditNoteSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
+                        let newLabel = mealType.label.trimmingCharacters(in: .whitespacesAndNewlines)
+                        event.mealType = newLabel.isEmpty ? "Feeding" : newLabel
                         event.notes = noteText.trimmingCharacters(in: .whitespacesAndNewlines)
+                        WidgetDataWriter.write(from: modelContext)
                         dismiss()
                     }
                 }
             }
-            .onAppear { noteText = event.notes }
+            .onAppear {
+                noteText = event.notes
+                let currentLabel = event.mealType ?? "Feeding"
+                let matchedPreset = MealType.presets.first { $0.label == currentLabel }
+                if let preset = matchedPreset {
+                    mealType = preset
+                } else {
+                    customMealText = currentLabel
+                    mealType = .custom(currentLabel)
+                }
+            }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
     }
 }
