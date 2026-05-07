@@ -92,8 +92,13 @@ struct PetQuery: EntityQuery, EntityStringQuery {
             return (PetEntity(id: pet.id, name: name), score)
         }
 
+        // Return only the best-scoring tier so Siri auto-resolves when one
+        // dog clearly wins. Returning multiple matches causes Siri to re-show
+        // the picker even after the user said a name.
+        guard let bestScore = scored.map(\.1).min() else { return [] }
         return scored
-            .sorted { $0.1 < $1.1 }
+            .filter { $0.1 == bestScore }
+            .sorted { $0.0.name < $1.0.name }
             .map { $0.0 }
     }
 }

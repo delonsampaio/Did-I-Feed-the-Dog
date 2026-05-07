@@ -72,8 +72,7 @@ struct DogFoodShortcuts: AppShortcutsProvider {
                 "Feed all dogs in \(.applicationName)",
                 "Mark all dogs as fed in \(.applicationName)",
                 "Log all feedings in \(.applicationName)",
-                "I fed all the dogs in \(.applicationName)",
-                "Feed all dogs \(\.$mealType) in \(.applicationName)"
+                "I fed all the dogs in \(.applicationName)"
             ],
             shortTitle: "Feed All Dogs",
             systemImageName: "fork.knife"

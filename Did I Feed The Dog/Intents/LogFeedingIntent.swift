@@ -7,10 +7,16 @@ struct LogFeedingIntent: AppIntent {
     static var description = IntentDescription("Quickly log a meal for one of your dogs.")
     static var openAppWhenRun: Bool = false
 
-    @Parameter(title: "Dog", requestValueDialog: IntentDialog("Which dog did you feed?"))
+    @Parameter(
+        title: "Dog",
+        requestValueDialog: IntentDialog(printed: "Which dog did you feed?", spoken: "Which dog did you feed?")
+    )
     var pet: PetEntity
 
-    @Parameter(title: "Meal Type", requestValueDialog: IntentDialog("What type of meal is this?"))
+    @Parameter(
+        title: "Meal Type",
+        requestValueDialog: IntentDialog(printed: "What type of meal is this?", spoken: "What type of meal is this?")
+    )
     var mealType: MealTypeAppEnum
 
     static var parameterSummary: some ParameterSummary {
@@ -22,11 +28,14 @@ struct LogFeedingIntent: AppIntent {
         let context = sharedModelContainer.mainContext
 
         guard let modelPet = IntentDataAccess.fetchPets(in: context).first(where: { $0.id == pet.id }) else {
-            return .result(dialog: "Couldn't find \(pet.name) in the app.")
+            return .result(dialog: IntentDialog(
+                printed: "Couldn't find \(pet.name) in the app.",
+                spoken: "Couldn't find \(pet.name) in the app."
+            ))
         }
 
         if modelPet.isFasting {
-            return .result(dialog: "\(modelPet.name ?? "That dog") is currently fasting and can't be fed.")
+            return .result(dialog: IntentDialog(printed: "\(modelPet.name ?? "That dog") is currently fasting and can't be fed.", spoken: "\(modelPet.name ?? "That dog") is currently fasting and can't be fed."))
         }
 
         let result = FeedingLogService.logFeeding(
@@ -46,6 +55,6 @@ struct LogFeedingIntent: AppIntent {
             dialogMessage += " \(remaining) portion\(remaining == 1 ? "" : "s") remaining."
         }
 
-        return .result(dialog: IntentDialog(stringLiteral: dialogMessage))
+        return .result(dialog: IntentDialog(printed: "\(dialogMessage)", spoken: "\(dialogMessage)"))
     }
 }
