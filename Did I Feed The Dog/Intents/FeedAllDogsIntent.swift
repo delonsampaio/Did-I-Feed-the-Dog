@@ -43,11 +43,28 @@ struct FeedAllDogsIntent: AppIntent {
         let dogWord = count == 1 ? "dog" : "dogs"
         var dialogMessage = "Logged \(mealType.label) for \(count) \(dogWord)."
 
-        if result.didTriggerLowStock {
-            dialogMessage += " Note, food stock is running low!"
-        } else if AppSettings.stockMode == .shared && mealType.deductsStock {
-            let remaining = AppSettings.sharedFoodStock
-            dialogMessage += " The shared pool has \(remaining) portion\(remaining == 1 ? "" : "s") remaining."
+        if mealType.deductsStock {
+            switch AppSettings.stockMode {
+            case .shared:
+                let remaining = AppSettings.sharedFoodStock
+                if remaining == 0 {
+                    dialogMessage += " Heads up, the shared pool is out of food — time to open a new bag!"
+                } else if result.didTriggerLowStock {
+                    dialogMessage += " Note, the shared pool is running low — \(remaining) portion\(remaining == 1 ? "" : "s") left."
+                } else {
+                    dialogMessage += " The shared pool has \(remaining) portion\(remaining == 1 ? "" : "s") remaining."
+                }
+            case .individual:
+                if !result.petsAtZeroStock.isEmpty {
+                    let names = result.petsAtZeroStock.compactMap { $0.name }.joined(separator: ", ")
+                    let verb = result.petsAtZeroStock.count == 1 ? "is" : "are"
+                    dialogMessage += " Heads up, \(names) \(verb) out of food — time to open a new bag!"
+                } else if result.didTriggerLowStock {
+                    dialogMessage += " Note, food stock is running low for one or more dogs."
+                }
+            case .none:
+                break
+            }
         }
 
         return .result(dialog: IntentDialog(stringLiteral: dialogMessage))

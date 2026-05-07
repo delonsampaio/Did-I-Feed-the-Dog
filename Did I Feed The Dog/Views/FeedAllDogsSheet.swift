@@ -11,7 +11,7 @@ struct FeedAllDogsSheet: View {
     @AppStorage("sharedFoodStock", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))  private var sharedFoodStock = 0
 
     let pets: [Pet]
-    var onLogged: (([FeedingEvent], @escaping () -> Void) -> Void)? = nil
+    var onLogged: ((FeedingLogService.BatchResult, @escaping () -> Void) -> Void)? = nil
 
     @State private var selectedMealType: MealType = .morning
     @State private var customLabel = ""
@@ -196,7 +196,7 @@ struct FeedAllDogsSheet: View {
             WidgetDataWriter.write(from: context)
         }
 
-        onLogged?(createdEvents, undo)
+        onLogged?(result, undo)
         dismiss()
     }
 }

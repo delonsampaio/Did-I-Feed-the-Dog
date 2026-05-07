@@ -6,7 +6,7 @@ struct LogFeedingSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     let pet: Pet
-    var onLogged: ((FeedingEvent) -> Void)? = nil
+    var onLogged: ((FeedingLogService.LogResult) -> Void)? = nil
     @State private var selectedMealType: MealType = .morning
     @State private var customLabel = ""
     @State private var showCustomField = false
@@ -170,7 +170,7 @@ struct LogFeedingSheet: View {
             UINotificationFeedbackGenerator().notificationOccurred(.warning)
         }
 
-        onLogged?(result.event)
+        onLogged?(result)
         dismiss()
     }
 }

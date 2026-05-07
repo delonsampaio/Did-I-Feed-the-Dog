@@ -20,6 +20,9 @@ struct FoodStockStatusIntent: AppIntent {
 
         case .shared:
             let count = AppSettings.sharedFoodStock
+            if count == 0 {
+                return .result(dialog: "The shared food pool is out of food — time to open a new bag!")
+            }
             let portionWord = count == 1 ? "portion" : "portions"
             return .result(dialog: "The shared food pool has \(count) \(portionWord) remaining.")
 
@@ -29,6 +32,9 @@ struct FoodStockStatusIntent: AppIntent {
                 return .result(dialog: "Couldn't find \(pet.name).")
             }
             let count = foundPet.foodStockCount
+            if count == 0 {
+                return .result(dialog: "\(pet.name) is out of food — time to open a new bag!")
+            }
             let portionWord = count == 1 ? "portion" : "portions"
             return .result(dialog: "\(pet.name) has \(count) \(portionWord) remaining.")
         }

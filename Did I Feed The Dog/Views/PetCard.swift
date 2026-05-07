@@ -15,6 +15,8 @@ struct PetCard: View {
     @State private var showFeedSheet = false
     @State private var showEditSheet = false
     @State private var showQuickStockSheet = false
+    @State private var showStockOutAlert = false
+    @State private var showStockOutRestockSheet = false
 
     private var recentEvents: [FeedingEvent] {
         pet.recentFeedings(limit: 3)
@@ -112,10 +114,11 @@ struct PetCard: View {
         }
         
         .sheet(isPresented: $showFeedSheet) {
-            LogFeedingSheet(pet: pet, onLogged: { event in
+            LogFeedingSheet(pet: pet, onLogged: { result in
                 // Restore only what was actually deducted — not whatever the
                 // meal type would notionally deduct. Custom meals with the
                 // "Deduct a portion" toggle off must NOT credit a portion.
+                let event = result.event
                 let didDeduct = event.actuallyDeductedStock
                 let undo: () -> Void = {
                     if didDeduct {
@@ -131,6 +134,9 @@ struct PetCard: View {
                     WidgetDataWriter.write(from: modelContext)
                 }
                 onFed?(event, undo)
+                if result.shouldPromptStockOut && AppSettings.stockOutPromptEnabled {
+                    showStockOutAlert = true
+                }
             })
         }
         .sheet(isPresented: $showEditSheet) {
@@ -138,13 +144,29 @@ struct PetCard: View {
         }
         .sheet(isPresented: $showQuickStockSheet) {
             if stockMode == .shared {
-                QuickStockSheet(stockCount: $sharedFoodStock, title: "Shared Food Stock")
+                QuickStockSheet(stockCount: $sharedFoodStock, title: "Shared Food Stock", petId: nil)
             } else {
                 QuickStockSheet(stockCount: Binding(
                     get: { pet.foodStockCount },
                     set: { pet.foodStockCount = $0 }
-                ), title: "\(pet.name ?? "Dog")'s Stock")
+                ), title: "\(pet.name ?? "Dog")'s Stock", petId: pet.id)
             }
+        }
+        .sheet(isPresented: $showStockOutRestockSheet) {
+            if stockMode == .shared {
+                QuickStockSheet(stockCount: $sharedFoodStock, title: "Shared Food Stock", petId: nil)
+            } else {
+                QuickStockSheet(stockCount: Binding(
+                    get: { pet.foodStockCount },
+                    set: { pet.foodStockCount = $0 }
+                ), title: "\(pet.name ?? "Dog")'s Stock", petId: pet.id)
+            }
+        }
+        .alert("Meal logged", isPresented: $showStockOutAlert) {
+            Button("Update Stock Now") { showStockOutRestockSheet = true }
+            Button("Remind Me Later", role: .cancel) { }
+        } message: {
+            Text("It looks like you're out of food — did you just open a new bag?")
         }
     }
 
@@ -347,55 +369,3 @@ struct PetCard: View {
     }
 }
 
-private struct QuickStockSheet: View {
-    @Environment(\.dismiss) private var dismiss
-    @Binding var stockCount: Int
-    let title: String
-
-    var body: some View {
-        NavigationStack {
-            VStack(spacing: 32) {
-                VStack(spacing: 8) {
-                    Text("\(stockCount)")
-                        .font(.system(size: 72, weight: .bold, design: .rounded))
-                        .foregroundStyle(.primary)
-                    Text("portions remaining")
-                        .font(.subheadline).foregroundStyle(.secondary)
-                }
-
-                HStack(spacing: 24) {
-                    Button {
-                        if stockCount > 0 { stockCount -= 1 }
-                    } label: {
-                        Image(systemName: "minus.circle.fill")
-                            .font(.system(size: 44))
-                            .foregroundStyle(.secondary)
-                    }
-                    .accessibilityLabel("Decrease stock by 1")
-                    Button {
-                        if stockCount < 9999 { stockCount += 1 }
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 44))
-                            .foregroundStyle(.green)
-                    }
-                    .accessibilityLabel("Increase stock by 1")
-                }
-
-                Stepper("Adjust by 10", value: $stockCount, in: 0...9999, step: 10)
-                    .padding(.horizontal, 40)
-
-                Spacer()
-            }
-            .padding(.top, 40)
-            .navigationTitle(title)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
-            }
-        }
-        .presentationDetents([.medium])
-    }
-}

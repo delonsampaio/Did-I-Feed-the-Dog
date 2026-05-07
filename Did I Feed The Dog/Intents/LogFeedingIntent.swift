@@ -45,11 +45,16 @@ struct LogFeedingIntent: AppIntent {
 
         var dialogMessage = "Logged \(mealType.label) for \(modelPet.name ?? "your dog")."
 
-        if result.didTriggerLowStock {
-            dialogMessage += " Note, food stock is running low!"
-        } else if AppSettings.stockMode != .none && mealType.deductsStock {
+        if AppSettings.stockMode != .none && mealType.deductsStock {
             let remaining = AppSettings.stockMode == .shared ? AppSettings.sharedFoodStock : modelPet.foodStockCount
-            dialogMessage += " \(remaining) portion\(remaining == 1 ? "" : "s") remaining."
+            let scopeLabel = AppSettings.stockMode == .shared ? "the shared pool is" : "\(modelPet.name ?? "your dog") is"
+            if remaining == 0 {
+                dialogMessage += " Heads up, \(scopeLabel) out of food — time to open a new bag!"
+            } else if result.didTriggerLowStock {
+                dialogMessage += " Note, food stock is running low — \(remaining) portion\(remaining == 1 ? "" : "s") left."
+            } else {
+                dialogMessage += " \(remaining) portion\(remaining == 1 ? "" : "s") remaining."
+            }
         }
 
         return .result(dialog: IntentDialog(stringLiteral: dialogMessage))

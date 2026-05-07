@@ -35,6 +35,13 @@ struct DashboardView: View {
     @State private var toastMessage = "Meal logged"
     @State private var toastId = UUID()
     @State private var showSyncError = false
+    @State private var showStockOutAlert = false
+    @State private var showStockOutRestockSheet = false
+    @State private var stockOutPetsToRestock: [Pet] = []
+    @State private var stockOutScopeIsShared = false
+
+    @AppStorage("stockMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var stockMode: StockMode = .individual
+    @AppStorage("sharedFoodStock", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var sharedFoodStock = 0
 
     private var allDogsReminderTimes: [Int] {
         allDogsReminderTimesRaw.split(separator: ",").compactMap { Int($0) }
@@ -124,11 +131,37 @@ struct DashboardView: View {
                     .presentationSizing(.page)
             }
             .sheet(isPresented: $showFeedAll) {
-                    FeedAllDogsSheet(pets: pets.filter { !$0.isFasting }, onLogged: { _, undo in
+                FeedAllDogsSheet(pets: pets.filter { !$0.isFasting }, onLogged: { result, undo in
                     triggerToast(message: "All dogs fed", undo: undo)
+                    if result.shouldPromptStockOut && AppSettings.stockOutPromptEnabled {
+                        stockOutScopeIsShared = stockMode == .shared
+                        stockOutPetsToRestock = result.petsAtZeroStock
+                        showStockOutAlert = true
+                    }
                 })
             }
-            .sheet(item: $deepLinkFeedingPet) { pet in LogFeedingSheet(pet: pet) }
+            .sheet(item: $deepLinkFeedingPet) { pet in
+                LogFeedingSheet(pet: pet, onLogged: { result in
+                    if result.shouldPromptStockOut && AppSettings.stockOutPromptEnabled {
+                        stockOutScopeIsShared = stockMode == .shared
+                        stockOutPetsToRestock = stockMode == .individual ? [pet] : []
+                        showStockOutAlert = true
+                    }
+                })
+            }
+            .sheet(isPresented: $showStockOutRestockSheet) {
+                if stockOutScopeIsShared {
+                    QuickStockSheet(stockCount: $sharedFoodStock, title: "Shared Food Stock", petId: nil)
+                } else {
+                    BulkStockSheet(pets: stockOutPetsToRestock)
+                }
+            }
+            .alert("Meal logged", isPresented: $showStockOutAlert) {
+                Button("Update Stock Now") { showStockOutRestockSheet = true }
+                Button("Remind Me Later", role: .cancel) { }
+            } message: {
+                Text("It looks like you're out of food — did you just open a new bag?")
+            }
             .overlay {
                 if pets.isEmpty {
                     ContentUnavailableView(

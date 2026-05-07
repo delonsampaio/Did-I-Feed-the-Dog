@@ -31,6 +31,7 @@ struct UpdateFoodStockIntent: AppIntent {
             return .result(dialog: "Food stock tracking is turned off in the app.")
         case .shared:
             AppSettings.sharedFoodStock = min(9999, AppSettings.sharedFoodStock + portionsAdded)
+            AppSettings.resetStockOutCount(petId: nil)
             WidgetCenter.shared.reloadAllTimelines()
             let total = AppSettings.sharedFoodStock
             let portionWord = total == 1 ? "portion" : "portions"
@@ -43,6 +44,7 @@ struct UpdateFoodStockIntent: AppIntent {
             }
 
             foundPet.foodStockCount = min(999, foundPet.foodStockCount + portionsAdded)
+            AppSettings.resetStockOutCount(petId: foundPet.id)
             try? context.save()
             WidgetCenter.shared.reloadAllTimelines()
 

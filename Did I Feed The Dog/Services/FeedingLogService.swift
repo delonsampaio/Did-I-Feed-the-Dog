@@ -19,12 +19,22 @@ enum FeedingLogService {
         /// Callers (sheets) use this to fire warning haptics; the push notification
         /// itself is already scheduled by the service.
         let didTriggerLowStock: Bool
+        /// True when this feeding tried to deduct from a stock that's now at 0
+        /// AND the per-scope feeding-at-zero counter landed on a prompt step
+        /// (1, 4, 7, …). Callers use this to surface the restock alert.
+        let shouldPromptStockOut: Bool
     }
 
     struct BatchResult {
         let events: [FeedingEvent]
         /// Per-pet flag for individual mode; true once if shared mode crossed the threshold.
         let didTriggerLowStock: Bool
+        /// True when at least one zero-stock counter (shared or individual)
+        /// landed on a prompt step in this batch.
+        let shouldPromptStockOut: Bool
+        /// Pets in this batch whose individual stock is at 0 after deduction.
+        /// Empty in shared mode — the shared pool is implied by the scope.
+        let petsAtZeroStock: [Pet]
     }
 
     static func logFeeding(
@@ -49,6 +59,7 @@ enum FeedingLogService {
         context.insert(event)
 
         let triggered = applyStockSideEffects(for: pet, deductsStock: deductsStock)
+        let shouldPromptStockOut = recordZeroStockIfNeeded(pet: pet, didDeduct: didDeduct)
         NotificationManager.shared.scheduleOverdueNotification(for: pet, lastFedDate: timestamp)
         suppressNextReminder(for: pet)
 
@@ -56,7 +67,7 @@ enum FeedingLogService {
         WidgetDataWriter.write(from: context)
         refreshBadge(in: context)
 
-        return LogResult(event: event, didTriggerLowStock: triggered)
+        return LogResult(event: event, didTriggerLowStock: triggered, shouldPromptStockOut: shouldPromptStockOut)
     }
 
     static func logFeedingForAll(
@@ -71,6 +82,7 @@ enum FeedingLogService {
         var created: [FeedingEvent] = []
         var sharedTriggered = false
         var anyIndividualTriggered = false
+        var petsAtZeroStock: [Pet] = []
         let mode = AppSettings.stockMode
         let didDeduct = deductsStock && mode != .none
 
@@ -98,6 +110,7 @@ enum FeedingLogService {
                         NotificationManager.shared.scheduleLowStockNotification(for: pet)
                     }
                 }
+                if pet.foodStockCount == 0 { petsAtZeroStock.append(pet) }
             case .shared:
                 let next = max(0, AppSettings.sharedFoodStock - 1)
                 AppSettings.sharedFoodStock = next
@@ -112,6 +125,24 @@ enum FeedingLogService {
             NotificationManager.shared.scheduleSharedLowStockNotification(stockCount: AppSettings.sharedFoodStock)
         }
 
+        // Stock-out prompt cadence — increment once per affected scope.
+        var shouldPromptStockOut = false
+        if didDeduct {
+            switch mode {
+            case .shared:
+                if AppSettings.sharedFoodStock == 0 {
+                    shouldPromptStockOut = AppSettings.recordFeedingAtZeroStock(petId: nil)
+                }
+            case .individual:
+                for pet in petsAtZeroStock {
+                    let triggered = AppSettings.recordFeedingAtZeroStock(petId: pet.id)
+                    shouldPromptStockOut = shouldPromptStockOut || triggered
+                }
+            case .none:
+                break
+            }
+        }
+
         if let first = pets.first {
             suppressNextReminder(for: first)
         }
@@ -120,10 +151,29 @@ enum FeedingLogService {
         WidgetDataWriter.write(from: context)
         refreshBadge(in: context)
 
-        return BatchResult(events: created, didTriggerLowStock: sharedTriggered || anyIndividualTriggered)
+        return BatchResult(
+            events: created,
+            didTriggerLowStock: sharedTriggered || anyIndividualTriggered,
+            shouldPromptStockOut: shouldPromptStockOut,
+            petsAtZeroStock: mode == .individual ? petsAtZeroStock : []
+        )
     }
 
     // MARK: - Helpers
+
+    private static func recordZeroStockIfNeeded(pet: Pet, didDeduct: Bool) -> Bool {
+        guard didDeduct else { return false }
+        switch AppSettings.stockMode {
+        case .individual:
+            guard pet.foodStockCount == 0 else { return false }
+            return AppSettings.recordFeedingAtZeroStock(petId: pet.id)
+        case .shared:
+            guard AppSettings.sharedFoodStock == 0 else { return false }
+            return AppSettings.recordFeedingAtZeroStock(petId: nil)
+        case .none:
+            return false
+        }
+    }
 
     @discardableResult
     private static func applyStockSideEffects(for pet: Pet, deductsStock: Bool) -> Bool {

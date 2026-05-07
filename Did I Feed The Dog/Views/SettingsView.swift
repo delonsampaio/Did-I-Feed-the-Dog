@@ -20,6 +20,7 @@ struct SettingsView: View {
     @AppStorage("lowStockThreshold", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))       private var lowStockThreshold = 5
     @AppStorage("stockMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))              private var stockMode: StockMode = .individual
     @AppStorage("sharedFoodStock", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))         private var sharedFoodStock = 0
+    @AppStorage("stockOutPromptEnabled", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))   private var stockOutPromptEnabled = true
     @AppStorage("reminderMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))            private var reminderMode: ReminderMode = .none
     @AppStorage("allDogsReminderTimesRaw", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var allDogsReminderTimesRaw = ""
     @AppStorage("overdueThresholdHours", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))   private var overdueThresholdHours = 12
@@ -146,6 +147,16 @@ struct SettingsView: View {
                         Text("\(sharedFoodStock) portions")
                             .foregroundStyle(.secondary)
                             .monospacedDigit()
+                    }
+                }
+            }
+            if stockMode != .none {
+                Toggle(isOn: $stockOutPromptEnabled) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Prompt to Restock When Empty")
+                        Text("Alert appears after a feeding that empties your stock.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }

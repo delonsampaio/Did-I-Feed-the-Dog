@@ -224,7 +224,11 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "How do I restock?",
-                answer: "Tap the Food Stock cell or the Low Food Stock banner on any dog's card to open the edit sheet and update the count directly."
+                answer: "Tap the Food Stock cell or the Low Food Stock banner on any dog's card to open the edit sheet and update the count directly. If a Feed All Dogs action drops several dogs to zero at once, the app shows a single restock sheet listing each affected dog so you can adjust them all from one screen."
+            )
+            FAQRow(
+                question: "Why did the app ask me to update stock after logging a meal?",
+                answer: "When a feeding drops your stock to zero, the app pops up an alert offering to update your portions — useful when you've just opened a new bag. Tap \"Update Stock Now\" to add portions, or \"Remind Me Later\" to dismiss. If you keep feeding while stock stays at zero, the prompt reappears every fourth feeding so you don't forget. You can turn this off entirely in Settings -> Food Stock."
             )
             FAQRow(
                 question: "What is the Low Stock Threshold?",
@@ -261,7 +265,7 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "How do I check food stock with Siri?",
-                answer: "Say \"Check food stock in Fed The Dog?\", \"How much dog food is left in Fed The Dog?\", or \"Is my dog's food running low in Fed The Dog?\". With multiple dogs in individual stock mode, Siri asks which dog."
+                answer: "Say \"Check food stock in Fed The Dog?\", \"How much dog food is left in Fed The Dog?\", or \"Is my dog's food running low in Fed The Dog?\". Siri reports the remaining count — or tells you that your dog is out of food when stock has hit zero. With multiple dogs in individual stock mode, Siri asks which dog."
             )
             FAQRow(
                 question: "How do I update food stock with Siri?",
@@ -362,7 +366,8 @@ struct HelpView: View {
             .init(section: "Food Stock", question: "What is Shared Pool mode?", answer: "One bag of food shared across all dogs. The pool decreases by one portion each time any dog is fed a meal. Snack and Treat logs do not reduce the shared count. Set the starting count in Settings -> Food Stock."),
             .init(section: "Food Stock", question: "What is Not Tracked?", answer: "Food stock tracking is turned off. No counts are shown and nothing is subtracted when you log a meal."),
             .init(section: "Food Stock", question: "Do Snack or Treat meals count against the food stock?", answer: "Snack and Treat do not reduce the portion count. All standard meal types (Morning, Breakfast, Lunch, Afternoon, Dinner, Evening) reduce the count by one. Custom meals reduce the count by default — but you can turn off the \"Deduct a portion\" toggle when logging a custom meal (e.g. Medication or Water) to skip the deduction."),
-            .init(section: "Food Stock", question: "How do I restock?", answer: "Tap the Food Stock cell or the Low Food Stock banner on any dog's card to open the edit sheet and update the count directly."),
+            .init(section: "Food Stock", question: "How do I restock?", answer: "Tap the Food Stock cell or the Low Food Stock banner on any dog's card to open the edit sheet and update the count directly. If a Feed All Dogs action drops several dogs to zero at once, the app shows a single restock sheet listing each affected dog so you can adjust them all from one screen."),
+            .init(section: "Food Stock", question: "Why did the app ask me to update stock after logging a meal?", answer: "When a feeding drops your stock to zero, the app pops up an alert offering to update your portions — useful when you've just opened a new bag. Tap \"Update Stock Now\" to add portions, or \"Remind Me Later\" to dismiss. If you keep feeding while stock stays at zero, the prompt reappears every fourth feeding so you don't forget. You can turn this off entirely in Settings -> Food Stock."),
             .init(section: "Food Stock", question: "What is the Low Stock Threshold?", answer: "When a dog's stock drops to or below this number, a warning banner appears on their card and a push notification is sent (if enabled). Adjust it in Settings -> Notifications."),
             .init(section: "Feeding Reminders", question: "How do I set up feeding reminders?", answer: "Go to Settings -> Feeding Reminders. Choose a schedule mode: Off, All Dogs, or Per Dog. Then add one or more daily reminder times."),
             .init(section: "Feeding Reminders", question: "What is All Dogs mode?", answer: "One set of reminder times applies to every dog. You get a single notification at each time reminding you to feed all your dogs."),
@@ -375,7 +380,7 @@ struct HelpView: View {
             .init(section: "Siri & Shortcuts", question: "Does Siri ask me which meal type when I log a feeding?", answer: "Yes. After Siri picks the dog (or asks which one), it asks \"What type of meal is this?\" and presents all the options — Breakfast, Lunch, Dinner, Morning, Afternoon, Evening, Snack, and Treat. Just say or tap the one you want."),
             .init(section: "Siri & Shortcuts", question: "Will Siri recognize a new dog I just added?", answer: "Yes. As soon as you save or rename a dog, Siri learns their name and will show them as an option the next time you ask. The same applies if a family member adds a dog to your shared home, as long as you open the app once so Siri sees them."),
             .init(section: "Siri & Shortcuts", question: "How do I check if my dog has been fed?", answer: "Say \"Did I feed the dog in Fed The Dog?\", \"Has the dog been fed in Fed The Dog?\", or \"When was my dog last fed in Fed The Dog?\". With one dog, Siri answers right away. With multiple, Siri asks which one."),
-            .init(section: "Siri & Shortcuts", question: "How do I check food stock with Siri?", answer: "Say \"Check food stock in Fed The Dog?\", \"How much dog food is left in Fed The Dog?\", or \"Is my dog's food running low in Fed The Dog?\". With multiple dogs in individual stock mode, Siri asks which dog."),
+            .init(section: "Siri & Shortcuts", question: "How do I check food stock with Siri?", answer: "Say \"Check food stock in Fed The Dog?\", \"How much dog food is left in Fed The Dog?\", or \"Is my dog's food running low in Fed The Dog?\". Siri reports the remaining count — or tells you that your dog is out of food when stock has hit zero. With multiple dogs in individual stock mode, Siri asks which dog."),
             .init(section: "Siri & Shortcuts", question: "How do I update food stock with Siri?", answer: "Say \"Add dog food in Fed The Dog?\", \"I bought more dog food in Fed The Dog?\", or \"Update food stock in Fed The Dog?\". Siri asks which dog (in individual mode) and how many portions you added."),
             .init(section: "Siri & Shortcuts", question: "Can I add these as shortcuts in the Shortcuts app?", answer: "Yes. Open the Shortcuts app, tap the + button, and search for Fed The Dog? to see all available actions. You can also go to iPhone Settings -> Apps -> Fed The Dog? to manage them."),
             .init(section: "Siri & Shortcuts", question: "Do I always have to say the full app name with Siri?", answer: "Yes — include \"in Fed The Dog?\" so Siri knows which app to use. With repeated use, Siri Suggestions may surface the shortcut on your lock screen or Spotlight for a quick tap, but spoken commands should always include the app name."),
