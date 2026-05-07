@@ -9,7 +9,7 @@ struct FeedAllDogsIntent: AppIntent {
 
     @Parameter(
         title: "Meal Type",
-        requestValueDialog: IntentDialog(printed: "What type of meal is this?", spoken: "What type of meal is this?")
+        requestValueDialog: IntentDialog("What type of meal is this?")
     )
     var mealType: MealTypeAppEnum
 
@@ -25,9 +25,9 @@ struct FeedAllDogsIntent: AppIntent {
 
         guard !eligiblePets.isEmpty else {
             if allPets.isEmpty {
-                return .result(dialog: IntentDialog(printed: "You haven't added any dogs yet.", spoken: "You haven't added any dogs yet."))
+                return .result(dialog: "You haven't added any dogs yet.")
             } else {
-                return .result(dialog: IntentDialog(printed: "All your dogs are currently fasting.", spoken: "All your dogs are currently fasting."))
+                return .result(dialog: "All your dogs are currently fasting.")
             }
         }
 
@@ -50,6 +50,6 @@ struct FeedAllDogsIntent: AppIntent {
             dialogMessage += " The shared pool has \(remaining) portion\(remaining == 1 ? "" : "s") remaining."
         }
 
-        return .result(dialog: IntentDialog(printed: "\(dialogMessage)", spoken: "\(dialogMessage)"))
+        return .result(dialog: IntentDialog(stringLiteral: dialogMessage))
     }
 }
