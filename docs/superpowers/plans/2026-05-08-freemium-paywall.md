@@ -127,15 +127,78 @@ Per backlog #73 notes — keep the main dashboard free of Pro badges. Only show 
 
 Rationale: dashboard stays clean for free users, Pro discovery happens naturally via Settings exploration.
 
+### Additional UX Refinements
+- **Sunk Cost Conversion:** Show the paywall *after* the user fills out the 2nd dog's profile and taps "Save", rather than blocking them immediately on "Add Dog".
+- **Family Sharing Highlight:** Explicitly call out "One purchase covers your whole family" on the paywall sheet.
+- **Onboarding Soft-Pitch:** Add a final, skippable screen to the initial onboarding flow outlining Pro features with a low-friction $0.99 upgrade option.
+- **Tease Push Notifications:** Add a subtle banner below the in-app "Last Fed" indicator for free users saying "Want to be notified when it's time? Unlock Pro."
+
 ---
 
-## Open Decisions to Lock In
+## Decisions Locked In
 
-- [ ] **Pure-quantity vs hybrid** — locked as **hybrid** above. Confirm before implementation.
-- [ ] **Widget behavior for free users** — hide from gallery, or show with "Pro" overlay/upgrade prompt? Hide is cleaner.
-- [ ] **Siri/Shortcuts behavior for free users** — block at perform time with "This is a Pro feature" dialog, or hide intents from Shortcuts gallery?
-- [ ] **Existing 1.0/1.1 buyers** — auto-grant Pro via `originalAppVersion` check, or require restore-purchase flow? Auto-grant is friendlier.
-- [ ] **Paywall trigger phrasing** — exact copy on the "Add second dog" sheet. Needs to feel inviting, not blocking.
+- **Hybrid gate** — confirmed (vs pure-quantity). Pitch language must reflect it.
+- **Widget behavior for free users** — *show in gallery normally; render with subtle upgrade copy when added*. A widget showing "1 of your dogs" + footer text like "Add more dogs with Pro" works as a passive billboard without reading as an ad. **Avoid** rendering the widget as a pure paywall surface — that earns 1-star reviews.
+- **Siri / Shortcuts for free users** — *intents stay discoverable in the Shortcuts app and via Siri*. When a free user invokes a Pro intent, return a polite dialog: "This feature requires Did I Feed The Dog Pro. Open the app to upgrade." Hiding intents kills discovery.
+- **Existing 1.0 / 1.1 buyers** — *auto-grant Pro* via `Bundle.main.appStoreReceiptURL` + `originalAppVersion` check at launch. Forcing a restore flow on people who already paid generates negative reviews. Mark them as Pro silently, no announcement needed.
+- **Paywall trigger** — fire on **Save**, not on **Add Dog tap** (sunk-cost UX, see below).
+
+## Conversion UX Tactics
+
+These are the small details that turn a $0.99 paywall from skippable to convertible.
+
+### 1. Sunk-cost paywall trigger
+
+When a free user with 1 dog taps "Add Dog", let them complete the entire `AddEditPetSheet` flow (name, birthday, photo, meal schedule). Show the paywall sheet **only when they tap Save**. Copy: "Save Spike to your pack — upgrade to Pro to unlock multiple dogs." After purchase, the second pet record is committed and they land back on the dashboard with both dogs visible.
+
+Rationale: by the time the user has invested 30+ seconds entering their dog's profile, sunk-cost psychology shifts the decision from "should I pay?" to "should I throw away what I just built?"
+
+### 2. Family Sharing prominence
+
+The IAP has Family Sharing enabled. Surface this on the paywall sheet as a **headline bullet**: "One purchase covers your whole family." For a household-management app, this is the #1 silent objection ("will my partner have to pay too?") and a major conversion driver.
+
+### 3. Onboarding soft-pitch
+
+The last screen of `OnboardingView` should be a **skippable** Pro pitch — outline the upgrade, list 3-4 highest-leverage Pro features (Unlimited Dogs, Widgets, Siri, Notifications), show the price + Family Sharing note, with a prominent "Maybe Later" dismissal. High-intent power users often pay before they've even finished setup, but only if they know the option exists. Skipping is friction-free.
+
+### 4. Light push-notification tease (with restraint)
+
+When a free user hits a single moment where push would help — e.g., the **first time** their card flips to Overdue in-app — show a one-time banner: "Want a notification next time? Unlock Pro." Store a `seenOverdueTeaseAt` timestamp so it appears at most once per user.
+
+> **Important:** do *not* sprinkle these teases throughout the UI. One well-placed banner converts; ten of them feels nagging and triggers backlash. The dashboard, last-fed badge, and feeding history should stay tease-free.
+
+## Telemetry — Track What Triggers Conversions
+
+Add lightweight, **on-device** counters (no third-party analytics SDK, no PII, no network calls) to surface which gates drive purchases. Stored in App Group UserDefaults so widgets can also bump counters if relevant.
+
+Counters to track:
+- `paywallShownFrom_addSecondDog` — primary trigger fires
+- `paywallShownFrom_notifications` — user toggled a Pro notification
+- `paywallShownFrom_widget` — widget add or first render
+- `paywallShownFrom_siri` — Siri invocation hit a Pro gate
+- `paywallShownFrom_onboarding` — soft-pitch shown
+- `paywallConvertedFrom_<source>` — purchase completed after a paywall fired from that source
+
+After the freemium relaunch, surface these counters in a hidden Settings → About → Stats screen (or just read them via Xcode debug session). If 80% of conversions are coming from the notifications gate rather than dog-count, that's a marketing/positioning insight worth acting on (e.g., reframe Pro as "Never miss a feeding").
+
+## Price Evolution
+
+**Launch 1.2 at $0.99.** The goal of the relaunch is to *prove the freemium pivot drives install volume*. Cheap-and-cheerful pricing minimizes purchase friction during the proof phase.
+
+Once installs are flowing and conversion rate is measurable (~1-2 months post-launch):
+1. **Test $2.99 in 1.3 or 1.4** — the feature set (unlimited dogs + widgets + Siri + push + Action Button + stock tracking) is genuinely worth more than $0.99. Most "lifetime unlock" iOS apps in this category sit at $2.99-$4.99.
+2. **Existing buyers grandfather automatically** via StoreKit — anyone who paid $0.99 keeps Pro forever, no controversy.
+3. **No A/B testing needed** — Apple doesn't easily support price A/B at the App Store level. Just pick a date, raise the price, and watch conversion rate vs install rate to validate.
+
+## App Store Optimization (ASO) Changes
+
+Going from Paid to Free re-ranks the app meaningfully — different algorithm bucket, different impression sources, likely a download spike. Things to update in App Store Connect **as part of the 1.2 release**:
+
+- **First screenshot**: add a "Free for 1 Dog" badge / overlay at the top.
+- **Subtitle / promotional text**: lead with "Free pet feeding tracker — Pro adds multi-dog, widgets, and Siri."
+- **Description**: rewrite the opening paragraph to reflect the new pricing.
+- **Keywords**: add "free pet tracker," "multi-dog," "household pet sharing," etc. — terms that match free-tier search behavior.
+- **What's New** for 1.2: lead with "Now free!" and list the iPad widget fixes / freemium pivot.
 
 ---
 
