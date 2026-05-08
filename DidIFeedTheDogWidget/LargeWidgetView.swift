@@ -22,6 +22,12 @@ import WidgetKit
 // need to render fewer rows or use Grid layout.
 
 struct LargeWidgetView: View {
+    // Cap rows for memory: each archived row costs ~2–3 MB, and the widget
+    // extension is hard-capped at 30 MB. Six rows + the per-archive baseline
+    // pushes a second consecutive size archive (e.g. Small → Medium) over the
+    // limit, killing the extension. Four rows keeps two archives under cap.
+    static let maxRows = 4
+
     let entry: WidgetEntry
 
     var body: some View {
@@ -30,7 +36,7 @@ struct LargeWidgetView: View {
             if entry.pets.isEmpty {
                 emptyRow
             } else {
-                ForEach(Array(entry.pets.prefix(6).enumerated()), id: \.offset) { index, pet in
+                ForEach(Array(entry.pets.prefix(Self.maxRows).enumerated()), id: \.offset) { index, pet in
                     if index > 0 { divider }
                     petRow(pet, badgeTextWidth: maxBadgeTextWidth, statusTextWidth: maxStatusTextWidth)
                 }
@@ -175,7 +181,7 @@ struct LargeWidgetView: View {
     private static let badgeFont = UIFont.systemFont(ofSize: 11, weight: .semibold)
 
     private var maxBadgeTextWidth: CGFloat {
-        let widths = entry.pets.prefix(6).map {
+        let widths = entry.pets.prefix(Self.maxRows).map {
             (relativeTime($0.lastFedDate) as NSString)
                 .size(withAttributes: [.font: Self.badgeFont]).width
         }
@@ -190,7 +196,7 @@ struct LargeWidgetView: View {
     private static let statusFontBold = UIFont.systemFont(ofSize: 12, weight: .bold)
 
     private var maxStatusTextWidth: CGFloat {
-        let widths = entry.pets.prefix(6).map { pet -> CGFloat in
+        let widths = entry.pets.prefix(Self.maxRows).map { pet -> CGFloat in
             let font = (pet.isFasting || pet.isFeedingOverdue) ? Self.statusFontBold : Self.statusFontRegular
             return (statusText(for: pet) as NSString)
                 .size(withAttributes: [.font: font]).width
