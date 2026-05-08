@@ -1,4 +1,5 @@
 import Foundation
+import ImageIO
 import OSLog
 import SwiftData
 import WidgetKit
@@ -41,22 +42,22 @@ enum WidgetDataWriter {
             snapshots = pets.map { pet in
                 let lastDate = (byPetId[pet.id] ?? [])
                     .max(by: { $0.timestamp < $1.timestamp })?.timestamp
-                
+
                 let times = modeRaw == "allDogs" ? allDogsTimes : (modeRaw == "perDog" ? pet.feedingScheduleTimes.sorted() : [])
-                
+
                 return PetWidgetData(id: pet.id, name: pet.name ?? "Unknown",
-                                     photoData: pet.photoData, lastFedDate: lastDate,
+                                     photoData: smallAvatarJPEG(from: pet.photoData), lastFedDate: lastDate,
                                      isFasting: pet.isFasting, scheduleTimes: times, thresholdHours: threshold)
             }
         } else {
             snapshots = pets.map { pet in
                 let lastDate = (pet.feedingEvents ?? [])
                     .max(by: { $0.timestamp < $1.timestamp })?.timestamp
-                    
+
                 let times = modeRaw == "allDogs" ? allDogsTimes : (modeRaw == "perDog" ? pet.feedingScheduleTimes.sorted() : [])
 
                 return PetWidgetData(id: pet.id, name: pet.name ?? "Unknown",
-                                     photoData: pet.photoData, lastFedDate: lastDate,
+                                     photoData: smallAvatarJPEG(from: pet.photoData), lastFedDate: lastDate,
                                      isFasting: pet.isFasting, scheduleTimes: times, thresholdHours: threshold)
             }
         }
@@ -90,5 +91,37 @@ enum WidgetDataWriter {
         FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: groupID)?
             .appendingPathComponent(fileName)
+    }
+
+    // Downsamples a stored avatar to a tiny JPEG before persisting to the
+    // widget store. Camera/Photos images can be 2–5 MB each; loading 6 of
+    // those in the Large widget pushes the extension past iOS's hard 30 MB
+    // memory cap and iOS jetsams the extension (redacted placeholder).
+    // 360px max dimension covers a 30pt avatar @3x retina with headroom.
+    private static func smallAvatarJPEG(from data: Data?, maxPixel: CGFloat = 360) -> Data? {
+        guard let data,
+              let source = CGImageSourceCreateWithData(data as CFData,
+                                                       [kCGImageSourceShouldCache: false] as CFDictionary)
+        else { return nil }
+
+        let thumbOptions = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxPixel
+        ] as CFDictionary
+
+        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, thumbOptions) else {
+            return nil
+        }
+
+        let output = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(output, "public.jpeg" as CFString, 1, nil) else {
+            return nil
+        }
+        let destOptions = [kCGImageDestinationLossyCompressionQuality: 0.7] as CFDictionary
+        CGImageDestinationAddImage(destination, cgImage, destOptions)
+        guard CGImageDestinationFinalize(destination) else { return nil }
+        return output as Data
     }
 }
