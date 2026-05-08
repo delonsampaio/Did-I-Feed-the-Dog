@@ -90,6 +90,9 @@ struct MediumWidgetView: View {
             if let data = pet.photoData,
                let uiImage = WidgetImage.downsample(data: data, toPointSize: CGSize(width: 30, height: 30)) {
                 Image(uiImage: uiImage).resizable().scaledToFill()
+            } else if let thumb = UIImage(named: DefaultAvatars.defaultFor(id: pet.id))?
+                .preparingThumbnail(of: CGSize(width: 30 * 3, height: 30 * 3)) {
+                Image(uiImage: thumb).resizable().scaledToFill()
             } else {
                 Image(DefaultAvatars.defaultFor(id: pet.id))
                     .resizable().scaledToFill()

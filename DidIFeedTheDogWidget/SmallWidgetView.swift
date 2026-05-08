@@ -58,6 +58,9 @@ struct SmallWidgetView: View {
             if let data = pet.photoData,
                let uiImage = WidgetImage.downsample(data: data, toPointSize: CGSize(width: 36, height: 36)) {
                 Image(uiImage: uiImage).resizable().scaledToFill()
+            } else if let thumb = UIImage(named: DefaultAvatars.defaultFor(id: pet.id))?
+                .preparingThumbnail(of: CGSize(width: 36 * 3, height: 36 * 3)) {
+                Image(uiImage: thumb).resizable().scaledToFill()
             } else {
                 Image(DefaultAvatars.defaultFor(id: pet.id))
                     .resizable().scaledToFill()
