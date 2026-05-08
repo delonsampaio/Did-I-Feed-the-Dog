@@ -20,7 +20,8 @@ struct MediumWidgetView: View {
             Spacer(minLength: 0)
             footer
         }
-        .padding(16)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(WidgetColors.background)
         .dynamicTypeSize(...DynamicTypeSize.xLarge)
@@ -34,7 +35,7 @@ struct MediumWidgetView: View {
                 .kerning(0.5)
             Spacer()
         }
-        .padding(.bottom, 10)
+        .padding(.bottom, 4)
     }
 
     private func petRow(_ pet: PetSnapshot, badgeTextWidth: CGFloat, statusTextWidth: CGFloat) -> some View {
@@ -55,7 +56,7 @@ struct MediumWidgetView: View {
                     lastFedBadge(pet: pet, textWidth: badgeTextWidth)
                 }
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, 2)
         }
     }
 

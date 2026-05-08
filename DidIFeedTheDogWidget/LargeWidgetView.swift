@@ -22,12 +22,7 @@ import WidgetKit
 // need to render fewer rows or use Grid layout.
 
 struct LargeWidgetView: View {
-    // Cap rows for memory on iPad only. iPhone fits 6 rows comfortably under
-    // the 30 MB widget extension cap, but iPad's archive pipeline (multiple
-    // sequential size archives in one process + slightly heavier rasterization)
-    // tips two consecutive archives over the limit at 6 rows. Drop to 4 rows
-    // on iPad so the extension survives the back-to-back archive batch.
-    static let maxRows: Int = UIDevice.current.userInterfaceIdiom == .pad ? 4 : 6
+    static let maxRows = 6
 
     let entry: WidgetEntry
 
