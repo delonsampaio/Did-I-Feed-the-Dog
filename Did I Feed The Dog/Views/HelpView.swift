@@ -108,7 +108,7 @@ struct HelpView: View {
         Section("Widgets & Quick Actions") {
             FAQRow(
                 question: "How do I add a home screen widget?",
-                answer: "Long-press your iPhone home screen, tap the + button in the top corner, and search for \"Did I Feed the Dog?\". The widget shows each dog's last fed time and overdue status at a glance."
+                answer: "Long-press your iPhone or iPad home screen, tap the + button in the top corner, and search for \"Did I Feed the Dog?\". The widget shows each dog's last fed time and overdue status at a glance."
             )
             FAQRow(
                 question: "What widget sizes are available?",
@@ -347,7 +347,7 @@ struct HelpView: View {
             .init(section: "Getting Started", question: "Can I change the app's appearance?", answer: "Yes. Go to Settings -> Appearance and pick Light, Dark, or System. System follows your iPhone's display setting. The change applies immediately, including while you're in Settings."),
             .init(section: "Getting Started", question: "How do I edit a dog's info?", answer: "Go to Settings -> Dogs and tap the dog's name to open the edit sheet. You can update their name, birthday, photo, and food stock count."),
             .init(section: "Getting Started", question: "How do I delete a dog?", answer: "In Settings -> Dogs, swipe left on the dog's name and tap Delete. This also removes all of their feeding history."),
-            .init(section: "Widgets & Quick Actions", question: "How do I add a home screen widget?", answer: "Long-press your iPhone home screen, tap the + button in the top corner, and search for \"Did I Feed the Dog?\". The widget shows each dog's last fed time and overdue status at a glance."),
+            .init(section: "Widgets & Quick Actions", question: "How do I add a home screen widget?", answer: "Long-press your iPhone or iPad home screen, tap the + button in the top corner, and search for \"Did I Feed the Dog?\". The widget shows each dog's last fed time and overdue status at a glance."),
             .init(section: "Widgets & Quick Actions", question: "What widget sizes are available?", answer: "There are six layouts: Small (shows your most-overdue dog), Medium (shows up to 3 dogs side by side), Large (shows up to 6 dogs in a list), and three Lock Screen variants — Circular (fed count out of total), Rectangular (most-overdue dog with relative time), and Inline (a short summary line). Long-press your Lock Screen and tap Customize to add the lock screen widgets."),
             .init(section: "Widgets & Quick Actions", question: "Can I tap the widget to log a meal?", answer: "Yes. Tapping any dog on the small or medium widget opens the Log Meal sheet for that dog directly. You don't need to navigate to the dashboard first."),
             .init(section: "Widgets & Quick Actions", question: "Why isn't my widget updating?", answer: "The widget refreshes automatically every hour and immediately any time you log a meal inside the app. If it looks stale, open the app and log a feeding — the widget will update right away."),
