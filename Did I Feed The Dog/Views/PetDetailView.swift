@@ -5,6 +5,8 @@ struct PetDetailView: View {
     @Environment(\.modelContext) private var modelContext
     let pet: Pet
 
+    @Environment(EntitlementManager.self) private var entitlements
+
     @AppStorage("stockMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))       private var stockMode: StockMode = .individual
     @AppStorage("sharedFoodStock", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var sharedFoodStock = 0
 
@@ -67,7 +69,7 @@ struct PetDetailView: View {
                                 } label: {
                                     Label("Delete", systemImage: "trash")
                                 }
-                                if stockMode != .none && event.actuallyDeductedStock {
+                                if entitlements.isPro && stockMode != .none && event.actuallyDeductedStock {
                                     Button {
                                         deleteEvent(event, restoreStock: true)
                                     } label: {
