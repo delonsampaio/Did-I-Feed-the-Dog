@@ -40,6 +40,9 @@ struct SettingsView: View {
             safetySection
             supportSection
             aboutSection
+            #if DEBUG
+            debugSection
+            #endif
         }
         .navigationTitle("Settings")
         .toolbar {
@@ -460,6 +463,33 @@ struct SettingsView: View {
             }
         }
     }
+
+    #if DEBUG
+    private var debugSection: some View {
+        Section {
+            Button(role: .destructive) {
+                // Delete all pets
+                for pet in pets {
+                    NotificationManager.shared.removeBirthdayNotification(for: pet)
+                    NotificationManager.shared.removeOverdueNotification(for: pet)
+                    NotificationManager.shared.removePerDogReminders(for: pet)
+                    modelContext.delete(pet)
+                }
+                // Reset entitlement and settings
+                entitlements.resetForTesting()
+                // Reset onboarding so it shows again on next launch
+                UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")?.set(false, forKey: "hasCompletedFirstLaunch")
+                WidgetDataWriter.write(from: modelContext)
+            } label: {
+                Label("Reset to Free Tier (Debug)", systemImage: "arrow.counterclockwise")
+            }
+        } header: {
+            Text("Developer")
+        } footer: {
+            Text("Clears all dogs, resets Pro status, and restarts onboarding. This section does not appear in release builds.")
+        }
+    }
+    #endif
 
     private func updateWaterBowlReminder() {
         if waterBowlReminderEnabled {
