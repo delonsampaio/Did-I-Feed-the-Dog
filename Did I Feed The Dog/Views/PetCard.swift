@@ -45,7 +45,7 @@ struct PetCard: View {
     }
 
     private var isLowStock: Bool {
-        guard lowStockUIWarning, stockMode != .none else { return false }
+        guard entitlements.isPro, lowStockUIWarning, stockMode != .none else { return false }
         return currentStockCount <= lowStockThreshold
     }
 
@@ -273,7 +273,7 @@ struct PetCard: View {
     private var statsRow: some View {
         VStack(spacing: 8) {
             HStack(spacing: 12) {
-                if stockMode != .none {
+                if entitlements.isPro && stockMode != .none {
                     Button {
                         showQuickStockSheet = true
                     } label: {
