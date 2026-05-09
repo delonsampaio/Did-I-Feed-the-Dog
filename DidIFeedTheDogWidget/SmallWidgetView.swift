@@ -7,13 +7,31 @@ struct SmallWidgetView: View {
     let entry: WidgetEntry
 
     var body: some View {
-        if let pet = entry.mostOverdue {
+        if !entry.isPro {
+            lockedView
+        } else if let pet = entry.mostOverdue {
             Link(destination: WidgetDeepLink.url(for: pet.id)) {
                 filledView(pet: pet)
             }
         } else {
             emptyView
         }
+    }
+
+    private var lockedView: some View {
+        VStack(spacing: 6) {
+            Image(systemName: "lock.fill")
+                .font(.system(size: 28))
+                .foregroundStyle(.secondary)
+            Text("Pro Feature")
+                .font(.caption.bold())
+                .foregroundStyle(.secondary)
+            Text("Upgrade in app")
+                .font(.system(size: 9))
+                .foregroundStyle(.tertiary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(WidgetColors.background)
     }
 
     private func filledView(pet: PetSnapshot) -> some View {

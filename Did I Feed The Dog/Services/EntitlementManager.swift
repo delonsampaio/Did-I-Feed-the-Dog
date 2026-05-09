@@ -1,6 +1,7 @@
 import StoreKit
 import Observation
 
+@MainActor
 @Observable
 final class EntitlementManager {
     static let shared = EntitlementManager()
@@ -17,8 +18,6 @@ final class EntitlementManager {
         isPro = AppSettings.isPro
         updatesTask = Task { await listenForTransactions() }
     }
-
-    deinit { updatesTask?.cancel() }
 
     // Called once at app launch; safe to call multiple times.
     func initialize() async {
@@ -85,10 +84,10 @@ final class EntitlementManager {
 
     private func grantProToExistingPurchasers() async {
         // Auto-grant Pro to anyone who purchased the original paid app.
-        // originalAppVersion < "1.2" means they paid before the freemium pivot.
+        // Build 146 was the last paid release (v1.1); freemium starts at 147+.
         guard let result = try? await AppTransaction.shared else { return }
         if case .verified(let appTransaction) = result,
-           appTransaction.originalAppVersion.compare("1.2", options: .numeric) == .orderedAscending {
+           appTransaction.originalAppVersion.compare("147", options: .numeric) == .orderedAscending {
             grant()
         }
     }
@@ -112,9 +111,13 @@ final class EntitlementManager {
 
     private func listenForTransactions() async {
         for await verification in Transaction.updates {
-            if case .verified(let transaction) = verification,
-               transaction.productID == Self.productID {
-                if transaction.revocationDate == nil { grant() } else { revoke() }
+            switch verification {
+            case .verified(let transaction):
+                if transaction.productID == Self.productID {
+                    if transaction.revocationDate == nil { grant() } else { revoke() }
+                }
+                await transaction.finish()
+            case .unverified(let transaction, _):
                 await transaction.finish()
             }
         }
@@ -128,5 +131,6 @@ final class EntitlementManager {
     private func revoke() {
         isPro = false
         AppSettings.isPro = false
+        NotificationManager.shared.removeAllProNotifications()
     }
 }

@@ -143,14 +143,16 @@ struct OnboardingView: View {
                     }
                 }
 
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) { dogNames.append("") }
-                } label: {
-                    Label("Add Another Dog", systemImage: "plus.circle.fill")
-                        .font(.subheadline)
-                        .foregroundStyle(Color.accentColor)
+                if entitlements.isPro {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) { dogNames.append("") }
+                    } label: {
+                        Label("Add Another Dog", systemImage: "plus.circle.fill")
+                            .font(.subheadline)
+                            .foregroundStyle(Color.accentColor)
+                    }
+                    .padding(.top, 4)
                 }
-                .padding(.top, 4)
             }
         }
         .padding(.horizontal, 32)
@@ -401,15 +403,17 @@ struct OnboardingView: View {
     }
 
     private func saveDog() {
-        // Trim, drop empties, dedupe (case-insensitive) so the user can't end
-        // up with two "Buster"s from typo-doubling.
         var seen = Set<String>()
+        let limit = entitlements.isPro ? Int.max : 1
+        var insertCount = 0
         for raw in dogNames {
+            guard insertCount < limit else { break }
             let trimmed = raw.trimmingCharacters(in: .whitespaces)
             guard !trimmed.isEmpty else { continue }
             let key = trimmed.lowercased()
             guard seen.insert(key).inserted else { continue }
             modelContext.insert(Pet(name: trimmed))
+            insertCount += 1
         }
     }
 

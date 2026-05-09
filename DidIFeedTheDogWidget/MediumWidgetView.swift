@@ -7,24 +7,45 @@ struct MediumWidgetView: View {
     let entry: WidgetEntry
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            header
-            if entry.pets.isEmpty {
-                emptyRow
-            } else {
-                ForEach(Array(entry.pets.prefix(3).enumerated()), id: \.offset) { index, pet in
-                    if index > 0 { divider }
-                    petRow(pet, badgeTextWidth: maxBadgeTextWidth, statusTextWidth: maxStatusTextWidth)
+        if !entry.isPro {
+            lockedView
+        } else {
+            VStack(alignment: .leading, spacing: 0) {
+                header
+                if entry.pets.isEmpty {
+                    emptyRow
+                } else {
+                    ForEach(Array(entry.pets.prefix(3).enumerated()), id: \.offset) { index, pet in
+                        if index > 0 { divider }
+                        petRow(pet, badgeTextWidth: maxBadgeTextWidth, statusTextWidth: maxStatusTextWidth)
+                    }
                 }
+                Spacer(minLength: 0)
+                footer
             }
-            Spacer(minLength: 0)
-            footer
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(WidgetColors.background)
+            .dynamicTypeSize(...DynamicTypeSize.xLarge)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+    }
+
+    private var lockedView: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "lock.fill")
+                .font(.system(size: 24))
+                .foregroundStyle(.secondary)
+            Text("Did I Feed the Dog? Pro")
+                .font(.caption.bold())
+                .foregroundStyle(.secondary)
+            Text("Upgrade in the app to unlock widgets")
+                .font(.system(size: 10))
+                .foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
+        }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(WidgetColors.background)
-        .dynamicTypeSize(...DynamicTypeSize.xLarge)
     }
 
     private var header: some View {
