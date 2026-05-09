@@ -248,6 +248,21 @@ final class NotificationManager {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["waterBowlReminder"])
     }
 
+    func removeAllProNotifications() {
+        let center = UNUserNotificationCenter.current()
+        center.getPendingNotificationRequests { requests in
+            let ids = requests.map(\.identifier).filter { id in
+                id.hasPrefix("overdue-") ||
+                id.hasPrefix("lowstock-") ||
+                id.hasPrefix("birthday-") ||
+                (id.hasPrefix("feeding-") && !id.hasPrefix("feeding-all-")) ||
+                id == "waterBowlReminder"
+            }
+            center.removePendingNotificationRequests(withIdentifiers: ids)
+        }
+        clearBadge()
+    }
+
     private func scheduleReminder(identifier: String, title: String, body: String, minutesSinceMidnight: Int) {
         let content = UNMutableNotificationContent()
         content.title = title
