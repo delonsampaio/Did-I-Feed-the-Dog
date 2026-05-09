@@ -142,7 +142,7 @@ struct PetCard: View {
                     WidgetDataWriter.write(from: modelContext)
                 }
                 onFed?(event, undo)
-                if result.shouldPromptStockOut && AppSettings.stockOutPromptEnabled {
+                if entitlements.isPro && result.shouldPromptStockOut && AppSettings.stockOutPromptEnabled {
                     showStockOutAlert = true
                 }
             })
