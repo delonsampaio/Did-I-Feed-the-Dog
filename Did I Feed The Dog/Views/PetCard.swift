@@ -9,10 +9,13 @@ struct PetCard: View {
     @AppStorage("reminderMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))      private var reminderMode: ReminderMode = .none
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(EntitlementManager.self) private var entitlements
 
     let pet: Pet
     var onFed: ((FeedingEvent, @escaping () -> Void) -> Void)? = nil
     @State private var showFeedSheet = false
+    @State private var showOverdueTease = false
+    @State private var showPaywall = false
     @State private var showEditSheet = false
     @State private var showQuickStockSheet = false
     @State private var showStockOutAlert = false
@@ -66,7 +69,12 @@ struct PetCard: View {
             }
 
             Spacer(minLength: 0)
-            
+
+            if showOverdueTease {
+                Button { showPaywall = true } label: { overdueTeaseBanner }
+                    .buttonStyle(.plain)
+            }
+
             // Fasting Mode Banner (Item #22)
             if pet.isFasting {
                 HStack {
@@ -167,6 +175,13 @@ struct PetCard: View {
             Button("Remind Me Later", role: .cancel) { }
         } message: {
             Text("It looks like you're out of food — did you just open a new bag?")
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallSheet(source: "overdueCard")
+        }
+        .onAppear { checkOverdueTease() }
+        .onChange(of: pet.isFeedingOverdue) { _, isOverdue in
+            if isOverdue { checkOverdueTease() }
         }
     }
 
@@ -360,6 +375,38 @@ struct PetCard: View {
         .disabled(pet.isFasting)
         .padding(.horizontal, 16)
         .padding(.bottom, 16)
+    }
+
+    private var overdueTeaseBanner: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "bell.badge.fill")
+                .foregroundStyle(Color.accentColor)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Want a notification next time?")
+                    .font(.subheadline).fontWeight(.semibold)
+                Text("Unlock Pro to get overdue alerts delivered to your phone.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption).foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color.accentColor.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .padding(.horizontal, 16)
+        .padding(.bottom, 10)
+    }
+
+    private func checkOverdueTease() {
+        guard !entitlements.isPro,
+              pet.isFeedingOverdue,
+              AppSettings.seenOverdueTeaseAt == nil else { return }
+        AppSettings.seenOverdueTeaseAt = .now
+        showOverdueTease = true
     }
 
     private func abbreviatedRelative(_ date: Date) -> String {

@@ -15,7 +15,20 @@ struct NotificationsSettingsView: View {
     @AppStorage("overdueThresholdHours", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var overdueThresholdHours = 12
     @AppStorage("reminderMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))          private var reminderMode: ReminderMode = .none
 
+    @Environment(EntitlementManager.self) private var entitlements
+
     @State private var notificationsAuthorized = true
+    @State private var showPaywall = false
+
+    private var proBadge: some View {
+        Text("PRO")
+            .font(.caption2.bold())
+            .foregroundStyle(.white)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(Color.accentColor)
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+    }
 
     var body: some View {
         Form {
@@ -51,33 +64,50 @@ struct NotificationsSettingsView: View {
             }
 
             Section("Push Notifications") {
-                Toggle(isOn: $lowStockPushEnabled) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Low Stock Notification")
-                        Text("Sends an alert to your phone when food is low.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                if !entitlements.isPro {
+                    Button { showPaywall = true } label: {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Push notifications require Pro")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.primary)
+                                Text("Get overdue, low stock, and birthday alerts delivered to your phone.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            proBadge
+                        }
                     }
-                }
-                .disabled(!notificationsAuthorized)
-                Toggle(isOn: $birthdayPushEnabled) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Birthday Notification")
-                        Text("Sends a celebration alert on your dog's special day.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                } else {
+                    Toggle(isOn: $lowStockPushEnabled) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Low Stock Notification")
+                            Text("Sends an alert to your phone when food is low.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
-                }
-                .disabled(!notificationsAuthorized)
-                Toggle(isOn: $overduePushEnabled) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Overdue Notification")
-                        Text("Alerts you if a dog misses their meal.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                    .disabled(!notificationsAuthorized)
+                    Toggle(isOn: $birthdayPushEnabled) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Birthday Notification")
+                            Text("Sends a celebration alert on your dog's special day.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
+                    .disabled(!notificationsAuthorized)
+                    Toggle(isOn: $overduePushEnabled) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Overdue Notification")
+                            Text("Alerts you if a dog misses their meal.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .disabled(!notificationsAuthorized)
                 }
-                .disabled(!notificationsAuthorized)
             }
 
             Section("In-App") {
@@ -89,21 +119,37 @@ struct NotificationsSettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                Toggle(isOn: $badgeEnabled) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("App Icon Badge")
-                        Text("Shows a red number on the app icon when a dog needs feeding.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                if entitlements.isPro {
+                    Toggle(isOn: $badgeEnabled) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("App Icon Badge")
+                            Text("Shows a red number on the app icon when a dog needs feeding.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
-                }
-                .disabled(!notificationsAuthorized)
-                .onChange(of: badgeEnabled) { _, enabled in
-                    if enabled {
-                        NotificationManager.shared.updateBadgeCount(pets: pets)
-                    } else {
-                        NotificationManager.shared.clearBadge()
+                    .disabled(!notificationsAuthorized)
+                    .onChange(of: badgeEnabled) { _, enabled in
+                        if enabled {
+                            NotificationManager.shared.updateBadgeCount(pets: pets)
+                        } else {
+                            NotificationManager.shared.clearBadge()
+                        }
                     }
+                } else {
+                    Button { showPaywall = true } label: {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("App Icon Badge")
+                                Text("Shows a red number on the app icon when a dog needs feeding.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            proBadge
+                        }
+                    }
+                    .foregroundStyle(.primary)
                 }
             }
 
@@ -148,6 +194,9 @@ struct NotificationsSettingsView: View {
         .task { await refreshNotificationAuth() }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             Task { await refreshNotificationAuth() }
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallSheet(source: "notifications")
         }
     }
 

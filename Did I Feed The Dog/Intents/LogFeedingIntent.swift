@@ -25,6 +25,9 @@ struct LogFeedingIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
+        guard EntitlementManager.shared.isPro else {
+            return .result(dialog: "This feature requires Did I Feed the Dog Pro. Open the app to upgrade.")
+        }
         let context = sharedModelContainer.mainContext
 
         guard let modelPet = IntentDataAccess.fetchPets(in: context).first(where: { $0.id == pet.id }) else {

@@ -3,24 +3,6 @@ import SwiftUI
 import UIKit
 import WidgetKit
 
-// BISECT STEP 4: Large widget redacts on home screen even after every
-// per-row layout constraint was removed (commit a068c70). Medium widget
-// renders fine with all the same constraints + width measurements, so
-// the difference must be one of:
-//   1. prefix(6) vs prefix(3) — too many rows
-//   2. .padding(.vertical, 6) vs Medium's 4 — too much vertical space
-//   3. URL force-unwrap vs Medium's WidgetDeepLink helper
-//
-// This file is now a verbatim copy of MediumWidgetView with three diffs:
-//   - struct name + the literal "3" replaced with "6"
-//   - .padding(.vertical) value matched to Medium's 4 (was 6)
-//   - URL construction matched to Medium's WidgetDeepLink helper
-//
-// If this build renders on home screen → all of #2 and #3 (and any
-// subtle difference) are eliminated, but it just confirms prefix(6)
-// works. If still redacted → prefix(6) itself is the cause and we'll
-// need to render fewer rows or use Grid layout.
-
 struct LargeWidgetView: View {
     static let maxRows = 6
 
@@ -98,7 +80,7 @@ struct LargeWidgetView: View {
 
     private var footer: some View {
         HStack {
-            Text("Fed The Dog?")
+            Text(entry.isPro ? "Fed The Dog?" : "Add more dogs with Pro")
                 .font(.system(size: 9, weight: .medium))
                 .foregroundStyle(.tertiary)
             Spacer()

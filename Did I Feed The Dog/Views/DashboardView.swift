@@ -25,6 +25,8 @@ struct DashboardView: View {
         horizontalSizeClass == .regular ? 32 : 16
     }
 
+    @Environment(EntitlementManager.self) private var entitlements
+
     @State private var syncMonitor = CloudKitSyncMonitor()
     @State private var showAddPet = false
     @State private var showSettings = false
@@ -88,7 +90,7 @@ struct DashboardView: View {
                     }
                     .accessibilityLabel("Add dog")
                 }
-                if pets.filter({ !$0.isFasting }).count >= 2 {
+                if entitlements.isPro && pets.filter({ !$0.isFasting }).count >= 2 {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button { showFeedAll = true } label: {
                             Image(systemName: "fork.knife.circle.fill").font(.title3)

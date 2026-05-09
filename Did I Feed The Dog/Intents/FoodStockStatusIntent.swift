@@ -14,6 +14,9 @@ struct FoodStockStatusIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
+        guard EntitlementManager.shared.isPro else {
+            return .result(dialog: "This feature requires Did I Feed the Dog Pro. Open the app to upgrade.")
+        }
         switch AppSettings.stockMode {
         case .none:
             return .result(dialog: "Food stock tracking is turned off in the app.")

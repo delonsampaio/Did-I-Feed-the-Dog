@@ -29,6 +29,10 @@ enum AppSettings {
         static let stockOutSharedCount     = "stockOutSharedFeedingCount"
         static let stockOutIndividualCounts = "stockOutIndividualFeedingCountsJSON"
         static let stockOutPromptEnabled   = "stockOutPromptEnabled"
+        static let isPro                   = "isPro"
+        static let seenOverdueTeaseAt      = "seenOverdueTeaseAt"
+        static let paywallShownFromPrefix  = "paywallShownFrom_"
+        static let paywallConvertedFromPrefix = "paywallConvertedFrom_"
     }
 
     static let sharedDefaults = UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog") ?? .standard
@@ -146,5 +150,32 @@ enum AppSettings {
             return [:]
         }
         return dict
+    }
+
+    // MARK: - Entitlement
+
+    static var isPro: Bool {
+        get { sharedDefaults.bool(forKey: Key.isPro) }
+        set { sharedDefaults.set(newValue, forKey: Key.isPro) }
+    }
+
+    // MARK: - Overdue Tease
+
+    static var seenOverdueTeaseAt: Date? {
+        get {
+            let ti = sharedDefaults.double(forKey: Key.seenOverdueTeaseAt)
+            return ti == 0 ? nil : Date(timeIntervalSinceReferenceDate: ti)
+        }
+        set {
+            sharedDefaults.set(newValue?.timeIntervalSinceReferenceDate ?? 0,
+                               forKey: Key.seenOverdueTeaseAt)
+        }
+    }
+
+    // MARK: - Telemetry
+
+    static func incrementTelemetry(key: String) {
+        let current = sharedDefaults.integer(forKey: key)
+        sharedDefaults.set(current + 1, forKey: key)
     }
 }

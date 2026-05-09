@@ -1,4 +1,5 @@
 import AppIntents
+import StoreKit
 import SwiftUI
 import SwiftData
 
@@ -10,12 +11,15 @@ struct OnboardingView: View {
     @AppStorage("allDogsReminderTimesRaw", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var allDogsReminderTimesRaw = ""
 
     private enum OnboardingStep: Int, CaseIterable {
-        case welcome = 0, addDog, sync, reminder, done
+        case welcome = 0, addDog, sync, reminder, proPitch, done
     }
+
+    @Environment(EntitlementManager.self) private var entitlements
 
     @State private var step: OnboardingStep = .welcome
     @State private var dogNames: [String] = [""]
     @State private var reminderEnabled = false
+    @State private var showPaywallFromOnboarding = false
     @State private var reminderTime: Date = {
         var c = Calendar.current.dateComponents([.year, .month, .day], from: .now)
         c.hour = 8; c.minute = 0; c.second = 0
@@ -32,11 +36,12 @@ struct OnboardingView: View {
 
                 Group {
                     switch step {
-                    case .welcome:  welcomeStep
-                    case .addDog:   addDogStep
-                    case .sync:     syncStep
-                    case .reminder: reminderStep
-                    case .done:     doneStep
+                    case .welcome:   welcomeStep
+                    case .addDog:    addDogStep
+                    case .sync:      syncStep
+                    case .reminder:  reminderStep
+                    case .proPitch:  proPitchStep
+                    case .done:      doneStep
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -56,6 +61,9 @@ struct OnboardingView: View {
                     .padding(.top, 16)
             }
             .frame(maxWidth: 500)
+        }
+        .sheet(isPresented: $showPaywallFromOnboarding) {
+            PaywallSheet(source: "onboarding")
         }
     }
 
@@ -210,6 +218,61 @@ struct OnboardingView: View {
         .padding(.horizontal, 32)
     }
 
+    private var proPitchStep: some View {
+        VStack(spacing: 24) {
+            VStack(spacing: 8) {
+                Text("Unlock the Full Experience")
+                    .font(.title.bold())
+                    .multilineTextAlignment(.center)
+
+                Text("Free for 1 dog with the essentials. Pro adds unlimited dogs and power features.")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            VStack(alignment: .leading, spacing: 14) {
+                ForEach([
+                    ("dog.fill",        "Unlimited dogs"),
+                    ("apps.iphone",     "Home & Lock Screen widgets"),
+                    ("mic.fill",        "Siri & Shortcuts"),
+                    ("bell.badge.fill", "Push notifications"),
+                ], id: \.1) { icon, text in
+                    HStack(spacing: 12) {
+                        Image(systemName: icon)
+                            .font(.body)
+                            .foregroundStyle(Color.accentColor)
+                            .frame(width: 22)
+                            .accessibilityHidden(true)
+                        Text(text).font(.body)
+                    }
+                }
+            }
+            .padding()
+            .background(Color(.secondarySystemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+
+            VStack(spacing: 6) {
+                Button {
+                    showPaywallFromOnboarding = true
+                } label: {
+                    Text("Upgrade to Pro — \(entitlements.product?.displayPrice ?? "$0.99")")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Color.accentColor)
+                        .foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+
+                Text("One purchase · Family Sharing included")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .padding(.horizontal, 28)
+    }
+
     private var doneStep: some View {
         VStack(spacing: 24) {
             Image(systemName: "checkmark.circle.fill")
@@ -234,19 +297,29 @@ struct OnboardingView: View {
 
     private var bottomButtons: some View {
         VStack(spacing: 12) {
-            Button(action: advance) {
-                Text(step == .done ? "Get Started" : "Next")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(canAdvance ? Color.accentColor : Color.gray.opacity(0.3))
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+            if step != .proPitch {
+                Button(action: advance) {
+                    Text(step == .done ? "Get Started" : "Next")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(canAdvance ? Color.accentColor : Color.gray.opacity(0.3))
+                        .foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+                .disabled(!canAdvance)
             }
-            .disabled(!canAdvance)
 
             if step == .reminder {
                 Button("Skip for now") {
+                    stepAnimate { step = .proPitch }
+                }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            }
+
+            if step == .proPitch {
+                Button("Maybe Later") {
                     stepAnimate { step = .done }
                 }
                 .font(.subheadline)
@@ -306,6 +379,8 @@ struct OnboardingView: View {
 
     private func advance() {
         switch step {
+        case .proPitch:
+            stepAnimate { step = .done }
         case .done:
             saveDog()
             saveReminder()

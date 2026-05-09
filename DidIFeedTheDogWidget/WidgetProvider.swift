@@ -7,6 +7,11 @@ import Foundation
 enum WidgetTuning {
     static let refreshInterval: TimeInterval = 3600
     static let maxFutureEntries = 5
+    static let groupID = "group.com.delon.DidIFeedTheDog"
+}
+
+private func readIsPro() -> Bool {
+    UserDefaults(suiteName: WidgetTuning.groupID)?.bool(forKey: "isPro") ?? false
 }
 
 struct Provider: TimelineProvider {
@@ -16,7 +21,7 @@ struct Provider: TimelineProvider {
         // fall back to a fixed "Max"/"Bailey" pair before any pets are added.
         let real = Self.fetchPetSnapshots()
         if !real.isEmpty {
-            return WidgetEntry(date: .now, pets: real)
+            return WidgetEntry(date: .now, pets: real, isPro: readIsPro())
         }
         let now = Date()
         return WidgetEntry(date: now, pets: [
@@ -24,19 +29,20 @@ struct Provider: TimelineProvider {
                         lastFedDate: now.addingTimeInterval(-1800), isFasting: false, scheduleTimes: [], thresholdHours: 12)),
             PetSnapshot(data: PetWidgetData(id: UUID(), name: "Bailey", photoData: nil,
                         lastFedDate: now.addingTimeInterval(-32400), isFasting: false, scheduleTimes: [], thresholdHours: 12))
-        ])
+        ], isPro: readIsPro())
     }
 
     func getSnapshot(in context: Context, completion: @escaping (WidgetEntry) -> Void) {
-        completion(WidgetEntry(date: .now, pets: Self.fetchPetSnapshots()))
+        completion(WidgetEntry(date: .now, pets: Self.fetchPetSnapshots(), isPro: readIsPro()))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<WidgetEntry>) -> Void) {
         let petsData = WidgetDataStore.load()
         let now = Date()
+        let isPro = readIsPro()
 
         var entries: [WidgetEntry] = []
-        entries.append(WidgetEntry(date: now, pets: Self.fetchPetSnapshots(data: petsData, at: now)))
+        entries.append(WidgetEntry(date: now, pets: Self.fetchPetSnapshots(data: petsData, at: now), isPro: isPro))
 
         // Schedule extra entries at the moments dogs would flip overdue, so
         // the widget visually changes state without waiting for the hourly
@@ -50,7 +56,7 @@ struct Provider: TimelineProvider {
 
         let sortedFutureDates = futureDates.sorted().prefix(WidgetTuning.maxFutureEntries)
         for date in sortedFutureDates {
-            entries.append(WidgetEntry(date: date, pets: Self.fetchPetSnapshots(data: petsData, at: date)))
+            entries.append(WidgetEntry(date: date, pets: Self.fetchPetSnapshots(data: petsData, at: date), isPro: isPro))
         }
 
         let next = now.addingTimeInterval(WidgetTuning.refreshInterval)

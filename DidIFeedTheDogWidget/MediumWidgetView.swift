@@ -79,7 +79,7 @@ struct MediumWidgetView: View {
 
     private var footer: some View {
         HStack {
-            Text("Fed The Dog?")
+            Text(entry.isPro ? "Fed The Dog?" : "Add more dogs with Pro")
                 .font(.system(size: 9, weight: .medium))
                 .foregroundStyle(.tertiary)
             Spacer()

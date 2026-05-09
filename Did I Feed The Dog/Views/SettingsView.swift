@@ -20,9 +20,13 @@ struct SettingsView: View {
     @AppStorage(LoggedBy.storageKey, store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))       private var loggedByName = ""
     @AppStorage("appearanceMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))          private var appearanceMode: AppearanceMode = .system
 
+    @Environment(EntitlementManager.self) private var entitlements
+
     @State private var editingPet: Pet?
     @State private var showAddPet = false
     @State private var notificationsAuthorized = true
+    @State private var showPaywall = false
+    @State private var paywallSource = ""
 
     var body: some View {
         Form {
@@ -48,6 +52,9 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showAddPet) {
             AddEditPetSheet()
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallSheet(source: paywallSource)
         }
         .task { await refreshNotificationAuth() }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
@@ -110,6 +117,19 @@ struct SettingsView: View {
 
     private var foodStockSection: some View {
         Section {
+            if !entitlements.isPro {
+                Button {
+                    paywallSource = "foodStock"
+                    showPaywall = true
+                } label: {
+                    HStack {
+                        Label("Food Stock Tracking", systemImage: "shippingbox.fill")
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        proBadge
+                    }
+                }
+            } else {
             Picker("Tracking Mode", selection: $stockMode) {
                 ForEach(StockMode.allCases, id: \.self) { mode in
                     Text(mode.label).tag(mode)
@@ -152,10 +172,11 @@ struct SettingsView: View {
                     }
                 }
             }
+            } // end else (isPro)
         } header: {
             Text("Food Stock")
         } footer: {
-            if stockMode != .none {
+            if entitlements.isPro && stockMode != .none {
                 Text("Snack and Treat meals do not reduce the portion count.")
             }
         }
@@ -193,13 +214,31 @@ struct SettingsView: View {
         WidgetDataWriter.write(from: modelContext)
     }
 
+    private var reminderTimeLimit: Int { entitlements.isPro ? 3 : 1 }
+
     private var feedingRemindersSection: some View {
         Section("Feeding Reminders") {
             Picker("Schedule", selection: $reminderMode) {
-                ForEach(ReminderMode.allCases, id: \.self) { Text($0.label).tag($0) }
+                ForEach(ReminderMode.allCases, id: \.self) { mode in
+                    if mode == .perDog && !entitlements.isPro {
+                        HStack {
+                            Text(mode.label)
+                            Spacer()
+                            proBadge
+                        }.tag(mode)
+                    } else {
+                        Text(mode.label).tag(mode)
+                    }
+                }
             }
-            .onChange(of: reminderMode) { _, _ in
-                if reminderMode == .allDogs && allDogsReminderTimes.isEmpty {
+            .onChange(of: reminderMode) { _, newMode in
+                if newMode == .perDog && !entitlements.isPro {
+                    reminderMode = .allDogs
+                    paywallSource = "notifications"
+                    showPaywall = true
+                    return
+                }
+                if newMode == .allDogs && allDogsReminderTimes.isEmpty {
                     allDogsReminderTimes = [7 * 60, 18 * 60]
                 }
                 updateReminders()
@@ -233,7 +272,7 @@ struct SettingsView: View {
                         .accessibilityLabel("Delete reminder time \(index + 1)")
                     }
                 }
-                if allDogsReminderTimes.count < 3 {
+                if allDogsReminderTimes.count < reminderTimeLimit {
                     Button {
                         var t = allDogsReminderTimes
                         t.append(12 * 60)
@@ -241,6 +280,18 @@ struct SettingsView: View {
                         updateReminders()
                     } label: {
                         Label("Add Reminder Time", systemImage: "plus.circle.fill")
+                    }
+                } else if !entitlements.isPro && allDogsReminderTimes.count >= 1 {
+                    Button {
+                        paywallSource = "notifications"
+                        showPaywall = true
+                    } label: {
+                        HStack {
+                            Label("Add More Reminder Times", systemImage: "plus.circle")
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            proBadge
+                        }
                     }
                 }
                 if hasReminderOverlap {
@@ -269,10 +320,34 @@ struct SettingsView: View {
         }
     }
 
+    private var proBadge: some View {
+        Text("PRO")
+            .font(.caption2.bold())
+            .foregroundStyle(.white)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(Color.accentColor)
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+    }
+
     private var notificationsSection: some View {
         Section {
-            NavigationLink(destination: NotificationsSettingsView()) {
-                Label("Notifications", systemImage: "bell.fill")
+            if entitlements.isPro {
+                NavigationLink(destination: NotificationsSettingsView()) {
+                    Label("Notifications", systemImage: "bell.fill")
+                }
+            } else {
+                Button {
+                    paywallSource = "notifications"
+                    showPaywall = true
+                } label: {
+                    HStack {
+                        Label("Notifications", systemImage: "bell.fill")
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        proBadge
+                    }
+                }
             }
         }
     }

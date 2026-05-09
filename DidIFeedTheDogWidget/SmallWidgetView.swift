@@ -32,7 +32,7 @@ struct SmallWidgetView: View {
                 .font((pet.isFasting || pet.isFeedingOverdue) ? .caption.bold() : .caption2)
                 .foregroundStyle(statusColor(for: pet))
             Spacer()
-            Text("Fed The Dog?")
+            Text(entry.isPro ? "Fed The Dog?" : "Add more dogs with Pro")
                 .font(.system(size: 9, weight: .medium))
                 .foregroundStyle(.tertiary)
         }

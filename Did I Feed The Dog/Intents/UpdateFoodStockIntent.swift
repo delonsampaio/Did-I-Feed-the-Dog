@@ -22,6 +22,9 @@ struct UpdateFoodStockIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
+        guard EntitlementManager.shared.isPro else {
+            return .result(dialog: "This feature requires Did I Feed the Dog Pro. Open the app to upgrade.")
+        }
         guard portionsAdded > 0 else {
             return .result(dialog: "Please provide a number greater than zero.")
         }

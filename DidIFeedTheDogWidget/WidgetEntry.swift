@@ -86,6 +86,7 @@ struct PetSnapshot: Identifiable {
 struct WidgetEntry: TimelineEntry {
     let date: Date
     let pets: [PetSnapshot]   // sorted most-overdue first; empty = no pets added yet
+    let isPro: Bool
 
     var mostOverdue: PetSnapshot? { pets.first }
     var fedCount: Int { pets.filter { !$0.isFeedingOverdue }.count }

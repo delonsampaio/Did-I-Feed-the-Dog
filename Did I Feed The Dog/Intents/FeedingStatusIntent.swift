@@ -14,6 +14,9 @@ struct FeedingStatusIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
+        guard EntitlementManager.shared.isPro else {
+            return .result(dialog: "This feature requires Did I Feed the Dog Pro. Open the app to upgrade.")
+        }
         let context = sharedModelContainer.mainContext
         let pets = IntentDataAccess.fetchPets(in: context)
         guard let foundPet = pets.first(where: { $0.id == pet.id }) else {

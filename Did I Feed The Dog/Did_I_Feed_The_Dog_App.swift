@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import StoreKit
 
 // File-scope so AppIntents (IntentDataAccess) reference the same container
 // instance. Two CloudKit-enabled containers against the same store in one
@@ -27,6 +28,7 @@ let sharedModelContainer: ModelContainer = {
 struct Did_I_Feed_The_Dog_App: App {
     @UIApplicationDelegateAdaptor(QuickActionAppDelegate.self) var appDelegate
     @State private var deepLinkPetId: UUID? = nil
+    private let entitlements = EntitlementManager.shared
 
     var body: some Scene {
         WindowGroup {
@@ -34,6 +36,8 @@ struct Did_I_Feed_The_Dog_App: App {
                 .onOpenURL { url in
                     deepLinkPetId = parseDeepLink(url)
                 }
+                .environment(entitlements)
+                .task { await entitlements.initialize() }
         }
         .modelContainer(sharedModelContainer)
     }

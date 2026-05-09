@@ -6,6 +6,7 @@ import PhotosUI
 struct AddEditPetSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(EntitlementManager.self) private var entitlements
     @AppStorage("birthdayPushEnabled", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var birthdayPushEnabled = true
     @AppStorage("stockMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))           private var stockMode: StockMode = .individual
     @AppStorage("reminderMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))        private var reminderMode: ReminderMode = .none
@@ -20,6 +21,8 @@ struct AddEditPetSheet: View {
     @State private var selectedAvatarName: String?
     @State private var showAvatarPicker = false
     @State private var feedingTimes: [Date] = []
+    @State private var showPaywall = false
+    @State private var pendingPetName: String? = nil
 
     // Feature #22
     @State private var isFasting = false
@@ -141,6 +144,12 @@ struct AddEditPetSheet: View {
             .sheet(isPresented: $showAvatarPicker) {
                 AvatarPickerSheet(selectedAvatarName: $selectedAvatarName, photoData: $photoData)
             }
+            .sheet(isPresented: $showPaywall) {
+                PaywallSheet(source: "addSecondDog", petName: pendingPetName)
+                    .onDisappear {
+                        if entitlements.isPro { performSave() }
+                    }
+            }
         }
         .presentationSizing(.page)
     }
@@ -191,6 +200,19 @@ struct AddEditPetSheet: View {
     }
 
     private func save() {
+        // Sunk-cost paywall: user has filled out the form; show paywall only now.
+        if pet == nil && !entitlements.isPro {
+            let existingCount = (try? modelContext.fetchCount(FetchDescriptor<Pet>())) ?? 0
+            if existingCount >= 1 {
+                pendingPetName = name.trimmingCharacters(in: .whitespaces)
+                showPaywall = true
+                return
+            }
+        }
+        performSave()
+    }
+
+    private func performSave() {
         let trimmedName = name.trimmingCharacters(in: .whitespaces)
         let resolvedBirthday: Date? = hasBirthday ? birthday : nil
         let times = feedingTimes.map { date -> Int in

@@ -27,7 +27,7 @@ final class NotificationManager {
     func scheduleOverdueNotification(for pet: Pet, lastFedDate: Date) {
         let identifier = overdueIdentifier(for: pet)
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
-        
+        guard EntitlementManager.shared.isPro else { return }
         // Suppress if fasting
         guard !pet.isFasting else { return }
         guard AppSettings.overduePushEnabled else { return }
@@ -55,6 +55,7 @@ final class NotificationManager {
     }
 
     func scheduleLowStockNotification(for pet: Pet, stockCount: Int? = nil) {
+        guard EntitlementManager.shared.isPro else { return }
         let count = stockCount ?? pet.foodStockCount
         let name = pet.name ?? "your dog"
         let content = UNMutableNotificationContent()
@@ -72,6 +73,7 @@ final class NotificationManager {
     }
 
     func scheduleSharedLowStockNotification(stockCount: Int) {
+        guard EntitlementManager.shared.isPro else { return }
         let content = UNMutableNotificationContent()
         content.title = "🦴 Low Food: Shared"
         content.body = stockCount == 0
@@ -86,6 +88,7 @@ final class NotificationManager {
     }
 
     func scheduleBirthdayNotification(for pet: Pet) {
+        guard EntitlementManager.shared.isPro else { return }
         guard let birthday = pet.birthday else { return }
         let identifier = birthdayIdentifier(for: pet)
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
@@ -108,6 +111,10 @@ final class NotificationManager {
     }
 
     func updateBadgeCount(pets: [Pet]) {
+        guard EntitlementManager.shared.isPro else {
+            Task { try? await UNUserNotificationCenter.current().setBadgeCount(0) }
+            return
+        }
         guard AppSettings.badgeEnabled else {
             Task { try? await UNUserNotificationCenter.current().setBadgeCount(0) }
             return
@@ -137,7 +144,7 @@ final class NotificationManager {
 
     func schedulePerDogReminders(for pet: Pet, times: [Int]) {
         removePerDogReminders(for: pet)
-        
+        guard EntitlementManager.shared.isPro else { return }
         // Suppress if fasting
         guard !pet.isFasting else { return }
         
@@ -218,7 +225,8 @@ final class NotificationManager {
     }
 
     func scheduleWaterBowlReminder(weekday: Int, timeMinutes: Int) {
-        removeWaterBowlReminder() // Clear existing first
+        removeWaterBowlReminder()
+        guard EntitlementManager.shared.isPro else { return }
         
         let content = UNMutableNotificationContent()
         content.title = "Time to scrub the water bowl! 🧼"
