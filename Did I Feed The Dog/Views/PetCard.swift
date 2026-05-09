@@ -70,7 +70,7 @@ struct PetCard: View {
 
             Spacer(minLength: 0)
 
-            if showOverdueTease {
+            if showOverdueTease && !entitlements.isPro {
                 Button { showPaywall = true } label: { overdueTeaseBanner }
                     .buttonStyle(.plain)
             }

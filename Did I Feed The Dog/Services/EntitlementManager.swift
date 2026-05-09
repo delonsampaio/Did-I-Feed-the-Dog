@@ -131,6 +131,7 @@ final class EntitlementManager {
     private func revoke() {
         isPro = false
         AppSettings.isPro = false
+        AppSettings.seenOverdueTeaseAt = nil
         NotificationManager.shared.removeAllProNotifications()
     }
 
