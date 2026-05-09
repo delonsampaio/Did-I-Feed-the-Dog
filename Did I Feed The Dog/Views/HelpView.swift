@@ -432,6 +432,7 @@ struct HelpView: View {
 }
 
 private struct FAQRow: View {
+    @Environment(EntitlementManager.self) private var entitlements
     let question: String
     let answer: String
     var isPro: Bool = false
@@ -450,7 +451,7 @@ private struct FAQRow: View {
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .foregroundStyle(.primary)
-                if isPro {
+                if isPro && !entitlements.isPro {
                     Text("PRO")
                         .font(.system(size: 9, weight: .bold))
                         .foregroundStyle(.white)
