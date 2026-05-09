@@ -290,8 +290,8 @@ struct SettingsView: View {
                         showPaywall = true
                     } label: {
                         HStack {
-                            Label("Add More Reminder Times", systemImage: "plus.circle")
-                                .foregroundStyle(.secondary)
+                            Label("Add More Reminder Times", systemImage: "plus.circle.fill")
+                                .foregroundStyle(.primary)
                             Spacer()
                             proBadge
                         }
