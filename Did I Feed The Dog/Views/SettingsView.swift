@@ -31,6 +31,9 @@ struct SettingsView: View {
     var body: some View {
         Form {
             appearanceSection
+            if !entitlements.isPro {
+                proUpgradeSection
+            }
             petsSection
             displayNameSection
             foodStockSection
@@ -68,6 +71,41 @@ struct SettingsView: View {
     private func refreshNotificationAuth() async {
         let settings = await UNUserNotificationCenter.current().notificationSettings()
         notificationsAuthorized = settings.authorizationStatus == .authorized
+    }
+
+    private var proUpgradeSection: some View {
+        Section {
+            VStack(spacing: 12) {
+                HStack(spacing: 10) {
+                    Image(systemName: "star.fill")
+                        .foregroundStyle(.yellow)
+                        .font(.title2)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Did I Feed the Dog? Pro")
+                            .font(.headline)
+                        Text("Widgets · Food stock · Reminders · Siri")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                }
+                Button {
+                    paywallSource = "settingsUpgradeBanner"
+                    showPaywall = true
+                } label: {
+                    Text("Upgrade for $0.99")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(Color.accentColor)
+                        .foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.vertical, 6)
+        }
     }
 
     private var appearanceSection: some View {
