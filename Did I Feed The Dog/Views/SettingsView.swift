@@ -357,44 +357,58 @@ struct SettingsView: View {
 
     private var hygieneSection: some View {
         Section("Health & Hygiene") {
-            Toggle(isOn: $waterBowlReminderEnabled) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Water Bowl Cleaning Reminder")
-                    Text("Weekly nudge to wash the bowl and keep their water fresh and clean.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+            if entitlements.isPro {
+                Toggle(isOn: $waterBowlReminderEnabled) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Water Bowl Cleaning Reminder")
+                        Text("Weekly nudge to wash the bowl and keep their water fresh and clean.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
-            }
-            .disabled(!notificationsAuthorized)
-            .onChange(of: waterBowlReminderEnabled) { _, _ in
-                updateWaterBowlReminder()
-            }
-
-            if waterBowlReminderEnabled {
-                Picker("Day of Week", selection: $waterBowlReminderWeekday) {
-                    Text("Sunday").tag(1)
-                    Text("Monday").tag(2)
-                    Text("Tuesday").tag(3)
-                    Text("Wednesday").tag(4)
-                    Text("Thursday").tag(5)
-                    Text("Friday").tag(6)
-                    Text("Saturday").tag(7)
-                }
-                .onChange(of: waterBowlReminderWeekday) { _, _ in
+                .disabled(!notificationsAuthorized)
+                .onChange(of: waterBowlReminderEnabled) { _, _ in
                     updateWaterBowlReminder()
                 }
 
-                DatePicker(
-                    "Time",
-                    selection: Binding(
-                        get: { minutesToDate(waterBowlReminderTime) },
-                        set: {
-                            waterBowlReminderTime = dateToMinutes($0)
-                            updateWaterBowlReminder()
-                        }
-                    ),
-                    displayedComponents: .hourAndMinute
-                )
+                if waterBowlReminderEnabled {
+                    Picker("Day of Week", selection: $waterBowlReminderWeekday) {
+                        Text("Sunday").tag(1)
+                        Text("Monday").tag(2)
+                        Text("Tuesday").tag(3)
+                        Text("Wednesday").tag(4)
+                        Text("Thursday").tag(5)
+                        Text("Friday").tag(6)
+                        Text("Saturday").tag(7)
+                    }
+                    .onChange(of: waterBowlReminderWeekday) { _, _ in
+                        updateWaterBowlReminder()
+                    }
+
+                    DatePicker(
+                        "Time",
+                        selection: Binding(
+                            get: { minutesToDate(waterBowlReminderTime) },
+                            set: {
+                                waterBowlReminderTime = dateToMinutes($0)
+                                updateWaterBowlReminder()
+                            }
+                        ),
+                        displayedComponents: .hourAndMinute
+                    )
+                }
+            } else {
+                Button {
+                    paywallSource = "waterBowl"
+                    showPaywall = true
+                } label: {
+                    HStack {
+                        Label("Water Bowl Cleaning Reminder", systemImage: "drop.fill")
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        proBadge
+                    }
+                }
             }
         }
     }
