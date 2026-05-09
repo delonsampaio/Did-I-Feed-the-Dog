@@ -65,7 +65,7 @@ struct AddEditPetSheet: View {
                     }
                 }
 
-                if stockMode == .individual {
+                if entitlements.isPro && stockMode == .individual {
                     Section(
                         header: Text("Food Stock"),
                         footer: Text("Snack and Treat meals do not reduce the portion count.")
