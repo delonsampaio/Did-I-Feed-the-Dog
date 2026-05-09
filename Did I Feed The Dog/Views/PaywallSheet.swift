@@ -20,11 +20,18 @@ struct PaywallSheet: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 28) {
-                    header
-                    familySharingBanner
-                    featureList
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(spacing: 28) {
+                        header
+                        familySharingBanner
+                        featureList
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 16)
+                }
+
+                VStack(spacing: 12) {
                     if let errorMessage = entitlements.purchaseError {
                         Text(errorMessage)
                             .font(.caption)
@@ -36,7 +43,9 @@ struct PaywallSheet: View {
                     legalNote
                 }
                 .padding(.horizontal, 24)
+                .padding(.top, 12)
                 .padding(.bottom, 8)
+                .background(Color(.systemGroupedBackground))
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Pro Upgrade")
