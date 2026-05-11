@@ -66,7 +66,6 @@
 		1419543F2FAEBDDA0045F0ED /* Exceptions for "DidIFeedTheDogWidget" folder in "Did I Feed The Dog?" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Sandbox.storekit,
 			);
 			target = 148945822F9FC3200031F35C /* Did I Feed The Dog? */;
 		};
