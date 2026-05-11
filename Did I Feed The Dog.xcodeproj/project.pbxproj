@@ -63,6 +63,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		1419543F2FAEBDDA0045F0ED /* Exceptions for "DidIFeedTheDogWidget" folder in "Did I Feed The Dog?" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Sandbox.storekit,
+			);
+			target = 148945822F9FC3200031F35C /* Did I Feed The Dog? */;
+		};
 		1489475F2FA04F480031F35C /* Exceptions for "DidIFeedTheDogWidget" folder in "DidIFeedTheDogWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -97,6 +104,7 @@
 		148947502FA04F470031F35C /* DidIFeedTheDogWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				1419543F2FAEBDDA0045F0ED /* Exceptions for "DidIFeedTheDogWidget" folder in "Did I Feed The Dog?" target */,
 				1489475F2FA04F480031F35C /* Exceptions for "DidIFeedTheDogWidget" folder in "DidIFeedTheDogWidgetExtension" target */,
 			);
 			path = DidIFeedTheDogWidget;
@@ -519,7 +527,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = DidIFeedTheDog.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 164;
 				DEVELOPMENT_TEAM = 4CD86DZ6WP;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -554,7 +562,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = DidIFeedTheDog.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 164;
 				DEVELOPMENT_TEAM = 4CD86DZ6WP;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -631,7 +639,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = DidIFeedTheDogWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 164;
 				DEVELOPMENT_TEAM = 4CD86DZ6WP;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DidIFeedTheDogWidget/Info.plist;
@@ -662,7 +670,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = DidIFeedTheDogWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 164;
 				DEVELOPMENT_TEAM = 4CD86DZ6WP;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DidIFeedTheDogWidget/Info.plist;
