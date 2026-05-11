@@ -8,6 +8,7 @@ final class EntitlementManager {
     static let productID = "pro_upgrade"
 
     private(set) var isPro: Bool = false
+    private(set) var isSandboxEnvironment: Bool = false
     private(set) var product: Product?
     private(set) var purchaseError: String?
     private(set) var isLoading: Bool = false
@@ -86,9 +87,11 @@ final class EntitlementManager {
         // Auto-grant Pro to anyone who purchased the original paid app.
         // Build 146 was the last paid release (v1.1); freemium starts at 147+.
         guard let result = try? await AppTransaction.shared else { return }
-        if case .verified(let appTransaction) = result,
-           appTransaction.originalAppVersion.compare("147", options: .numeric) == .orderedAscending {
-            grant()
+        if case .verified(let appTransaction) = result {
+            isSandboxEnvironment = appTransaction.environment == .sandbox || appTransaction.environment == .xcode
+            if appTransaction.originalAppVersion.compare("147", options: .numeric) == .orderedAscending {
+                grant()
+            }
         }
     }
 

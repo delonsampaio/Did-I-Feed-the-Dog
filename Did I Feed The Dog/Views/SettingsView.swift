@@ -520,7 +520,7 @@ struct SettingsView: View {
         #if DEBUG
         return true
         #else
-        return Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
+        return entitlements.isSandboxEnvironment
         #endif
     }
 
