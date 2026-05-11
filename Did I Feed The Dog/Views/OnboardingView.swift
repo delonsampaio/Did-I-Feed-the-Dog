@@ -326,6 +326,12 @@ struct OnboardingView: View {
                 }
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+
+                Button("Restore Purchase") {
+                    Task { await entitlements.restore() }
+                }
+                .font(.caption)
+                .foregroundStyle(.tertiary)
             }
 
             if step != .welcome && step != .done {
