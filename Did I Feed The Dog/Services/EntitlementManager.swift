@@ -135,12 +135,10 @@ final class EntitlementManager {
         NotificationManager.shared.removeAllProNotifications()
     }
 
-    #if DEBUG
     func resetForTesting() {
         isPro = false
         AppSettings.isPro = false
         AppSettings.seenOverdueTeaseAt = nil
         NotificationManager.shared.removeAllProNotifications()
     }
-    #endif
 }

@@ -43,9 +43,9 @@ struct SettingsView: View {
             safetySection
             supportSection
             aboutSection
-            #if DEBUG
-            debugSection
-            #endif
+            if isTestingEnvironment {
+                debugSection
+            }
         }
         .navigationTitle("Settings")
         .toolbar {
@@ -516,20 +516,24 @@ struct SettingsView: View {
         }
     }
 
-    #if DEBUG
+    private var isTestingEnvironment: Bool {
+        #if DEBUG
+        return true
+        #else
+        return Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
+        #endif
+    }
+
     private var debugSection: some View {
         Section {
             Button(role: .destructive) {
-                // Delete all pets
                 for pet in pets {
                     NotificationManager.shared.removeBirthdayNotification(for: pet)
                     NotificationManager.shared.removeOverdueNotification(for: pet)
                     NotificationManager.shared.removePerDogReminders(for: pet)
                     modelContext.delete(pet)
                 }
-                // Reset entitlement and settings
                 entitlements.resetForTesting()
-                // Reset onboarding so it shows again on next launch
                 UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")?.set(false, forKey: "hasCompletedFirstLaunch")
                 WidgetDataWriter.write(from: modelContext)
             } label: {
@@ -538,10 +542,9 @@ struct SettingsView: View {
         } header: {
             Text("Developer")
         } footer: {
-            Text("Clears all dogs, resets Pro status, and restarts onboarding. This section does not appear in release builds.")
+            Text("Clears all dogs, resets Pro status, and restarts onboarding. Only visible in debug builds and TestFlight.")
         }
     }
-    #endif
 
     private func updateWaterBowlReminder() {
         if waterBowlReminderEnabled {
