@@ -520,7 +520,7 @@ struct SettingsView: View {
         #if DEBUG
         return true
         #else
-        return entitlements.isSandboxEnvironment
+        return false
         #endif
     }
 
