@@ -337,6 +337,13 @@ struct OnboardingView: View {
                 }
                 .font(.caption)
                 .foregroundStyle(.tertiary)
+
+                if let error = entitlements.purchaseError {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                        .multilineTextAlignment(.center)
+                }
             }
 
             if step != .welcome && step != .done {
