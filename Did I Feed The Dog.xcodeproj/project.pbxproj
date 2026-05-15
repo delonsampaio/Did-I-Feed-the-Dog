@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		14195C972FB271120045F0ED /* Sandbox.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 14195C962FB271120045F0ED /* Sandbox.storekit */; };
+		14195C982FB271120045F0ED /* Sandbox.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 14195C962FB271120045F0ED /* Sandbox.storekit */; };
 		1489474D2FA04F470031F35C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1489474C2FA04F460031F35C /* WidgetKit.framework */; };
 		1489474F2FA04F470031F35C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1489474E2FA04F470031F35C /* SwiftUI.framework */; };
 		148947642FA04F480031F35C /* DidIFeedTheDogWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1489474A2FA04F460031F35C /* DidIFeedTheDogWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -51,6 +53,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		14195C962FB271120045F0ED /* Sandbox.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Sandbox.storekit; sourceTree = "<group>"; };
 		148945832F9FC3210031F35C /* Did I Feed The Dog?.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Did I Feed The Dog?.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		148946892FA0252B0031F35C /* Did I Feed The DogTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Did I Feed The DogTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1489474A2FA04F460031F35C /* DidIFeedTheDogWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DidIFeedTheDogWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -63,12 +66,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		1419543F2FAEBDDA0045F0ED /* Exceptions for "DidIFeedTheDogWidget" folder in "Did I Feed The Dog?" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-			);
-			target = 148945822F9FC3200031F35C /* Did I Feed The Dog? */;
-		};
 		1489475F2FA04F480031F35C /* Exceptions for "DidIFeedTheDogWidget" folder in "DidIFeedTheDogWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -103,7 +100,6 @@
 		148947502FA04F470031F35C /* DidIFeedTheDogWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				1419543F2FAEBDDA0045F0ED /* Exceptions for "DidIFeedTheDogWidget" folder in "Did I Feed The Dog?" target */,
 				1489475F2FA04F480031F35C /* Exceptions for "DidIFeedTheDogWidget" folder in "DidIFeedTheDogWidgetExtension" target */,
 			);
 			path = DidIFeedTheDogWidget;
@@ -148,6 +144,7 @@
 		1489457A2F9FC3200031F35C = {
 			isa = PBXGroup;
 			children = (
+				14195C962FB271120045F0ED /* Sandbox.storekit */,
 				1489477D2FA053580031F35C /* Did-I-Feed-The-Dog--Info.plist */,
 				1489477B2FA0504C0031F35C /* DidIFeedTheDogWidgetExtension.entitlements */,
 				148945852F9FC3210031F35C /* Did I Feed The Dog */,
@@ -279,7 +276,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2640;
-				LastUpgradeCheck = 2640;
+				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					148945822F9FC3200031F35C = {
 						CreatedOnToolsVersion = 26.4.1;
@@ -324,6 +321,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				14195C972FB271120045F0ED /* Sandbox.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -338,6 +336,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				14195C982FB271120045F0ED /* Sandbox.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -435,6 +434,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 4CD86DZ6WP;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -458,6 +458,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -498,6 +499,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 4CD86DZ6WP;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -514,6 +516,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -527,7 +530,6 @@
 				CODE_SIGN_ENTITLEMENTS = DidIFeedTheDog.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 164;
-				DEVELOPMENT_TEAM = 4CD86DZ6WP;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Did-I-Feed-The-Dog--Info.plist";
@@ -562,7 +564,6 @@
 				CODE_SIGN_ENTITLEMENTS = DidIFeedTheDog.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 164;
-				DEVELOPMENT_TEAM = 4CD86DZ6WP;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Did-I-Feed-The-Dog--Info.plist";
@@ -595,7 +596,6 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4CD86DZ6WP;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.DelonSampaio.Did-I-Feed-The-DogTests";
@@ -616,7 +616,6 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4CD86DZ6WP;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.DelonSampaio.Did-I-Feed-The-DogTests";
@@ -639,7 +638,6 @@
 				CODE_SIGN_ENTITLEMENTS = DidIFeedTheDogWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 164;
-				DEVELOPMENT_TEAM = 4CD86DZ6WP;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DidIFeedTheDogWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = DidIFeedTheDogWidget;
@@ -670,7 +668,6 @@
 				CODE_SIGN_ENTITLEMENTS = DidIFeedTheDogWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 164;
-				DEVELOPMENT_TEAM = 4CD86DZ6WP;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DidIFeedTheDogWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = DidIFeedTheDogWidget;
@@ -699,7 +696,6 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4CD86DZ6WP;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.DelonSampaio.Did-I-Feed-The-Dog-.DidIFeedTheDogTests";
@@ -720,7 +716,6 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4CD86DZ6WP;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.DelonSampaio.Did-I-Feed-The-Dog-.DidIFeedTheDogTests";
