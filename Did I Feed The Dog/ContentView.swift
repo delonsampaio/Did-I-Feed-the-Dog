@@ -33,6 +33,16 @@ struct ContentView: View {
                     Task { await NotificationManager.shared.requestAuthorization() }
                 }
             }
+            .onChange(of: entitlements.isPro) { _, isPro in
+                // initialize() may complete after .task already showed onboarding.
+                // If Pro is granted and the user has dogs, they're reinstalling —
+                // dismiss onboarding and go straight to the dashboard.
+                if isPro && showOnboarding && !pets.isEmpty {
+                    showOnboarding = false
+                    hasCompletedFirstLaunch = true
+                    Task { await NotificationManager.shared.requestAuthorization() }
+                }
+            }
             .fullScreenCover(isPresented: $showOnboarding, onDismiss: {
                 hasCompletedFirstLaunch = true
             }) {
