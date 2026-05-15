@@ -6,6 +6,7 @@ struct ContentView: View {
     @AppStorage("appearanceMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var appearanceMode: AppearanceMode = .system
     @AppStorage("hasCompletedFirstLaunch", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var hasCompletedFirstLaunch = false
     @Query private var pets: [Pet]
+    @Environment(EntitlementManager.self) private var entitlements
 
     @State private var showOnboarding = false
 
@@ -14,11 +15,9 @@ struct ContentView: View {
             .onAppear { appearanceMode.apply() }
             .onChange(of: appearanceMode) { _, new in new.apply() }
             .task {
-                // Only show onboarding the first time the user opens the app.
-                // Without the persisted flag, a fresh install on a second
-                // device (where CloudKit hasn't synced pets yet) would briefly
-                // see pets.isEmpty and trigger onboarding before sync arrives.
-                if !hasCompletedFirstLaunch && pets.isEmpty {
+                // Free users always see onboarding so they get the pro pitch.
+                // Pro users with synced dogs can skip it — they're reinstalling.
+                if !hasCompletedFirstLaunch && (pets.isEmpty || !entitlements.isPro) {
                     showOnboarding = true
                 } else {
                     hasCompletedFirstLaunch = true
@@ -26,9 +25,9 @@ struct ContentView: View {
                 }
             }
             .onChange(of: pets) { _, newPets in
-                // If CloudKit syncs dogs from another device while the onboarding
-                // screen is showing, automatically dismiss it and jump to the dashboard.
-                if showOnboarding && !newPets.isEmpty {
+                // If CloudKit syncs dogs while onboarding is showing, only
+                // auto-dismiss for Pro users — free users still need the pro pitch.
+                if showOnboarding && !newPets.isEmpty && entitlements.isPro {
                     showOnboarding = false
                     hasCompletedFirstLaunch = true
                     Task { await NotificationManager.shared.requestAuthorization() }
