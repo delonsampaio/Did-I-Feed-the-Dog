@@ -408,7 +408,10 @@ struct OnboardingView: View {
             dismiss()
         default:
             stepAnimate {
-                if let next = OnboardingStep(rawValue: step.rawValue + 1) { step = next }
+                if var next = OnboardingStep(rawValue: step.rawValue + 1) {
+                    if next == .proPitch && entitlements.isPro { next = .done }
+                    step = next
+                }
             }
         }
     }
