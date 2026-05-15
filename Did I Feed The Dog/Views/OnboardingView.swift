@@ -65,6 +65,11 @@ struct OnboardingView: View {
         .sheet(isPresented: $showPaywallFromOnboarding) {
             PaywallSheet(source: "onboarding")
         }
+        .onChange(of: entitlements.isPro) { _, isPro in
+            if isPro && step == .proPitch {
+                stepAnimate { step = .done }
+            }
+        }
     }
 
     // MARK: - Progress
