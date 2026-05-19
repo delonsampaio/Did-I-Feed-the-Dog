@@ -12,6 +12,7 @@ struct FeedingStatusIntent: AppIntent {
         Summary("Check feeding status for \(\.$pet)")
     }
 
+    @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         guard EntitlementManager.shared.isPro else {
             return .result(dialog: "This feature requires Did I Feed the Dog Pro. Open the app to upgrade.")

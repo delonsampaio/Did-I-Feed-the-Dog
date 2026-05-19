@@ -216,8 +216,8 @@ enum FeedingLogService {
         // Reschedule immediately to fix background logging bug where dashboard .onAppear doesn't run
         NotificationManager.shared.rescheduleIfNeeded(
             reminderMode: mode,
-            pets: [pet],
-            allDogsReminderTimes: AppSettings.allDogsReminderTimes
+            allDogsReminderTimes: AppSettings.allDogsReminderTimes,
+            pets: [pet]
         )
     }
 
