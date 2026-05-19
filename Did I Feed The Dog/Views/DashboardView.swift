@@ -8,9 +8,9 @@ struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Pet.name) private var pets: [Pet]
 
-    @AppStorage("reminderMode", store: .sharedGroup)            private var reminderMode: ReminderMode = .none
+    @AppStorage("reminderMode", store: .sharedGroup) private var reminderMode: ReminderMode = .none
     @AppStorage("allDogsReminderTimesRaw", store: .sharedGroup) private var allDogsReminderTimesRaw = ""
-    @AppStorage("appearanceMode", store: .sharedGroup)          private var appearanceMode: AppearanceMode = .system
+    @AppStorage("appearanceMode", store: .sharedGroup) private var appearanceMode: AppearanceMode = .system
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -24,8 +24,6 @@ struct DashboardView: View {
     private var horizontalPadding: CGFloat {
         horizontalSizeClass == .regular ? 32 : 16
     }
-
-    @Environment(EntitlementManager.self) private var entitlements
 
     @State private var syncMonitor = CloudKitSyncMonitor()
     @State private var showAddPet = false
@@ -90,7 +88,7 @@ struct DashboardView: View {
                     }
                     .accessibilityLabel("Add dog")
                 }
-                if entitlements.isPro && pets.filter({ !$0.isFasting }).count >= 2 {
+                if pets.filter({ !$0.isFasting }).count >= 2 {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button { showFeedAll = true } label: {
                             Image(systemName: "fork.knife.circle.fill").font(.title3)
@@ -197,17 +195,13 @@ struct DashboardView: View {
         }
         .onChange(of: deepLinkPetId) { _, newId in
             guard let id = newId else { return }
-            if let pet = pets.first(where: { $0.id == id }), !pet.isFasting {
-                deepLinkFeedingPet = pet
-            }
+            handleDeepLink(petId: id)
             deepLinkPetId = nil
         }
         .onReceive(NotificationCenter.default.publisher(for: .quickActionTriggered)) { notification in
             guard let petIdString = notification.userInfo?["petId"] as? String,
                   let petId = UUID(uuidString: petIdString) else { return }
-            if let pet = pets.first(where: { $0.id == petId }), !pet.isFasting {
-                deepLinkFeedingPet = pet
-            }
+            handleDeepLink(petId: petId)
         }
         .onAppear {
             NotificationManager.shared.rescheduleIfNeeded(
@@ -222,9 +216,7 @@ struct DashboardView: View {
             
             if let pendingIdString = QuickActionManager.shared.pendingPetId,
                let pendingId = UUID(uuidString: pendingIdString) {
-                if let pet = pets.first(where: { $0.id == pendingId }), !pet.isFasting {
-                    deepLinkFeedingPet = pet
-                }
+                handleDeepLink(petId: pendingId)
                 QuickActionManager.shared.pendingPetId = nil
             }
         }
@@ -248,5 +240,11 @@ struct DashboardView: View {
         undoAction = undo
         toastId = UUID()
         showUndoToast = true
+    }
+
+    private func handleDeepLink(petId: UUID) {
+        if let pet = pets.first(where: { $0.id == petId }), !pet.isFasting {
+            deepLinkFeedingPet = pet
+        }
     }
 }

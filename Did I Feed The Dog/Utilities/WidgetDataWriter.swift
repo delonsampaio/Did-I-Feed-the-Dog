@@ -37,33 +37,34 @@ enum WidgetDataWriter {
         let allDogsTimes = AppSettings.allDogsReminderTimes.sorted()
         let threshold = AppSettings.overdueThresholdHours
 
-        if let events = events {
-            let byPetId = Dictionary(grouping: events, by: { $0.pet?.id ?? UUID() })
-            snapshots = pets.map { pet in
-                let lastDate = (byPetId[pet.id] ?? [])
-                    .max(by: { $0.timestamp < $1.timestamp })?.timestamp
-
-                let times = modeRaw == "allDogs" ? allDogsTimes : (modeRaw == "perDog" ? pet.feedingScheduleTimes.sorted() : [])
-
-                return PetWidgetData(id: pet.id, name: pet.name ?? "Unknown",
-                                     photoData: smallAvatarJPEG(from: pet.photoData), lastFedDate: lastDate,
-                                     isFasting: pet.isFasting, scheduleTimes: times, thresholdHours: threshold)
+        let eventsByPetId = events.map { Dictionary(grouping: $0, by: { $0.pet?.id ?? UUID() }) }
+        
+        snapshots = pets.map { pet in
+            let lastDate: Date?
+            if let byPetId = eventsByPetId {
+                lastDate = (byPetId[pet.id] ?? []).max(by: { $0.timestamp < $1.timestamp })?.timestamp
+            } else {
+                lastDate = (pet.feedingEvents ?? []).max(by: { $0.timestamp < $1.timestamp })?.timestamp
             }
-        } else {
-            snapshots = pets.map { pet in
-                let lastDate = (pet.feedingEvents ?? [])
-                    .max(by: { $0.timestamp < $1.timestamp })?.timestamp
 
-                let times = modeRaw == "allDogs" ? allDogsTimes : (modeRaw == "perDog" ? pet.feedingScheduleTimes.sorted() : [])
+            let times = modeRaw == "allDogs" ? allDogsTimes : (modeRaw == "perDog" ? pet.feedingScheduleTimes.sorted() : [])
 
-                return PetWidgetData(id: pet.id, name: pet.name ?? "Unknown",
-                                     photoData: smallAvatarJPEG(from: pet.photoData), lastFedDate: lastDate,
-                                     isFasting: pet.isFasting, scheduleTimes: times, thresholdHours: threshold)
-            }
+            return PetWidgetData(id: pet.id, name: pet.name ?? "Unknown",
+                                 photoData: smallAvatarJPEG(from: pet.photoData), lastFedDate: lastDate,
+                                 isFasting: pet.isFasting, scheduleTimes: times, thresholdHours: threshold)
         }
 
-        guard let data = try? JSONEncoder().encode(snapshots) else { return }
-        if let url = fileURL() { try? data.write(to: url) }
+        guard let data = try? JSONEncoder().encode(snapshots) else {
+            widgetLogger.error("Failed to encode widget snapshots.")
+            return 
+        }
+        if let url = fileURL() { 
+            do {
+                try data.write(to: url)
+            } catch {
+                widgetLogger.error("Failed to write widget data to disk: \(error.localizedDescription, privacy: .public)")
+            }
+        }
         UserDefaults(suiteName: groupID)?.set(data, forKey: udKey)
         WidgetCenter.shared.reloadAllTimelines()
     }

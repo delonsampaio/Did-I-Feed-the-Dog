@@ -1,5 +1,4 @@
 import AppIntents
-import StoreKit
 import SwiftUI
 import SwiftData
 
@@ -7,20 +6,21 @@ struct OnboardingView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @AppStorage("reminderMode", store: .sharedGroup)            private var reminderMode: ReminderMode = .none
+    @AppStorage("reminderMode", store: .sharedGroup) private var reminderMode: ReminderMode = .none
     @AppStorage("allDogsReminderTimesRaw", store: .sharedGroup) private var allDogsReminderTimesRaw = ""
 
     private enum OnboardingStep: Int, CaseIterable {
-        case welcome = 0, addDog, sync, reminder, proPitch, done
+        case welcome = 0, addDog, sync, reminder, done
     }
 
-    @Environment(EntitlementManager.self) private var entitlements
-    @Query private var existingPets: [Pet]
+    private struct DogEntry: Identifiable, Equatable {
+        let id = UUID()
+        var name: String
+    }
 
     @State private var step: OnboardingStep = .welcome
-    @State private var dogNames: [String] = [""]
+    @State private var dogNames: [DogEntry] = [DogEntry(name: "")]
     @State private var reminderEnabled = false
-    @State private var showPaywallFromOnboarding = false
     @State private var reminderTime: Date = {
         var c = Calendar.current.dateComponents([.year, .month, .day], from: .now)
         c.hour = 8; c.minute = 0; c.second = 0
@@ -37,12 +37,11 @@ struct OnboardingView: View {
 
                 Group {
                     switch step {
-                    case .welcome:   welcomeStep
-                    case .addDog:    addDogStep
-                    case .sync:      syncStep
-                    case .reminder:  reminderStep
-                    case .proPitch:  proPitchStep
-                    case .done:      doneStep
+                    case .welcome:  welcomeStep
+                    case .addDog:   addDogStep
+                    case .sync:     syncStep
+                    case .reminder: reminderStep
+                    case .done:     doneStep
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -62,14 +61,6 @@ struct OnboardingView: View {
                     .padding(.top, 16)
             }
             .frame(maxWidth: 500)
-        }
-        .sheet(isPresented: $showPaywallFromOnboarding) {
-            PaywallSheet(source: "onboarding")
-        }
-        .onChange(of: entitlements.isPro) { _, isPro in
-            if isPro && step == .proPitch {
-                stepAnimate { step = .done }
-            }
         }
     }
 
@@ -126,32 +117,32 @@ struct OnboardingView: View {
                     .multilineTextAlignment(.center)
             }
 
-            VStack(spacing: 10) {
-                ForEach(dogNames.indices, id: \.self) { i in
-                    HStack(spacing: 10) {
-                        TextField(i == 0 ? "Dog's name" : "Another dog's name", text: $dogNames[i])
-                            .font(.title3)
-                            .multilineTextAlignment(.center)
-                            .padding()
-                            .background(Color(.secondarySystemBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+            ScrollView {
+                VStack(spacing: 10) {
+                    ForEach($dogNames) { $dog in
+                        HStack(spacing: 10) {
+                            TextField(dog.id == dogNames.first?.id ? "Dog's name" : "Another dog's name", text: $dog.name)
+                                .font(.title3)
+                                .multilineTextAlignment(.center)
+                                .padding()
+                                .background(Color(.secondarySystemBackground))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                        if dogNames.count > 1 {
-                            Button {
-                                dogNames.remove(at: i)
-                            } label: {
-                                Image(systemName: "minus.circle.fill")
-                                    .font(.title2)
-                                    .foregroundStyle(.red)
+                            if dogNames.count > 1 {
+                                Button {
+                                    dogNames.removeAll(where: { $0.id == dog.id })
+                                } label: {
+                                    Image(systemName: "minus.circle.fill")
+                                        .font(.title2)
+                                        .foregroundStyle(.red)
+                                }
+                                .accessibilityLabel("Remove \(dog.name.trimmingCharacters(in: .whitespaces).isEmpty ? "dog" : dog.name.trimmingCharacters(in: .whitespaces))")
                             }
-                            .accessibilityLabel("Remove \(dogNames[i].trimmingCharacters(in: .whitespaces).isEmpty ? "dog" : dogNames[i].trimmingCharacters(in: .whitespaces))")
                         }
                     }
-                }
 
-                if entitlements.isPro {
                     Button {
-                        withAnimation(.easeInOut(duration: 0.2)) { dogNames.append("") }
+                        withAnimation(.easeInOut(duration: 0.2)) { dogNames.append(DogEntry(name: "")) }
                     } label: {
                         Label("Add Another Dog", systemImage: "plus.circle.fill")
                             .font(.subheadline)
@@ -159,9 +150,11 @@ struct OnboardingView: View {
                     }
                     .padding(.top, 4)
                 }
+                .padding(.horizontal, 4)
+                .padding(.bottom, 20)
             }
         }
-        .padding(.horizontal, 32)
+        .padding(.horizontal, 28)
     }
 
     private var syncStep: some View {
@@ -226,62 +219,6 @@ struct OnboardingView: View {
         .padding(.horizontal, 32)
     }
 
-    private var proPitchStep: some View {
-        VStack(spacing: 24) {
-            VStack(spacing: 8) {
-                Text("Unlock the Full Experience")
-                    .font(.title.bold())
-                    .multilineTextAlignment(.center)
-
-                Text("Free for 1 dog with the essentials. Pro adds unlimited dogs and power features.")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-
-            VStack(alignment: .leading, spacing: 14) {
-                ForEach([
-                    ("dog.fill",           "Unlimited dogs"),
-                    ("apps.iphone",        "Home & Lock Screen widgets"),
-                    ("mic.fill",           "Siri & Shortcuts"),
-                    ("bell.badge.fill",    "Push notifications"),
-                    ("switch.2",           "Control Center button"),
-                ], id: \.1) { icon, text in
-                    HStack(spacing: 12) {
-                        Image(systemName: icon)
-                            .font(.body)
-                            .foregroundStyle(Color.accentColor)
-                            .frame(width: 22)
-                            .accessibilityHidden(true)
-                        Text(text).font(.body)
-                    }
-                }
-            }
-            .padding()
-            .background(Color(.secondarySystemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 14))
-
-            VStack(spacing: 6) {
-                Button {
-                    showPaywallFromOnboarding = true
-                } label: {
-                    Text("Upgrade to Pro — \(entitlements.product?.displayPrice ?? "$0.99")")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.accentColor)
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                }
-
-                Text("One purchase · Family Sharing included")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-            }
-        }
-        .padding(.horizontal, 28)
-    }
-
     private var doneStep: some View {
         VStack(spacing: 24) {
             Image(systemName: "checkmark.circle.fill")
@@ -306,55 +243,29 @@ struct OnboardingView: View {
 
     private var bottomButtons: some View {
         VStack(spacing: 12) {
-            if step != .proPitch {
-                Button(action: advance) {
-                    Text(step == .done ? "Get Started" : "Next")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(canAdvance ? Color.accentColor : Color.gray.opacity(0.3))
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                }
-                .disabled(!canAdvance)
+            Button(action: advance) {
+                Text(step == .done ? "Get Started" : "Next")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(canAdvance ? Color.accentColor : Color.gray.opacity(0.3))
+                    .foregroundStyle(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
             }
+            .disabled(!canAdvance)
 
             if step == .reminder {
                 Button("Skip for now") {
-                    stepAnimate { step = .proPitch }
-                }
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            }
-
-            if step == .proPitch {
-                Button("Maybe Later") {
                     stepAnimate { step = .done }
                 }
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-
-                Button("Restore Purchase") {
-                    Task { await entitlements.restore() }
-                }
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-
-                if let error = entitlements.purchaseError {
-                    Text(error)
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                        .multilineTextAlignment(.center)
-                }
             }
 
             if step != .welcome && step != .done {
                 Button("Back") {
                     stepAnimate {
-                        if var prev = OnboardingStep(rawValue: step.rawValue - 1) {
-                            if prev == .addDog && !existingPets.isEmpty { prev = .welcome }
-                            step = prev
-                        }
+                        if let prev = OnboardingStep(rawValue: step.rawValue - 1) { step = prev }
                     }
                 }
                 .font(.subheadline)
@@ -365,35 +276,34 @@ struct OnboardingView: View {
 
     // MARK: - Helpers
 
+    private var validDogNames: [String] {
+        dogNames.map { $0.name.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+    }
+
     private var petName: String {
-        dogNames
-            .map { $0.trimmingCharacters(in: .whitespaces) }
-            .first { !$0.isEmpty } ?? "your dog"
+        validDogNames.first ?? "your dog"
     }
 
     private var petNamesFormatted: String {
-        let names = dogNames.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
-        return names.isEmpty ? "your dogs" : ListFormatter.localizedString(byJoining: names)
+        return validDogNames.isEmpty ? "your dogs" : ListFormatter.localizedString(byJoining: validDogNames)
     }
 
     private var petNamesNeverMiss: String {
-        let names = dogNames.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
-        let verb = names.count == 1 ? "misses" : "miss"
+        let verb = validDogNames.count == 1 ? "misses" : "miss"
         return "\(petNamesFormatted) never \(verb) a meal"
     }
 
     private var firstMealText: String {
-        let names = dogNames.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
-        if names.isEmpty {
+        if validDogNames.isEmpty {
             return "your dog's first meal"
         }
-        let joined = ListFormatter.localizedString(byJoining: names)
-        return "\(joined)'s first \(names.count > 1 ? "meals" : "meal")"
+        let joined = ListFormatter.localizedString(byJoining: validDogNames)
+        return "\(joined)'s first \(validDogNames.count > 1 ? "meals" : "meal")"
     }
 
     private var canAdvance: Bool {
         if step == .addDog {
-            return dogNames.contains { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+            return dogNames.contains { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
         }
         return true
     }
@@ -404,8 +314,6 @@ struct OnboardingView: View {
 
     private func advance() {
         switch step {
-        case .proPitch:
-            stepAnimate { step = .done }
         case .done:
             saveDog()
             saveReminder()
@@ -420,27 +328,19 @@ struct OnboardingView: View {
             dismiss()
         default:
             stepAnimate {
-                if var next = OnboardingStep(rawValue: step.rawValue + 1) {
-                    if next == .addDog && !existingPets.isEmpty { next = .sync }
-                    if next == .proPitch && entitlements.isPro { next = .done }
-                    step = next
-                }
+                if let next = OnboardingStep(rawValue: step.rawValue + 1) { step = next }
             }
         }
     }
 
     private func saveDog() {
+        // Trim, drop empties, dedupe (case-insensitive) so the user can't end
+        // up with two "Buster"s from typo-doubling.
         var seen = Set<String>()
-        let limit = entitlements.isPro ? Int.max : 1
-        var insertCount = 0
-        for raw in dogNames {
-            guard insertCount < limit else { break }
-            let trimmed = raw.trimmingCharacters(in: .whitespaces)
-            guard !trimmed.isEmpty else { continue }
+        for trimmed in validDogNames {
             let key = trimmed.lowercased()
             guard seen.insert(key).inserted else { continue }
             modelContext.insert(Pet(name: trimmed))
-            insertCount += 1
         }
     }
 
@@ -448,9 +348,8 @@ struct OnboardingView: View {
         guard reminderEnabled else { return }
         let c = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
         let minutes = (c.hour ?? 0) * 60 + (c.minute ?? 0)
-        let names = dogNames.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
         reminderMode = .allDogs
         allDogsReminderTimesRaw = "\(minutes)"
-        NotificationManager.shared.scheduleAllDogsReminders(times: [minutes], petNames: names.isEmpty ? [petName] : names)
+        NotificationManager.shared.scheduleAllDogsReminders(times: [minutes], petNames: validDogNames.isEmpty ? [petName] : validDogNames)
     }
 }
