@@ -189,8 +189,12 @@ struct FeedAllDogsSheet: View {
 
             let context = modelContext
             let createdEvents = result.events
+            let affectedPets = pets
             let undo: () -> Void = {
                 for event in createdEvents { context.delete(event) }
+                for pet in affectedPets {
+                    pet.recomputeFeedingCache(excluding: createdEvents)
+                }
                 if shouldDecrementStock {
                     switch capturedStockMode {
                     case .individual:
@@ -202,6 +206,8 @@ struct FeedAllDogsSheet: View {
                     }
                 }
                 WidgetDataWriter.write(from: context)
+                let allPets = (try? context.fetch(FetchDescriptor<Pet>())) ?? []
+                NotificationManager.shared.updateBadgeCount(pets: allPets)
             }
 
             onLogged?(result, undo)

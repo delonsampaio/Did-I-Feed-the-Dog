@@ -522,6 +522,7 @@ struct SettingsView: View {
                 entitlements.resetForTesting()
                 UserDefaults.sharedGroup.set(false, forKey: "hasCompletedFirstLaunch")
                 WidgetDataWriter.write(from: modelContext)
+                NotificationManager.shared.clearBadge()
             } label: {
                 Label("Reset to Free Tier (Debug)", systemImage: "arrow.counterclockwise")
             }
@@ -558,5 +559,6 @@ struct SettingsView: View {
         RemindersCoordinator.refresh(pets: survivors)
         QuickActionManager.shared.update(with: survivors)
         WidgetDataWriter.write(from: modelContext)
+        NotificationManager.shared.updateBadgeCount(pets: survivors)
     }
 }
