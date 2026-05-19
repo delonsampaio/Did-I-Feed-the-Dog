@@ -12,9 +12,8 @@ struct FeedingStatusIntent: AppIntent {
         Summary("Check feeding status for \(\.$pet)")
     }
 
-    @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let context = sharedModelContainer.mainContext
+        let context = ModelContext(sharedModelContainer)
         let pets = IntentDataAccess.fetchPets(in: context)
         guard let foundPet = pets.first(where: { $0.id == pet.id }) else {
             return .result(dialog: "Could not find \(pet.name).")

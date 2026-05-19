@@ -12,7 +12,6 @@ struct FoodStockStatusIntent: AppIntent {
         Summary("Check food stock for \(\.$pet)")
     }
 
-    @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         switch AppSettings.stockMode {
         case .none:
@@ -27,7 +26,7 @@ struct FoodStockStatusIntent: AppIntent {
             return .result(dialog: "The shared food pool has \(count) \(portionWord) remaining.")
 
         case .individual:
-            let context = sharedModelContainer.mainContext
+            let context = ModelContext(sharedModelContainer)
             guard let foundPet = IntentDataAccess.fetchPets(in: context).first(where: { $0.id == pet.id }) else {
                 return .result(dialog: "Couldn't find \(pet.name).")
             }

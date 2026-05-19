@@ -8,9 +8,9 @@ struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Pet.name) private var pets: [Pet]
 
-    @AppStorage("reminderMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))            private var reminderMode: ReminderMode = .none
-    @AppStorage("allDogsReminderTimesRaw", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var allDogsReminderTimesRaw = ""
-    @AppStorage("appearanceMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))          private var appearanceMode: AppearanceMode = .system
+    @AppStorage("reminderMode", store: .sharedGroup) private var reminderMode: ReminderMode = .none
+    @AppStorage("allDogsReminderTimesRaw", store: .sharedGroup) private var allDogsReminderTimesRaw = ""
+    @AppStorage("appearanceMode", store: .sharedGroup) private var appearanceMode: AppearanceMode = .system
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -40,8 +40,8 @@ struct DashboardView: View {
     @State private var stockOutPetsToRestock: [Pet] = []
     @State private var stockOutScopeIsShared = false
 
-    @AppStorage("stockMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var stockMode: StockMode = .individual
-    @AppStorage("sharedFoodStock", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var sharedFoodStock = 0
+    @AppStorage("stockMode", store: .sharedGroup) private var stockMode: StockMode = .individual
+    @AppStorage("sharedFoodStock", store: .sharedGroup) private var sharedFoodStock = 0
 
     private var allDogsReminderTimes: [Int] {
         allDogsReminderTimesRaw.split(separator: ",").compactMap { Int($0) }

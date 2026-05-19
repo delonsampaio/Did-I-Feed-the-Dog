@@ -12,9 +12,8 @@ struct HelpView: View {
 
     private var groupedSearchResults: [(section: String, items: [FAQItem])] {
         guard !searchText.isEmpty else { return [] }
-        let q = searchText.lowercased()
         let matches = allFAQs.filter {
-            $0.question.lowercased().contains(q) || $0.answer.lowercased().contains(q)
+            $0.question.localizedCaseInsensitiveContains(searchText) || $0.answer.localizedCaseInsensitiveContains(searchText)
         }
         
         var groups: [(section: String, items: [FAQItem])] = []

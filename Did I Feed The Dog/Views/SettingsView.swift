@@ -9,16 +9,16 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \Pet.name) private var pets: [Pet]
 
-    @AppStorage("waterBowlReminderEnabled", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var waterBowlReminderEnabled = false
-    @AppStorage("waterBowlReminderWeekday", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var waterBowlReminderWeekday = 1
-    @AppStorage("waterBowlReminderTime", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))   private var waterBowlReminderTime = 600
-    @AppStorage("stockMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))              private var stockMode: StockMode = .individual
-    @AppStorage("sharedFoodStock", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))         private var sharedFoodStock = 0
-    @AppStorage("stockOutPromptEnabled", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))   private var stockOutPromptEnabled = true
-    @AppStorage("reminderMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))            private var reminderMode: ReminderMode = .none
-    @AppStorage("allDogsReminderTimesRaw", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var allDogsReminderTimesRaw = ""
-    @AppStorage(LoggedBy.storageKey, store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))       private var loggedByName = ""
-    @AppStorage("appearanceMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))          private var appearanceMode: AppearanceMode = .system
+    @AppStorage("waterBowlReminderEnabled", store: .sharedGroup) private var waterBowlReminderEnabled = false
+    @AppStorage("waterBowlReminderWeekday", store: .sharedGroup) private var waterBowlReminderWeekday = 1
+    @AppStorage("waterBowlReminderTime", store: .sharedGroup) private var waterBowlReminderTime = 600
+    @AppStorage("stockMode", store: .sharedGroup) private var stockMode: StockMode = .individual
+    @AppStorage("sharedFoodStock", store: .sharedGroup) private var sharedFoodStock = 0
+    @AppStorage("stockOutPromptEnabled", store: .sharedGroup) private var stockOutPromptEnabled = true
+    @AppStorage("reminderMode", store: .sharedGroup) private var reminderMode: ReminderMode = .none
+    @AppStorage("allDogsReminderTimesRaw", store: .sharedGroup) private var allDogsReminderTimesRaw = ""
+    @AppStorage(LoggedBy.storageKey, store: .sharedGroup) private var loggedByName = ""
+    @AppStorage("appearanceMode", store: .sharedGroup) private var appearanceMode: AppearanceMode = .system
 
     @State private var editingPet: Pet?
     @State private var showAddPet = false

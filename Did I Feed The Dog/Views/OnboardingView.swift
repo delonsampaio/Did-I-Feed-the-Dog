@@ -6,15 +6,20 @@ struct OnboardingView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @AppStorage("reminderMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))            private var reminderMode: ReminderMode = .none
-    @AppStorage("allDogsReminderTimesRaw", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var allDogsReminderTimesRaw = ""
+    @AppStorage("reminderMode", store: .sharedGroup) private var reminderMode: ReminderMode = .none
+    @AppStorage("allDogsReminderTimesRaw", store: .sharedGroup) private var allDogsReminderTimesRaw = ""
 
     private enum OnboardingStep: Int, CaseIterable {
         case welcome = 0, addDog, sync, reminder, done
     }
 
+    private struct DogEntry: Identifiable, Equatable {
+        let id = UUID()
+        var name: String
+    }
+
     @State private var step: OnboardingStep = .welcome
-    @State private var dogNames: [String] = [""]
+    @State private var dogNames: [DogEntry] = [DogEntry(name: "")]
     @State private var reminderEnabled = false
     @State private var reminderTime: Date = {
         var c = Calendar.current.dateComponents([.year, .month, .day], from: .now)
@@ -112,40 +117,44 @@ struct OnboardingView: View {
                     .multilineTextAlignment(.center)
             }
 
-            VStack(spacing: 10) {
-                ForEach(dogNames.indices, id: \.self) { i in
-                    HStack(spacing: 10) {
-                        TextField(i == 0 ? "Dog's name" : "Another dog's name", text: $dogNames[i])
-                            .font(.title3)
-                            .multilineTextAlignment(.center)
-                            .padding()
-                            .background(Color(.secondarySystemBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+            ScrollView {
+                VStack(spacing: 10) {
+                    ForEach($dogNames) { $dog in
+                        HStack(spacing: 10) {
+                            TextField(dog.id == dogNames.first?.id ? "Dog's name" : "Another dog's name", text: $dog.name)
+                                .font(.title3)
+                                .multilineTextAlignment(.center)
+                                .padding()
+                                .background(Color(.secondarySystemBackground))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                        if dogNames.count > 1 {
-                            Button {
-                                dogNames.remove(at: i)
-                            } label: {
-                                Image(systemName: "minus.circle.fill")
-                                    .font(.title2)
-                                    .foregroundStyle(.red)
+                            if dogNames.count > 1 {
+                                Button {
+                                    dogNames.removeAll(where: { $0.id == dog.id })
+                                } label: {
+                                    Image(systemName: "minus.circle.fill")
+                                        .font(.title2)
+                                        .foregroundStyle(.red)
+                                }
+                                .accessibilityLabel("Remove \(dog.name.trimmingCharacters(in: .whitespaces).isEmpty ? "dog" : dog.name.trimmingCharacters(in: .whitespaces))")
                             }
-                            .accessibilityLabel("Remove \(dogNames[i].trimmingCharacters(in: .whitespaces).isEmpty ? "dog" : dogNames[i].trimmingCharacters(in: .whitespaces))")
                         }
                     }
-                }
 
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) { dogNames.append("") }
-                } label: {
-                    Label("Add Another Dog", systemImage: "plus.circle.fill")
-                        .font(.subheadline)
-                        .foregroundStyle(Color.accentColor)
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) { dogNames.append(DogEntry(name: "")) }
+                    } label: {
+                        Label("Add Another Dog", systemImage: "plus.circle.fill")
+                            .font(.subheadline)
+                            .foregroundStyle(Color.accentColor)
+                    }
+                    .padding(.top, 4)
                 }
-                .padding(.top, 4)
+                .padding(.horizontal, 4)
+                .padding(.bottom, 20)
             }
         }
-        .padding(.horizontal, 32)
+        .padding(.horizontal, 28)
     }
 
     private var syncStep: some View {
@@ -269,23 +278,23 @@ struct OnboardingView: View {
 
     private var petName: String {
         dogNames
-            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .map { $0.name.trimmingCharacters(in: .whitespaces) }
             .first { !$0.isEmpty } ?? "your dog"
     }
 
     private var petNamesFormatted: String {
-        let names = dogNames.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+        let names = dogNames.map { $0.name.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
         return names.isEmpty ? "your dogs" : ListFormatter.localizedString(byJoining: names)
     }
 
     private var petNamesNeverMiss: String {
-        let names = dogNames.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+        let names = dogNames.map { $0.name.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
         let verb = names.count == 1 ? "misses" : "miss"
         return "\(petNamesFormatted) never \(verb) a meal"
     }
 
     private var firstMealText: String {
-        let names = dogNames.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+        let names = dogNames.map { $0.name.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
         if names.isEmpty {
             return "your dog's first meal"
         }
@@ -295,7 +304,7 @@ struct OnboardingView: View {
 
     private var canAdvance: Bool {
         if step == .addDog {
-            return dogNames.contains { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+            return dogNames.contains { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
         }
         return true
     }
@@ -329,8 +338,8 @@ struct OnboardingView: View {
         // Trim, drop empties, dedupe (case-insensitive) so the user can't end
         // up with two "Buster"s from typo-doubling.
         var seen = Set<String>()
-        for raw in dogNames {
-            let trimmed = raw.trimmingCharacters(in: .whitespaces)
+        for entry in dogNames {
+            let trimmed = entry.name.trimmingCharacters(in: .whitespaces)
             guard !trimmed.isEmpty else { continue }
             let key = trimmed.lowercased()
             guard seen.insert(key).inserted else { continue }
@@ -342,7 +351,7 @@ struct OnboardingView: View {
         guard reminderEnabled else { return }
         let c = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
         let minutes = (c.hour ?? 0) * 60 + (c.minute ?? 0)
-        let names = dogNames.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+        let names = dogNames.map { $0.name.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
         reminderMode = .allDogs
         allDogsReminderTimesRaw = "\(minutes)"
         NotificationManager.shared.scheduleAllDogsReminders(times: [minutes], petNames: names.isEmpty ? [petName] : names)

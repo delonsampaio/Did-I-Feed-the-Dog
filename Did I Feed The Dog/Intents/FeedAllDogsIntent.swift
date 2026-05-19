@@ -17,9 +17,8 @@ struct FeedAllDogsIntent: AppIntent {
         Summary("Log \(\.$mealType) for all dogs")
     }
 
-    @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let context = sharedModelContainer.mainContext
+        let context = ModelContext(sharedModelContainer)
         let allPets = IntentDataAccess.fetchPets(in: context)
         let eligiblePets = allPets.filter { !$0.isFasting }
 
@@ -31,11 +30,10 @@ struct FeedAllDogsIntent: AppIntent {
             }
         }
 
-        let result = FeedingLogService.logFeedingForAll(
+        let result = await logFeedingForAllOnBackground(
             pets: eligiblePets,
             mealLabel: mealType.label,
             deductsStock: mealType.deductsStock,
-            logger: LoggedBy.current,
             in: context
         )
 
@@ -68,5 +66,21 @@ struct FeedAllDogsIntent: AppIntent {
         }
 
         return .result(dialog: IntentDialog(stringLiteral: dialogMessage))
+    }
+
+    @MainActor
+    private func logFeedingForAllOnBackground(
+        pets: [Pet],
+        mealLabel: String,
+        deductsStock: Bool,
+        in context: ModelContext
+    ) async -> FeedingLogService.BatchResult {
+        FeedingLogService.logFeedingForAll(
+            pets: pets,
+            mealLabel: mealLabel,
+            deductsStock: deductsStock,
+            logger: LoggedBy.current,
+            in: context
+        )
     }
 }

@@ -1,5 +1,9 @@
 import Foundation
 
+extension UserDefaults {
+    static let sharedGroup = UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")!
+}
+
 // Centralized facade over UserDefaults / @AppStorage keys. SwiftUI views
 // continue to use @AppStorage(...) directly because that gives them automatic
 // re-render on change — but everything *outside* the View layer (intents,
@@ -31,7 +35,7 @@ enum AppSettings {
         static let stockOutPromptEnabled   = "stockOutPromptEnabled"
     }
 
-    static let sharedDefaults = UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog") ?? .standard
+    static let sharedDefaults = UserDefaults.sharedGroup
 
     // MARK: - Stock
 

@@ -20,7 +20,6 @@ struct UpdateFoodStockIntent: AppIntent {
         Summary("Add \(\.$portionsAdded) portions for \(\.$pet)")
     }
 
-    @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         guard portionsAdded > 0 else {
             return .result(dialog: "Please provide a number greater than zero.")
@@ -37,7 +36,7 @@ struct UpdateFoodStockIntent: AppIntent {
             let portionWord = total == 1 ? "portion" : "portions"
             return .result(dialog: "Updated. The shared pool now has \(total) \(portionWord) remaining.")
         case .individual:
-            let context = sharedModelContainer.mainContext
+            let context = ModelContext(sharedModelContainer)
             let pets = IntentDataAccess.fetchPets(in: context)
             guard let foundPet = pets.first(where: { $0.id == pet.id }) else {
                 return .result(dialog: "Could not find \(pet.name).")

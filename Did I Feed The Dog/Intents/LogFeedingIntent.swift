@@ -23,9 +23,8 @@ struct LogFeedingIntent: AppIntent {
         Summary("Log \(\.$mealType) for \(\.$pet)")
     }
 
-    @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let context = sharedModelContainer.mainContext
+        let context = ModelContext(sharedModelContainer)
 
         guard let modelPet = IntentDataAccess.fetchPets(in: context).first(where: { $0.id == pet.id }) else {
             return .result(dialog: "Couldn't find \(pet.name) in the app.")
@@ -35,11 +34,10 @@ struct LogFeedingIntent: AppIntent {
             return .result(dialog: "\(modelPet.name ?? "That dog") is currently fasting and can't be fed.")
         }
 
-        let result = FeedingLogService.logFeeding(
-            for: modelPet,
+        let result = await logFeedingOnBackground(
+            pet: modelPet,
             mealLabel: mealType.label,
             deductsStock: mealType.deductsStock,
-            logger: LoggedBy.current,
             in: context
         )
 
@@ -58,5 +56,21 @@ struct LogFeedingIntent: AppIntent {
         }
 
         return .result(dialog: IntentDialog(stringLiteral: dialogMessage))
+    }
+
+    @MainActor
+    private func logFeedingOnBackground(
+        pet: Pet,
+        mealLabel: String,
+        deductsStock: Bool,
+        in context: ModelContext
+    ) async -> FeedingLogService.LogResult {
+        FeedingLogService.logFeeding(
+            for: pet,
+            mealLabel: mealLabel,
+            deductsStock: deductsStock,
+            logger: LoggedBy.current,
+            in: context
+        )
     }
 }

@@ -3,8 +3,8 @@ import SwiftData
 
 struct ContentView: View {
     @Binding var deepLinkPetId: UUID?
-    @AppStorage("appearanceMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var appearanceMode: AppearanceMode = .system
-    @AppStorage("hasCompletedFirstLaunch", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var hasCompletedFirstLaunch = false
+    @AppStorage("appearanceMode", store: .sharedGroup) private var appearanceMode: AppearanceMode = .system
+    @AppStorage("hasCompletedFirstLaunch", store: .sharedGroup) private var hasCompletedFirstLaunch = false
     @Query private var pets: [Pet]
 
     @State private var showOnboarding = false
