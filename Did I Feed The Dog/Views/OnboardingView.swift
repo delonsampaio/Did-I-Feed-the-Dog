@@ -9,6 +9,7 @@ struct OnboardingView: View {
     @Environment(EntitlementManager.self) private var entitlements
     @AppStorage("reminderMode", store: .sharedGroup) private var reminderMode: ReminderMode = .none
     @AppStorage("allDogsReminderTimesRaw", store: .sharedGroup) private var allDogsReminderTimesRaw = ""
+    @AppStorage(LoggedBy.storageKey, store: .sharedGroup) private var loggedByName = ""
 
     @Query private var existingPets: [Pet]
 
@@ -156,6 +157,24 @@ struct OnboardingView: View {
                     }
                 }
                 .padding(.horizontal, 4)
+                .padding(.bottom, 8)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Your name (optional)")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
+                    TextField("e.g. Mom, Dad, Alex", text: $loggedByName)
+                        .font(.title3)
+                        .multilineTextAlignment(.center)
+                        .padding()
+                        .background(Color(.secondarySystemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    Text("Shown next to each meal you log so the whole family knows who fed the dog.")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.top, 4)
                 .padding(.bottom, 20)
             }
         }
