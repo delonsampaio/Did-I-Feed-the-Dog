@@ -26,7 +26,6 @@ struct PetWidgetData: Codable {
 
 enum WidgetDataWriter {
     private static let groupID  = "group.com.delon.DidIFeedTheDog"
-    private static let fileName = "widgetPetData.json"
     private static let udKey    = "widgetPetData"
 
     // Pass explicit events to avoid stale lazy-relationship data.
@@ -59,15 +58,9 @@ enum WidgetDataWriter {
             return
         }
 
-        // Move file I/O off the main thread to prevent frame drops
+        // Write to UserDefaults only - it's backed by plist and handles atomic cross-process writes
+        // Removed redundant JSON file to eliminate race conditions between app/intents/widgets
         Task.detached(priority: .utility) {
-            if let url = fileURL() {
-                do {
-                    try data.write(to: url)
-                } catch {
-                    widgetLogger.error("Failed to write widget data to disk: \(error.localizedDescription, privacy: .public)")
-                }
-            }
             UserDefaults(suiteName: groupID)?.set(data, forKey: udKey)
             await MainActor.run {
                 WidgetCenter.shared.reloadAllTimelines()
@@ -96,12 +89,6 @@ enum WidgetDataWriter {
             return
         }
         write(pets, events: events)
-    }
-
-    static func fileURL() -> URL? {
-        FileManager.default
-            .containerURL(forSecurityApplicationGroupIdentifier: groupID)?
-            .appendingPathComponent(fileName)
     }
 
     // Downsamples a stored avatar to a tiny JPEG before persisting to the

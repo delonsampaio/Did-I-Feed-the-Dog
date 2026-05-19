@@ -20,7 +20,6 @@ struct UpdateFoodStockIntent: AppIntent {
         Summary("Add \(\.$portionsAdded) portions for \(\.$pet)")
     }
 
-    @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         guard EntitlementManager.shared.isPro else {
             return .result(dialog: "This feature requires Did I Feed the Dog Pro. Open the app to upgrade.")
@@ -35,12 +34,15 @@ struct UpdateFoodStockIntent: AppIntent {
         case .shared:
             AppSettings.sharedFoodStock = min(9999, AppSettings.sharedFoodStock + portionsAdded)
             AppSettings.resetStockOutCount(petId: nil)
-            WidgetCenter.shared.reloadAllTimelines()
+            await MainActor.run {
+                WidgetCenter.shared.reloadAllTimelines()
+            }
             let total = AppSettings.sharedFoodStock
             let portionWord = total == 1 ? "portion" : "portions"
             return .result(dialog: "Updated. The shared pool now has \(total) \(portionWord) remaining.")
         case .individual:
-            let context = sharedModelContainer.mainContext
+            // Use background context to avoid blocking Siri UI thread
+            let context = ModelContext(sharedModelContainer)
             let pets = IntentDataAccess.fetchPets(in: context)
             guard let foundPet = pets.first(where: { $0.id == pet.id }) else {
                 return .result(dialog: "Could not find \(pet.name).")
@@ -49,7 +51,9 @@ struct UpdateFoodStockIntent: AppIntent {
             foundPet.foodStockCount = min(999, foundPet.foodStockCount + portionsAdded)
             AppSettings.resetStockOutCount(petId: foundPet.id)
             try? context.save()
-            WidgetCenter.shared.reloadAllTimelines()
+            await MainActor.run {
+                WidgetCenter.shared.reloadAllTimelines()
+            }
 
             let total = foundPet.foodStockCount
             let portionWord = total == 1 ? "portion" : "portions"

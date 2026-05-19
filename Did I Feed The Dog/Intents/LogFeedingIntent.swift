@@ -23,12 +23,12 @@ struct LogFeedingIntent: AppIntent {
         Summary("Log \(\.$mealType) for \(\.$pet)")
     }
 
-    @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         guard EntitlementManager.shared.isPro else {
             return .result(dialog: "This feature requires Did I Feed the Dog Pro. Open the app to upgrade.")
         }
-        let context = sharedModelContainer.mainContext
+        // Use background context to avoid blocking Siri UI thread during database writes
+        let context = ModelContext(sharedModelContainer)
 
         guard let modelPet = IntentDataAccess.fetchPets(in: context).first(where: { $0.id == pet.id }) else {
             return .result(dialog: "Couldn't find \(pet.name) in the app.")

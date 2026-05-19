@@ -12,12 +12,12 @@ struct FeedingStatusIntent: AppIntent {
         Summary("Check feeding status for \(\.$pet)")
     }
 
-    @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         guard EntitlementManager.shared.isPro else {
             return .result(dialog: "This feature requires Did I Feed the Dog Pro. Open the app to upgrade.")
         }
-        let context = sharedModelContainer.mainContext
+        // Use background context to avoid blocking Siri UI thread
+        let context = ModelContext(sharedModelContainer)
         let pets = IntentDataAccess.fetchPets(in: context)
         guard let foundPet = pets.first(where: { $0.id == pet.id }) else {
             return .result(dialog: "Could not find \(pet.name).")

@@ -12,7 +12,6 @@ struct FoodStockStatusIntent: AppIntent {
         Summary("Check food stock for \(\.$pet)")
     }
 
-    @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         guard EntitlementManager.shared.isPro else {
             return .result(dialog: "This feature requires Did I Feed the Dog Pro. Open the app to upgrade.")
@@ -30,7 +29,8 @@ struct FoodStockStatusIntent: AppIntent {
             return .result(dialog: "The shared food pool has \(count) \(portionWord) remaining.")
 
         case .individual:
-            let context = sharedModelContainer.mainContext
+            // Use background context to avoid blocking Siri UI thread
+            let context = ModelContext(sharedModelContainer)
             guard let foundPet = IntentDataAccess.fetchPets(in: context).first(where: { $0.id == pet.id }) else {
                 return .result(dialog: "Couldn't find \(pet.name).")
             }

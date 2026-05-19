@@ -1,7 +1,9 @@
 import Foundation
 
 extension UserDefaults {
-    static let sharedGroup = UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")!
+    // Fallback to .standard if App Group fails to provision (e.g., simulator or forked project)
+    // Better for widget to fail gracefully than for main app to crash on launch
+    static let sharedGroup = UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog") ?? .standard
 }
 
 // Centralized facade over UserDefaults / @AppStorage keys. SwiftUI views

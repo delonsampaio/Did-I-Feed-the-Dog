@@ -17,12 +17,12 @@ struct FeedAllDogsIntent: AppIntent {
         Summary("Log \(\.$mealType) for all dogs")
     }
 
-    @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         guard EntitlementManager.shared.isPro else {
             return .result(dialog: "This feature requires Did I Feed the Dog Pro. Open the app to upgrade.")
         }
-        let context = sharedModelContainer.mainContext
+        // Use background context to avoid blocking Siri UI thread during database writes
+        let context = ModelContext(sharedModelContainer)
         let allPets = IntentDataAccess.fetchPets(in: context)
         let eligiblePets = allPets.filter { !$0.isFasting }
 
