@@ -15,6 +15,7 @@ struct OnboardingView: View {
     }
 
     @Environment(EntitlementManager.self) private var entitlements
+    @Query private var existingPets: [Pet]
 
     @State private var step: OnboardingStep = .welcome
     @State private var dogNames: [String] = [""]
@@ -349,7 +350,10 @@ struct OnboardingView: View {
             if step != .welcome && step != .done {
                 Button("Back") {
                     stepAnimate {
-                        if let prev = OnboardingStep(rawValue: step.rawValue - 1) { step = prev }
+                        if var prev = OnboardingStep(rawValue: step.rawValue - 1) {
+                            if prev == .addDog && !existingPets.isEmpty { prev = .welcome }
+                            step = prev
+                        }
                     }
                 }
                 .font(.subheadline)
@@ -416,6 +420,7 @@ struct OnboardingView: View {
         default:
             stepAnimate {
                 if var next = OnboardingStep(rawValue: step.rawValue + 1) {
+                    if next == .addDog && !existingPets.isEmpty { next = .sync }
                     if next == .proPitch && entitlements.isPro { next = .done }
                     step = next
                 }
