@@ -34,10 +34,10 @@ struct PetCard: View {
     }
 
     private var lastFedLabel: String {
-        guard let last = pet.lastFeedingEvent else { return "Never" }
+        guard let lastDate = pet.lastFeedingDate else { return "Never" }
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: last.timestamp, relativeTo: .now)
+        return formatter.localizedString(for: lastDate, relativeTo: .now)
     }
 
     private var currentStockCount: Int {

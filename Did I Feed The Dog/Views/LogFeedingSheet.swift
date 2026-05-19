@@ -15,6 +15,8 @@ struct LogFeedingSheet: View {
     @State private var isSubmitting = false
     @State private var showCustomTime = false
     @State private var logDate = Date()
+    @State private var showSaveError = false
+    @State private var saveErrorMessage = ""
 
     var body: some View {
         NavigationStack {
@@ -62,6 +64,11 @@ struct LogFeedingSheet: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
+            }
+            .alert("Save Failed", isPresented: $showSaveError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(saveErrorMessage)
             }
         }
         .presentationSizing(.page)
@@ -156,21 +163,26 @@ struct LogFeedingSheet: View {
 
         let shouldDecrementStock = showCustomField ? deductPortion : selectedMealType.decrementsStock
 
-        let result = FeedingLogService.logFeeding(
-            for: pet,
-            mealLabel: resolvedMealLabel,
-            deductsStock: shouldDecrementStock,
-            timestamp: showCustomTime ? logDate : .now,
-            notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
-            logger: LoggedBy.current,
-            in: modelContext
-        )
+        do {
+            let result = try FeedingLogService.logFeeding(
+                for: pet,
+                mealLabel: resolvedMealLabel,
+                deductsStock: shouldDecrementStock,
+                timestamp: showCustomTime ? logDate : .now,
+                notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
+                logger: LoggedBy.current,
+                in: modelContext
+            )
 
-        if result.didTriggerLowStock {
-            UINotificationFeedbackGenerator().notificationOccurred(.warning)
+            if result.didTriggerLowStock {
+                UINotificationFeedbackGenerator().notificationOccurred(.warning)
+            }
+
+            onLogged?(result)
+            dismiss()
+        } catch {
+            saveErrorMessage = "Failed to save meal: \(error.localizedDescription)"
+            showSaveError = true
         }
-
-        onLogged?(result)
-        dismiss()
     }
 }

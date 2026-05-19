@@ -38,13 +38,18 @@ struct LogFeedingIntent: AppIntent {
             return .result(dialog: "\(modelPet.name ?? "That dog") is currently fasting and can't be fed.")
         }
 
-        let result = FeedingLogService.logFeeding(
-            for: modelPet,
-            mealLabel: mealType.label,
-            deductsStock: mealType.deductsStock,
-            logger: LoggedBy.current,
-            in: context
-        )
+        let result: FeedingLogService.LogResult
+        do {
+            result = try FeedingLogService.logFeeding(
+                for: modelPet,
+                mealLabel: mealType.label,
+                deductsStock: mealType.deductsStock,
+                logger: LoggedBy.current,
+                in: context
+            )
+        } catch {
+            return .result(dialog: "Failed to save meal. Please try again or open the app.")
+        }
 
         var dialogMessage = "Logged \(mealType.label) for \(modelPet.name ?? "your dog")."
 

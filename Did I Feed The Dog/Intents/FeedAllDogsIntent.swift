@@ -34,13 +34,18 @@ struct FeedAllDogsIntent: AppIntent {
             }
         }
 
-        let result = FeedingLogService.logFeedingForAll(
-            pets: eligiblePets,
-            mealLabel: mealType.label,
-            deductsStock: mealType.deductsStock,
-            logger: LoggedBy.current,
-            in: context
-        )
+        let result: FeedingLogService.BatchResult
+        do {
+            result = try FeedingLogService.logFeedingForAll(
+                pets: eligiblePets,
+                mealLabel: mealType.label,
+                deductsStock: mealType.deductsStock,
+                logger: LoggedBy.current,
+                in: context
+            )
+        } catch {
+            return .result(dialog: "Failed to save meals. Please try again or open the app.")
+        }
 
         let count = result.events.count
         let dogWord = count == 1 ? "dog" : "dogs"

@@ -40,8 +40,9 @@ extension Pet {
             break
         }
 
-        guard let last = lastFeedingEvent else { return true }
-        return Date().timeIntervalSince(last.timestamp) >= Double(ctx.overdueThresholdHours) * 3600
+        // Use denormalized field to avoid O(N) relationship faulting
+        guard let lastDate = lastFeedingDate else { return true }
+        return Date().timeIntervalSince(lastDate) >= Double(ctx.overdueThresholdHours) * 3600
     }
 
     private func isOverdueForSchedule(_ times: [Int]) -> Bool {
@@ -59,7 +60,8 @@ extension Pet {
         components.second = 0
         guard let scheduledDate = cal.date(from: components) else { return false }
 
-        guard let last = lastFeedingEvent else { return true }
-        return last.timestamp < scheduledDate
+        // Use denormalized field to avoid O(N) relationship faulting
+        guard let lastDate = lastFeedingDate else { return true }
+        return lastDate < scheduledDate
     }
 }

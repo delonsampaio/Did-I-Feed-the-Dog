@@ -20,6 +20,8 @@ struct FeedAllDogsSheet: View {
     @State private var isSubmitting = false
     @State private var showCustomTime = false
     @State private var logDate = Date()
+    @State private var showSaveError = false
+    @State private var saveErrorMessage = ""
 
     var body: some View {
         NavigationStack {
@@ -65,6 +67,11 @@ struct FeedAllDogsSheet: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
+            }
+            .alert("Save Failed", isPresented: $showSaveError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(saveErrorMessage)
             }
         }
         .presentationSizing(.page)
@@ -165,38 +172,43 @@ struct FeedAllDogsSheet: View {
             : []
         let sharedStockBefore = sharedFoodStock
 
-        let result = FeedingLogService.logFeedingForAll(
-            pets: pets,
-            mealLabel: resolvedMealLabel,
-            deductsStock: shouldDecrementStock,
-            timestamp: showCustomTime ? logDate : .now,
-            notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
-            logger: LoggedBy.current,
-            in: modelContext
-        )
+        do {
+            let result = try FeedingLogService.logFeedingForAll(
+                pets: pets,
+                mealLabel: resolvedMealLabel,
+                deductsStock: shouldDecrementStock,
+                timestamp: showCustomTime ? logDate : .now,
+                notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
+                logger: LoggedBy.current,
+                in: modelContext
+            )
 
-        if result.didTriggerLowStock {
-            UINotificationFeedbackGenerator().notificationOccurred(.warning)
-        }
-
-        let context = modelContext
-        let createdEvents = result.events
-        let undo: () -> Void = {
-            for event in createdEvents { context.delete(event) }
-            if shouldDecrementStock {
-                switch capturedStockMode {
-                case .individual:
-                    for (pet, original) in stocksBefore { pet.foodStockCount = original }
-                case .shared:
-                    AppSettings.sharedFoodStock = sharedStockBefore
-                case .none:
-                    break
-                }
+            if result.didTriggerLowStock {
+                UINotificationFeedbackGenerator().notificationOccurred(.warning)
             }
-            WidgetDataWriter.write(from: context)
-        }
 
-        onLogged?(result, undo)
-        dismiss()
+            let context = modelContext
+            let createdEvents = result.events
+            let undo: () -> Void = {
+                for event in createdEvents { context.delete(event) }
+                if shouldDecrementStock {
+                    switch capturedStockMode {
+                    case .individual:
+                        for (pet, original) in stocksBefore { pet.foodStockCount = original }
+                    case .shared:
+                        AppSettings.sharedFoodStock = sharedStockBefore
+                    case .none:
+                        break
+                    }
+                }
+                WidgetDataWriter.write(from: context)
+            }
+
+            onLogged?(result, undo)
+            dismiss()
+        } catch {
+            saveErrorMessage = "Failed to save meals: \(error.localizedDescription)"
+            showSaveError = true
+        }
     }
 }

@@ -30,6 +30,11 @@ struct Did_I_Feed_The_Dog_App: App {
     @State private var deepLinkPetId: UUID? = nil
     private let entitlements = EntitlementManager.shared
 
+    init() {
+        // Migrate existing users: populate denormalized fields on first launch after update
+        migrateDenormalizedFieldsIfNeeded()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView(deepLinkPetId: $deepLinkPetId)
@@ -40,5 +45,28 @@ struct Did_I_Feed_The_Dog_App: App {
                 .task { await entitlements.initialize() }
         }
         .modelContainer(sharedModelContainer)
+    }
+
+    private func migrateDenormalizedFieldsIfNeeded() {
+        let migrationKey = "didMigrateDenormalizedFields_v1"
+        guard !UserDefaults.sharedGroup.bool(forKey: migrationKey) else { return }
+
+        let context = sharedModelContainer.mainContext
+        do {
+            let pets = try context.fetch(FetchDescriptor<Pet>())
+            for pet in pets {
+                // Populate lastFeedingDate from relationship if not already set
+                if pet.lastFeedingDate == nil, let lastEvent = pet.lastFeedingEvent {
+                    pet.lastFeedingDate = lastEvent.timestamp
+                }
+                // Populate todaysFeedingCount
+                let startOfDay = Calendar.current.startOfDay(for: .now)
+                pet.todaysFeedingCount = (pet.feedingEvents ?? []).filter { $0.timestamp >= startOfDay }.count
+            }
+            try context.save()
+            UserDefaults.sharedGroup.set(true, forKey: migrationKey)
+        } catch {
+            print("Migration failed: \(error)")
+        }
     }
 }

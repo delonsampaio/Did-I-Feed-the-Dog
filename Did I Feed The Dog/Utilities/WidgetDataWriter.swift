@@ -32,13 +32,13 @@ enum WidgetDataWriter {
     // Pass explicit events to avoid stale lazy-relationship data.
     static func write(_ pets: [Pet], events: [FeedingEvent]? = nil) {
         let snapshots: [PetWidgetData]
-        
+
         let modeRaw = AppSettings.reminderMode.rawValue
         let allDogsTimes = AppSettings.allDogsReminderTimes.sorted()
         let threshold = AppSettings.overdueThresholdHours
 
         let eventsByPetId = events.map { Dictionary(grouping: $0, by: { $0.pet?.id ?? UUID() }) }
-        
+
         snapshots = pets.map { pet in
             let lastDate: Date?
             if let byPetId = eventsByPetId {
@@ -56,17 +56,23 @@ enum WidgetDataWriter {
 
         guard let data = try? JSONEncoder().encode(snapshots) else {
             widgetLogger.error("Failed to encode widget snapshots.")
-            return 
+            return
         }
-        if let url = fileURL() { 
-            do {
-                try data.write(to: url)
-            } catch {
-                widgetLogger.error("Failed to write widget data to disk: \(error.localizedDescription, privacy: .public)")
+
+        // Move file I/O off the main thread to prevent frame drops
+        Task.detached(priority: .utility) {
+            if let url = fileURL() {
+                do {
+                    try data.write(to: url)
+                } catch {
+                    widgetLogger.error("Failed to write widget data to disk: \(error.localizedDescription, privacy: .public)")
+                }
+            }
+            UserDefaults(suiteName: groupID)?.set(data, forKey: udKey)
+            await MainActor.run {
+                WidgetCenter.shared.reloadAllTimelines()
             }
         }
-        UserDefaults(suiteName: groupID)?.set(data, forKey: udKey)
-        WidgetCenter.shared.reloadAllTimelines()
     }
 
     // Fetches both pets and events explicitly so no stale lazy loads.

@@ -10,7 +10,11 @@ final class Pet {
     var foodStockCount: Int = 0
     var feedingScheduleTimesRaw: String = ""
     var isFasting: Bool = false // Feature #22
-    
+
+    // Denormalized fields to avoid O(N) relationship faulting on every dashboard refresh
+    var lastFeedingDate: Date?
+    var todaysFeedingCount: Int = 0
+
     @Relationship(deleteRule: .cascade, inverse: \FeedingEvent.pet) var feedingEvents: [FeedingEvent]?
 
     var feedingScheduleTimes: [Int] {
@@ -26,6 +30,8 @@ final class Pet {
         self.foodStockCount = foodStockCount
         self.feedingScheduleTimesRaw = ""
         self.isFasting = isFasting
+        self.lastFeedingDate = nil
+        self.todaysFeedingCount = 0
     }
 
     var ageString: String {
@@ -55,9 +61,19 @@ final class Pet {
         return Array(events.sorted { $0.timestamp > $1.timestamp }.prefix(limit))
     }
 
-    var todaysFeedingCount: Int {
+    /// Updates the denormalized fields after a feeding is logged.
+    /// Called by FeedingLogService to keep the cached values in sync.
+    func updateFeedingCache(timestamp: Date) {
+        lastFeedingDate = timestamp
         let startOfDay = Calendar.current.startOfDay(for: .now)
-        return (feedingEvents ?? []).filter { $0.timestamp >= startOfDay }.count
+        if timestamp >= startOfDay {
+            todaysFeedingCount += 1
+        }
+    }
+
+    /// Resets today's feeding count. Called at the start of each day.
+    func resetTodaysFeedingCount() {
+        todaysFeedingCount = 0
     }
 
     func decrementStock() {

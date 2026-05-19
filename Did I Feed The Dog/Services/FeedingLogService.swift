@@ -45,7 +45,7 @@ enum FeedingLogService {
         notes: String = "",
         logger: String,
         in context: ModelContext
-    ) -> LogResult {
+    ) throws -> LogResult {
         let didDeduct = deductsStock && AppSettings.stockMode != .none
 
         let event = FeedingEvent(
@@ -58,12 +58,15 @@ enum FeedingLogService {
         )
         context.insert(event)
 
+        // Update denormalized fields to avoid O(N) faulting
+        pet.updateFeedingCache(timestamp: timestamp)
+
         let triggered = applyStockSideEffects(for: pet, deductsStock: deductsStock)
         let shouldPromptStockOut = recordZeroStockIfNeeded(pet: pet, didDeduct: didDeduct)
         NotificationManager.shared.scheduleOverdueNotification(for: pet, lastFedDate: timestamp)
         suppressNextReminder(for: pet)
 
-        save(context)
+        try context.save()
         WidgetDataWriter.write(from: context)
         refreshBadge(in: context)
 
@@ -78,7 +81,7 @@ enum FeedingLogService {
         notes: String = "",
         logger: String,
         in context: ModelContext
-    ) -> BatchResult {
+    ) throws -> BatchResult {
         var created: [FeedingEvent] = []
         var sharedTriggered = false
         var anyIndividualTriggered = false
@@ -97,6 +100,9 @@ enum FeedingLogService {
             )
             context.insert(event)
             created.append(event)
+
+            // Update denormalized fields to avoid O(N) faulting
+            pet.updateFeedingCache(timestamp: timestamp)
 
             NotificationManager.shared.scheduleOverdueNotification(for: pet, lastFedDate: timestamp)
 
@@ -147,7 +153,7 @@ enum FeedingLogService {
             suppressNextReminder(for: first)
         }
 
-        save(context)
+        try context.save()
         WidgetDataWriter.write(from: context)
         refreshBadge(in: context)
 
@@ -207,14 +213,12 @@ enum FeedingLogService {
             for: pet,
             allDogsReminderTimes: AppSettings.allDogsReminderTimes
         )
-    }
-
-    private static func save(_ context: ModelContext) {
-        do {
-            try context.save()
-        } catch {
-            logger.error("Failed to save context after feeding log: \(error.localizedDescription, privacy: .public)")
-        }
+        // Reschedule immediately to fix background logging bug where dashboard .onAppear doesn't run
+        NotificationManager.shared.rescheduleIfNeeded(
+            reminderMode: mode,
+            pets: [pet],
+            allDogsReminderTimes: AppSettings.allDogsReminderTimes
+        )
     }
 
     private static func refreshBadge(in context: ModelContext) {
