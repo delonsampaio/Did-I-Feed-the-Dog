@@ -373,22 +373,8 @@ struct SettingsView: View {
 
     private var notificationsSection: some View {
         Section {
-            if entitlements.isPro {
-                NavigationLink(destination: NotificationsSettingsView()) {
-                    Label("Notifications", systemImage: "bell.fill")
-                }
-            } else {
-                Button {
-                    paywallSource = "notifications"
-                    showPaywall = true
-                } label: {
-                    HStack {
-                        Label("Notifications", systemImage: "bell.fill")
-                            .foregroundStyle(.primary)
-                        Spacer()
-                        proBadge
-                    }
-                }
+            NavigationLink(destination: NotificationsSettingsView()) {
+                Label("Notifications", systemImage: "bell.fill")
             }
         }
     }
