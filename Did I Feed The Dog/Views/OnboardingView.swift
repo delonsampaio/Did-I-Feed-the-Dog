@@ -6,8 +6,11 @@ struct OnboardingView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(EntitlementManager.self) private var entitlements
     @AppStorage("reminderMode", store: .sharedGroup) private var reminderMode: ReminderMode = .none
     @AppStorage("allDogsReminderTimesRaw", store: .sharedGroup) private var allDogsReminderTimesRaw = ""
+
+    @Query private var existingPets: [Pet]
 
     private enum OnboardingStep: Int, CaseIterable {
         case welcome = 0, addDog, sync, reminder, done
@@ -141,14 +144,16 @@ struct OnboardingView: View {
                         }
                     }
 
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) { dogNames.append(DogEntry(name: "")) }
-                    } label: {
-                        Label("Add Another Dog", systemImage: "plus.circle.fill")
-                            .font(.subheadline)
-                            .foregroundStyle(Color.accentColor)
+                    if entitlements.isPro {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) { dogNames.append(DogEntry(name: "")) }
+                        } label: {
+                            Label("Add Another Dog", systemImage: "plus.circle.fill")
+                                .font(.subheadline)
+                                .foregroundStyle(Color.accentColor)
+                        }
+                        .padding(.top, 4)
                     }
-                    .padding(.top, 4)
                 }
                 .padding(.horizontal, 4)
                 .padding(.bottom, 20)
@@ -265,7 +270,13 @@ struct OnboardingView: View {
             if step != .welcome && step != .done {
                 Button("Back") {
                     stepAnimate {
-                        if let prev = OnboardingStep(rawValue: step.rawValue - 1) { step = prev }
+                        // Mirror the forward skip: if dogs already exist we skipped addDog on the
+                        // way in, so skip it on the way back too.
+                        if step == .sync && !existingPets.isEmpty {
+                            step = .welcome
+                        } else if let prev = OnboardingStep(rawValue: step.rawValue - 1) {
+                            step = prev
+                        }
                     }
                 }
                 .font(.subheadline)
@@ -326,6 +337,9 @@ struct OnboardingView: View {
             // overdue / low-stock / birthday pushes can fire later.
             Task { await NotificationManager.shared.requestAuthorization() }
             dismiss()
+        case .welcome:
+            // Skip Add Dog if iCloud already synced dogs back (e.g. reinstall).
+            stepAnimate { step = existingPets.isEmpty ? .addDog : .sync }
         default:
             stepAnimate {
                 if let next = OnboardingStep(rawValue: step.rawValue + 1) { step = next }
@@ -334,13 +348,16 @@ struct OnboardingView: View {
     }
 
     private func saveDog() {
-        // Trim, drop empties, dedupe (case-insensitive) so the user can't end
-        // up with two "Buster"s from typo-doubling.
+        let existingCount = (try? modelContext.fetchCount(FetchDescriptor<Pet>())) ?? 0
         var seen = Set<String>()
+        var created = 0
         for trimmed in validDogNames {
             let key = trimmed.lowercased()
             guard seen.insert(key).inserted else { continue }
+            // Free tier is limited to 1 dog total across all sources (including iCloud-synced dogs).
+            if !entitlements.isPro && existingCount + created >= 1 { break }
             modelContext.insert(Pet(name: trimmed))
+            created += 1
         }
     }
 
