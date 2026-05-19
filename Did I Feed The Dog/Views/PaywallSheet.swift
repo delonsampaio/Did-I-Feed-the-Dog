@@ -4,6 +4,7 @@ import StoreKit
 struct PaywallSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(EntitlementManager.self) private var entitlements
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     var source: String = "unknown"
     var petName: String? = nil
@@ -19,17 +20,23 @@ struct PaywallSheet: View {
         ("switch.2",            "Control Center button"),
     ]
 
+    private var isIPad: Bool { sizeClass == .regular }
+    private var contentMaxWidth: CGFloat { isIPad ? 560 : .infinity }
+    private var horizontalPadding: CGFloat { isIPad ? 40 : 24 }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 ScrollView {
-                    VStack(spacing: 28) {
+                    VStack(spacing: isIPad ? 36 : 28) {
                         header
                         familySharingBanner
                         featureList
                     }
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, horizontalPadding)
                     .padding(.bottom, 16)
+                    .frame(maxWidth: contentMaxWidth)
+                    .frame(maxWidth: .infinity)
                 }
 
                 VStack(spacing: 12) {
@@ -43,9 +50,11 @@ struct PaywallSheet: View {
                     restoreButton
                     legalNote
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, horizontalPadding)
                 .padding(.top, 12)
                 .padding(.bottom, 8)
+                .frame(maxWidth: contentMaxWidth)
+                .frame(maxWidth: .infinity)
                 .background(Color(.systemGroupedBackground))
             }
             .background(Color(.systemGroupedBackground))
@@ -70,27 +79,27 @@ struct PaywallSheet: View {
     // MARK: - Subviews
 
     private var header: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: isIPad ? 16 : 12) {
             Image(systemName: "pawprint.fill")
-                .font(.system(size: 56))
+                .font(.system(size: isIPad ? 72 : 56))
                 .foregroundStyle(Color.accentColor)
-                .padding(20)
+                .padding(isIPad ? 28 : 20)
                 .background(Color.accentColor.opacity(0.15))
-                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .clipShape(RoundedRectangle(cornerRadius: isIPad ? 28 : 20))
                 .accessibilityHidden(true)
                 .padding(.top, 8)
 
             Text("Did I Feed the Dog? Pro")
-                .font(.title2.bold())
+                .font(isIPad ? .title.bold() : .title2.bold())
 
             if let name = petName {
                 Text("Save \(name) to your pack — upgrade to Pro to unlock multiple dogs.")
-                    .font(.subheadline)
+                    .font(isIPad ? .body : .subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             } else {
                 Text("Free for 1 dog with the essentials. Pro unlocks more dogs and power features.")
-                    .font(.subheadline)
+                    .font(isIPad ? .body : .subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
@@ -118,20 +127,20 @@ struct PaywallSheet: View {
     }
 
     private var featureList: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: isIPad ? 20 : 16) {
             ForEach(features, id: \.text) { feature in
                 HStack(spacing: 14) {
                     Image(systemName: feature.icon)
-                        .font(.body)
+                        .font(isIPad ? .title3 : .body)
                         .foregroundStyle(Color.accentColor)
-                        .frame(width: 24)
+                        .frame(width: isIPad ? 28 : 24)
                         .accessibilityHidden(true)
                     Text(feature.text)
-                        .font(.body)
+                        .font(isIPad ? .body : .body)
                 }
             }
         }
-        .padding()
+        .padding(isIPad ? 20 : 16)
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
