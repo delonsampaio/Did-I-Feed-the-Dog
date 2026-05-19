@@ -11,13 +11,11 @@ struct PaywallSheet: View {
 
     private let features: [(icon: String, text: String)] = [
         ("dog.fill",            "Unlimited dogs"),
-        ("bell.badge.fill",     "Push notifications for every dog"),
         ("apps.iphone",         "Home & Lock Screen widgets"),
-        ("mic.fill",            "Siri & Shortcuts"),
-        ("app.badge.fill",      "App icon badge"),
+        ("bell.badge.fill",     "Push notifications"),
         ("shippingbox.fill",    "Food stock tracking"),
+        ("mic.fill",            "Siri & Shortcuts"),
         ("command.circle.fill", "Action Button & Quick Actions"),
-        ("switch.2",            "Control Center button"),
     ]
 
     private var isIPad: Bool { sizeClass == .regular }
@@ -127,22 +125,37 @@ struct PaywallSheet: View {
     }
 
     private var featureList: some View {
-        VStack(alignment: .leading, spacing: isIPad ? 20 : 16) {
-            ForEach(features, id: \.text) { feature in
-                HStack(spacing: 14) {
-                    Image(systemName: feature.icon)
-                        .font(isIPad ? .title3 : .body)
-                        .foregroundStyle(Color.accentColor)
-                        .frame(width: isIPad ? 28 : 24)
-                        .accessibilityHidden(true)
-                    Text(feature.text)
-                        .font(isIPad ? .body : .body)
+        Group {
+            if isIPad {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+                    ForEach(features, id: \.text) { feature in
+                        featureRow(feature, iconSize: .title3, frameWidth: 28)
+                    }
+                }
+            } else {
+                VStack(alignment: .leading, spacing: 16) {
+                    ForEach(features, id: \.text) { feature in
+                        featureRow(feature, iconSize: .body, frameWidth: 24)
+                    }
                 }
             }
         }
         .padding(isIPad ? 20 : 16)
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    private func featureRow(_ feature: (icon: String, text: String), iconSize: Font, frameWidth: CGFloat) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: feature.icon)
+                .font(iconSize)
+                .foregroundStyle(Color.accentColor)
+                .frame(width: frameWidth)
+                .accessibilityHidden(true)
+            Text(feature.text)
+                .font(.body)
+            Spacer(minLength: 0)
+        }
     }
 
     private var purchaseButton: some View {
