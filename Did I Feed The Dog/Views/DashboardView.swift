@@ -39,6 +39,7 @@ struct DashboardView: View {
     @State private var showStockOutRestockSheet = false
     @State private var stockOutPetsToRestock: [Pet] = []
     @State private var stockOutScopeIsShared = false
+    @State private var undoVersion = 0
 
     @AppStorage("stockMode", store: .sharedGroup) private var stockMode: StockMode = .individual
     @AppStorage("sharedFoodStock", store: .sharedGroup) private var sharedFoodStock = 0
@@ -69,6 +70,7 @@ struct DashboardView: View {
                             PetCard(pet: pet, onFed: { _, undo in
                                 triggerToast(message: "Meal logged", undo: undo)
                             })
+                            .id("\(pet.id)-\(undoVersion)")
                         }
                     }
                 }
@@ -176,6 +178,7 @@ struct DashboardView: View {
                 if showUndoToast {
                     UndoToast(message: toastMessage) {
                         undoAction?()
+                        undoVersion += 1
                         showUndoToast = false
                         undoAction = nil
                     } onDismiss: {
