@@ -16,11 +16,3 @@ struct LogFeedingControl: ControlWidget {
     }
 }
 
-struct OpenLogFeedingIntent: AppIntent {
-    static var title: LocalizedStringResource = "Log Feeding"
-    static var openAppWhenRun: Bool = true
-
-    func perform() async throws -> some IntentResult {
-        .result()
-    }
-}
