@@ -16,6 +16,7 @@ struct PaywallSheet: View {
         ("shippingbox.fill",    "Food stock tracking"),
         ("mic.fill",            "Siri & Shortcuts"),
         ("command.circle.fill", "Action Button & Quick Actions"),
+        ("person.2.fill",       "Family Sharing included"),
     ]
 
     private var isIPad: Bool { sizeClass == .regular }
@@ -28,7 +29,6 @@ struct PaywallSheet: View {
                 ScrollView {
                     VStack(spacing: isIPad ? 36 : 28) {
                         header
-                        familySharingBanner
                         featureList
                     }
                     .padding(.horizontal, horizontalPadding)
@@ -104,26 +104,6 @@ struct PaywallSheet: View {
         }
     }
 
-    private var familySharingBanner: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "person.2.fill")
-                .font(.title3)
-                .foregroundStyle(Color.accentColor)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("One purchase covers your whole family")
-                    .font(.subheadline.bold())
-                Text("Family Sharing enabled — pay once for everyone.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-        }
-        .padding()
-        .background(Color.accentColor.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-    }
-
     private var featureList: some View {
         Group {
             if isIPad {
@@ -189,7 +169,7 @@ struct PaywallSheet: View {
     }
 
     private var legalNote: some View {
-        Text("One-time purchase · No subscription · Family Sharing included")
+        Text("One-time purchase · No subscription")
             .font(.caption2)
             .foregroundStyle(.tertiary)
             .multilineTextAlignment(.center)
