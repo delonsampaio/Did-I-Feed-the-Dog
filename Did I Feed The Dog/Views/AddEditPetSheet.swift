@@ -278,6 +278,7 @@ struct AddEditPetSheet: View {
         // schedules.
         let allPets = (try? modelContext.fetch(FetchDescriptor<Pet>())) ?? []
         RemindersCoordinator.refresh(pets: allPets)
+        NotificationManager.shared.updateBadgeCount(pets: allPets)
         dismiss()
     }
 }

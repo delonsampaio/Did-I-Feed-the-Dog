@@ -81,4 +81,14 @@ final class Pet {
     func decrementStock() {
         foodStockCount = max(0, foodStockCount - 1)
     }
+
+    /// Recomputes the denormalized cache fields from the current relationship.
+    /// Call after deleting a FeedingEvent so lastFeedingDate and todaysFeedingCount
+    /// reflect the actual remaining events rather than the deleted one.
+    func recomputeFeedingCache() {
+        let events = feedingEvents ?? []
+        lastFeedingDate = events.max(by: { $0.timestamp < $1.timestamp })?.timestamp
+        let startOfDay = Calendar.current.startOfDay(for: .now)
+        todaysFeedingCount = events.filter { $0.timestamp >= startOfDay }.count
+    }
 }

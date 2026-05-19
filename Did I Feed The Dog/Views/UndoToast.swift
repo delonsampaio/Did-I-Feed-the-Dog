@@ -47,6 +47,11 @@ struct UndoToast: View {
         // after the toast is gone. Replaces the old DispatchQueue.asyncAfter
         // pattern that leaked timers.
         .task {
+            // Yield one cycle so SwiftUI renders the initial progress = 1.0
+            // frame before the shrink animation starts. Without this, the
+            // parent's spring entry animation context bleeds into the first
+            // withAnimation call and the bar appears partially shrunk.
+            try? await Task.sleep(for: .milliseconds(50))
             withAnimation(.linear(duration: duration)) { progress = 0.0 }
             do {
                 try await Task.sleep(for: .seconds(duration))

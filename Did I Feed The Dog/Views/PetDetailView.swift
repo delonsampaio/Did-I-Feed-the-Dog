@@ -151,6 +151,7 @@ struct PetDetailView: View {
             }
         }
         modelContext.delete(event)
+        pet.recomputeFeedingCache()
         WidgetDataWriter.write(from: modelContext)
     }
 
@@ -159,6 +160,7 @@ struct PetDetailView: View {
         for index in offsets {
             modelContext.delete(events[index])
         }
+        pet.recomputeFeedingCache()
         WidgetDataWriter.write(from: modelContext)
     }
 
