@@ -27,18 +27,21 @@ final class CloudKitSyncMonitor {
             
             if event.endDate != nil {
                 if let error = event.error {
-                    // Extract the meaningful underlying error if it's a Code 2 (Partial Failure)
-                    if let ckError = error as? CKError,
-                       ckError.code == .partialFailure,
-                       let partialErrors = ckError.userInfo[CKPartialErrorsByItemIDKey] as? [AnyHashable: Error],
-                       let realError = partialErrors.values.first {
-                        self?.lastError = realError
+                    if let ckError = error as? CKError, ckError.code == .partialFailure {
+                        let partialErrors = (ckError.userInfo[CKPartialErrorsByItemIDKey] as? [AnyHashable: Error]) ?? [:]
+                        if let realError = partialErrors.values.first {
+                            // A real partial failure with specific item errors
+                            print("CloudKit Sync Error: \(realError.localizedDescription)")
+                            self?.lastError = realError
+                        } else {
+                            // Empty partialErrors dict = NSPersistentCloudKitContainer no-op signal; treat as success
+                            self?.lastError = nil
+                        }
                     } else {
                         let nsError = error as NSError
-                        print("CloudKit Sync Error detail: \(nsError.userInfo)")
+                        print("CloudKit Sync Error: \(nsError.domain) \(nsError.code) \(nsError.userInfo)")
                         self?.lastError = DetailedSyncError(message: "\(nsError.domain) Code \(nsError.code)")
                     }
-                    print("CloudKit Sync Error: \(error.localizedDescription)")
                 } else if event.succeeded {
                     self?.lastError = nil
                 }

@@ -61,8 +61,8 @@ enum WidgetDataWriter {
         // Write to UserDefaults only - it's backed by plist and handles atomic cross-process writes
         // Removed redundant JSON file to eliminate race conditions between app/intents/widgets
         Task.detached(priority: .utility) {
-            UserDefaults(suiteName: groupID)?.set(data, forKey: udKey)
             await MainActor.run {
+                UserDefaults(suiteName: groupID)?.set(data, forKey: udKey)
                 WidgetCenter.shared.reloadAllTimelines()
             }
         }

@@ -106,7 +106,7 @@ struct DashboardView: View {
                             ProgressView()
                                 .scaleEffect(0.8)
                                 .accessibilityLabel("Syncing with iCloud")
-                        } else if let error = syncMonitor.lastError {
+                        } else if syncMonitor.lastError != nil {
                             Button {
                                 showSyncError = true
                             } label: {
