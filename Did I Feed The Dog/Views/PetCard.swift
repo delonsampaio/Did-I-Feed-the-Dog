@@ -12,6 +12,7 @@ struct PetCard: View {
     @Environment(EntitlementManager.self) private var entitlements
 
     let pet: Pet
+    var undoVersion: Int = 0
     var onFed: ((FeedingEvent, @escaping () -> Void) -> Void)? = nil
     @State private var showFeedSheet = false
     @State private var showOverdueTease = false

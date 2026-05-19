@@ -67,10 +67,9 @@ struct DashboardView: View {
                     }
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(pets) { pet in
-                            PetCard(pet: pet, onFed: { _, undo in
+                            PetCard(pet: pet, undoVersion: undoVersion, onFed: { _, undo in
                                 triggerToast(message: "Meal logged", undo: undo)
                             })
-                            .id("\(pet.id)-\(undoVersion)")
                         }
                     }
                 }
