@@ -10,6 +10,7 @@ final class Pet {
     var foodStockCount: Int = 0
     var feedingScheduleTimesRaw: String = ""
     var isFasting: Bool = false // Feature #22
+    var notificationsMuted: Bool = false // Feature #28
 
     // Denormalized fields to avoid O(N) relationship faulting on every dashboard refresh
     var lastFeedingDate: Date?
@@ -22,7 +23,7 @@ final class Pet {
         set { feedingScheduleTimesRaw = newValue.map(String.init).joined(separator: ",") }
     }
 
-    init(name: String? = nil, birthday: Date? = nil, photoData: Data? = nil, foodStockCount: Int = 0, isFasting: Bool = false) {
+    init(name: String? = nil, birthday: Date? = nil, photoData: Data? = nil, foodStockCount: Int = 0, isFasting: Bool = false, notificationsMuted: Bool = false) {
         self.id = UUID()
         self.name = name
         self.birthday = birthday
@@ -30,6 +31,7 @@ final class Pet {
         self.foodStockCount = foodStockCount
         self.feedingScheduleTimesRaw = ""
         self.isFasting = isFasting
+        self.notificationsMuted = notificationsMuted
         self.lastFeedingDate = nil
         self.todaysFeedingCount = 0
     }

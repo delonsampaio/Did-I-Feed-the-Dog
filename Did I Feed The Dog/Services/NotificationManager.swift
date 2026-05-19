@@ -28,8 +28,8 @@ final class NotificationManager {
         let identifier = overdueIdentifier(for: pet)
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
         guard EntitlementManager.shared.isPro else { return }
-        // Suppress if fasting
         guard !pet.isFasting else { return }
+        guard !pet.notificationsMuted else { return }
         guard AppSettings.overduePushEnabled else { return }
 
         let thresholdHours = AppSettings.overdueThresholdHours
@@ -55,7 +55,10 @@ final class NotificationManager {
     }
 
     func scheduleLowStockNotification(for pet: Pet, stockCount: Int? = nil) {
+        let identifier = lowStockIdentifier(for: pet)
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
         guard EntitlementManager.shared.isPro else { return }
+        guard !pet.notificationsMuted else { return }
         let count = stockCount ?? pet.foodStockCount
         let name = pet.name ?? "your dog"
         let content = UNMutableNotificationContent()
@@ -65,8 +68,6 @@ final class NotificationManager {
             : "Only \(count) portion\(count == 1 ? "" : "s") remaining for \(name)."
         content.sound = .default
 
-        let identifier = lowStockIdentifier(for: pet)
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 30, repeats: false)
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
         UNUserNotificationCenter.current().add(request)
@@ -92,6 +93,7 @@ final class NotificationManager {
         guard let birthday = pet.birthday else { return }
         let identifier = birthdayIdentifier(for: pet)
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
+        guard !pet.notificationsMuted else { return }
 
         let components = Calendar.current.dateComponents([.month, .day], from: birthday)
         let content = UNMutableNotificationContent()
@@ -119,9 +121,8 @@ final class NotificationManager {
             Task { try? await UNUserNotificationCenter.current().setBadgeCount(0) }
             return
         }
-        // Build the overdue context once and reuse for every pet.
         let ctx = OverdueContext.current
-        let count = pets.filter { $0.isFeedingOverdue(using: ctx) }.count
+        let count = pets.filter { $0.isFeedingOverdue(using: ctx) && !$0.notificationsMuted }.count
         Task { try? await UNUserNotificationCenter.current().setBadgeCount(count) }
     }
 
@@ -145,8 +146,8 @@ final class NotificationManager {
     func schedulePerDogReminders(for pet: Pet, times: [Int]) {
         removePerDogReminders(for: pet)
         guard EntitlementManager.shared.isPro else { return }
-        // Suppress if fasting
         guard !pet.isFasting else { return }
+        guard !pet.notificationsMuted else { return }
         
         for (i, minutes) in times.enumerated() {
             scheduleReminder(
@@ -214,6 +215,14 @@ final class NotificationManager {
                 schedulePerDogReminders(for: pet, times: pet.feedingScheduleTimes)
             }
         }
+    }
+
+    func removeAllAlerts(for pet: Pet) {
+        removeOverdueNotification(for: pet)
+        removePerDogReminders(for: pet)
+        UNUserNotificationCenter.current().removePendingNotificationRequests(
+            withIdentifiers: [lowStockIdentifier(for: pet), birthdayIdentifier(for: pet)]
+        )
     }
 
     func removeAllFeedingReminders(petIds: [UUID]) {

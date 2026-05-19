@@ -26,6 +26,8 @@ struct AddEditPetSheet: View {
 
     // Feature #22
     @State private var isFasting = false
+    // Feature #28
+    @State private var notificationsMuted = false
 
     var body: some View {
         NavigationStack {
@@ -53,13 +55,18 @@ struct AddEditPetSheet: View {
                     .buttonStyle(.plain)
                 }
                 
-                // Feature #22: Medical Section
                 Section("Medical") {
                     Toggle("Fasting Mode", isOn: $isFasting)
                         .tint(.red)
-                    
                     if isFasting {
                         Text("Reminders and overdue alerts are disabled. A DO NOT FEED warning will appear on the dashboard.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Toggle("Mute Notifications", isOn: $notificationsMuted)
+                        .tint(.orange)
+                    if notificationsMuted {
+                        Text("All alerts for this dog — reminders, overdue, low stock, and birthday — are silenced. The card still shows overdue status.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -185,6 +192,7 @@ struct AddEditPetSheet: View {
         foodStockCount = pet.foodStockCount
         photoData = pet.photoData
         isFasting = pet.isFasting
+        notificationsMuted = pet.notificationsMuted
         feedingTimes = pet.feedingScheduleTimes.map { minutes in
             Calendar.current.date(bySettingHour: minutes / 60, minute: minutes % 60, second: 0, of: .now) ?? .now
         }
@@ -226,11 +234,15 @@ struct AddEditPetSheet: View {
             pet.photoData = photoData
             pet.foodStockCount = foodStockCount
             pet.isFasting = isFasting
+            pet.notificationsMuted = notificationsMuted
             pet.feedingScheduleTimes = times
 
             if isFasting {
                 NotificationManager.shared.removeOverdueNotification(for: pet)
                 NotificationManager.shared.removePerDogReminders(for: pet)
+            }
+            if notificationsMuted {
+                NotificationManager.shared.removeAllAlerts(for: pet)
             }
 
             // Birthday push only schedules when there IS a birthday and the
@@ -245,7 +257,7 @@ struct AddEditPetSheet: View {
                 NotificationManager.shared.schedulePerDogReminders(for: pet, times: times)
             }
         } else {
-            let newPet = Pet(name: trimmedName, birthday: resolvedBirthday, photoData: photoData, foodStockCount: foodStockCount, isFasting: isFasting)
+            let newPet = Pet(name: trimmedName, birthday: resolvedBirthday, photoData: photoData, foodStockCount: foodStockCount, isFasting: isFasting, notificationsMuted: notificationsMuted)
             newPet.feedingScheduleTimes = times
             modelContext.insert(newPet)
             if birthdayPushEnabled, resolvedBirthday != nil {

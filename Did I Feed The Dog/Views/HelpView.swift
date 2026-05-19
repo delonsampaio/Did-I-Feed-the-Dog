@@ -154,6 +154,10 @@ struct HelpView: View {
                 question: "What is Fasting Mode?",
                 answer: "Fasting Mode is used when your dog shouldn't eat — for example, before a vet visit or due to illness. It displays a \"Do Not Feed\" warning on the card, prevents accidental logging, and pauses all feeding reminders and overdue alerts for that dog. Turn it on by long-pressing a dog's card on the dashboard, or in Settings -> Dogs -> [dog's name] -> Medical."
             )
+            FAQRow(
+                question: "How do I silence notifications for one dog?",
+                answer: "Go to Settings -> Dogs -> [dog's name] -> Medical and turn on Mute Notifications. All push alerts for that dog — feeding reminders, overdue, low stock, and birthday — are silenced until you turn it off. The card still shows their overdue status and history as normal; only the push notifications are muted."
+            )
         }
     }
 
@@ -357,6 +361,7 @@ struct HelpView: View {
             .init(section: "Feeding Status", question: "Can I edit or delete a feeding entry?", answer: "Yes. Tap a dog's card header to open their history, then swipe left on any entry. You'll see an Edit option to change the meal type and notes, and Delete options to remove the entry (and optionally restore the food portion)."),
             .init(section: "Feeding Status", question: "Can I see when the next meal is due?", answer: "Yes, if you have feeding reminders set up. In Per Dog mode, each card shows a 'Next meal' row with the upcoming scheduled time. In All Dogs mode, a single line appears above all cards on the dashboard."),
             .init(section: "Feeding Status", question: "What is Fasting Mode?", answer: "Fasting Mode is used when your dog shouldn't eat — for example, before a vet visit or due to illness. It displays a \"Do Not Feed\" warning on the card, prevents accidental logging, and pauses all feeding reminders and overdue alerts for that dog. Turn it on by long-pressing a dog's card on the dashboard, or in Settings -> Dogs -> [dog's name] -> Medical."),
+            .init(section: "Feeding Status", question: "How do I silence notifications for one dog?", answer: "Go to Settings -> Dogs -> [dog's name] -> Medical and turn on Mute Notifications. All push alerts for that dog — feeding reminders, overdue, low stock, and birthday — are silenced until you turn it off. The card still shows their overdue status and history as normal; only the push notifications are muted."),
             .init(section: "Feeding Notes", question: "Can I add a note when logging a feeding?", answer: "Yes. The Log Meal sheet has an optional notes field below the meal picker. Use it for anything useful — gave medication, only ate half, used a different food, etc."),
             .init(section: "Feeding Notes", question: "Where do I see the notes I added?", answer: "Notes appear in italic under the meal type in the feeding history. Tap a dog's card header to open their history."),
             .init(section: "Feeding Notes", question: "Can I edit a note after saving?", answer: "Yes. Tap any row in the feeding history to open the Edit Note sheet. The existing note is pre-filled -- update it and tap Save."),

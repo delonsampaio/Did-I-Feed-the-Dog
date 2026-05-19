@@ -19,8 +19,8 @@ enum RemindersCoordinator {
             NotificationManager.shared.removeAllFeedingReminders(petIds: pets.map(\.id))
 
         case .allDogs:
-            // Fasting dogs should not be named in the reminder body.
-            let activeNames = pets.filter { !$0.isFasting }.compactMap { $0.name }
+            // Fasting and muted dogs should not be named in the reminder body.
+            let activeNames = pets.filter { !$0.isFasting && !$0.notificationsMuted }.compactMap { $0.name }
             // Always remove first so renamed/added/removed dogs are reflected
             // in the notification body the next time it fires.
             NotificationManager.shared.removeAllDogsReminders()
