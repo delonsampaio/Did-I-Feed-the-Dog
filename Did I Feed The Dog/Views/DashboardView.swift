@@ -235,7 +235,7 @@ struct DashboardView: View {
         // every event into memory just to fire a side effect was wasteful).
     }
 
-    private func triggerToast(message: String, undo: @escaping () -> Void) {
+    private func triggerToast(message: String, undo: (() -> Void)? = nil) {
         toastMessage = message
         undoAction = undo
         toastId = UUID()
@@ -243,7 +243,11 @@ struct DashboardView: View {
     }
 
     private func handleDeepLink(petId: UUID) {
-        if let pet = pets.first(where: { $0.id == petId }), !pet.isFasting {
+        guard let pet = pets.first(where: { $0.id == petId }) else {
+            triggerToast(message: "That dog is no longer in your list.")
+            return
+        }
+        if !pet.isFasting {
             deepLinkFeedingPet = pet
         }
     }

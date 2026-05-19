@@ -2,7 +2,7 @@ import SwiftUI
 
 struct UndoToast: View {
     let message: String
-    let onUndo: () -> Void
+    let onUndo: (() -> Void)?
     let onDismiss: () -> Void
 
     private let duration: Double = AppConstants.undoToastSeconds
@@ -15,12 +15,14 @@ struct UndoToast: View {
                     .font(.subheadline)
                     .foregroundStyle(.primary)
                 Spacer()
-                Button("Undo") {
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                    onUndo()
+                if let onUndo {
+                    Button("Undo") {
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        onUndo()
+                    }
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.green)
                 }
-                .font(.subheadline.bold())
-                .foregroundStyle(.green)
             }
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
