@@ -239,6 +239,14 @@ struct OnboardingView: View {
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
+
+                if !entitlements.isPro {
+                    Text("Want multiple dogs, widgets, or Siri? Upgrade to Pro anytime in Settings.")
+                        .font(.footnote)
+                        .foregroundStyle(.tertiary)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 4)
+                }
             }
         }
         .padding(.horizontal, 24)
