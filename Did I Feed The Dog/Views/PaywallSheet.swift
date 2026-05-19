@@ -11,9 +11,11 @@ struct PaywallSheet: View {
 
     private let features: [(icon: String, text: String)] = [
         ("dog.fill",            "Unlimited dogs"),
+        ("fork.knife",          "Feed all dogs at once"),
         ("apps.iphone",         "Home & Lock Screen widgets"),
         ("bell.badge.fill",     "Push notifications"),
         ("shippingbox.fill",    "Food stock tracking"),
+        ("app.badge.fill",      "App icon badge"),
         ("mic.fill",            "Siri & Shortcuts"),
         ("command.circle.fill", "Action Button & Quick Actions"),
         ("person.2.fill",       "Family Sharing included"),
@@ -79,24 +81,24 @@ struct PaywallSheet: View {
     private var header: some View {
         VStack(spacing: isIPad ? 16 : 12) {
             Image(systemName: "pawprint.fill")
-                .font(.system(size: isIPad ? 72 : 56))
+                .font(.system(size: isIPad ? 64 : 40))
                 .foregroundStyle(Color.accentColor)
-                .padding(isIPad ? 28 : 20)
+                .padding(isIPad ? 24 : 16)
                 .background(Color.accentColor.opacity(0.15))
-                .clipShape(RoundedRectangle(cornerRadius: isIPad ? 28 : 20))
+                .clipShape(RoundedRectangle(cornerRadius: isIPad ? 24 : 16))
                 .accessibilityHidden(true)
-                .padding(.top, 8)
+                .padding(.top, 4)
 
             Text("Did I Feed the Dog? Pro")
                 .font(isIPad ? .title.bold() : .title2.bold())
 
             if let name = petName {
-                Text("Save \(name) to your pack — upgrade to Pro to unlock multiple dogs.")
+                Text("Add \(name) to your pack with Pro.")
                     .font(isIPad ? .body : .subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             } else {
-                Text("Free for 1 dog with the essentials. Pro unlocks more dogs and power features.")
+                Text("Unlock more dogs and power features.")
                     .font(isIPad ? .body : .subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
