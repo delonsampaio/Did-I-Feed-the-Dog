@@ -153,6 +153,7 @@ struct PetDetailView: View {
         modelContext.delete(event)
         pet.recomputeFeedingCache(excluding: [event])
         WidgetDataWriter.write(from: modelContext)
+        refreshBadge()
     }
 
     private func deleteEvents(_ events: [FeedingEvent], at offsets: IndexSet) {
@@ -161,6 +162,12 @@ struct PetDetailView: View {
         for event in toDelete { modelContext.delete(event) }
         pet.recomputeFeedingCache(excluding: toDelete)
         WidgetDataWriter.write(from: modelContext)
+        refreshBadge()
+    }
+
+    private func refreshBadge() {
+        let pets = (try? modelContext.fetch(FetchDescriptor<Pet>())) ?? []
+        NotificationManager.shared.updateBadgeCount(pets: pets)
     }
 
 
