@@ -79,7 +79,11 @@ enum WidgetDataWriter {
         let events: [FeedingEvent]
         do {
             pets = try context.fetch(FetchDescriptor<Pet>())
-            events = try context.fetch(FetchDescriptor<FeedingEvent>())
+
+            // Only fetch recent events to prevent unbounded memory growth over time
+            let limitDate = Calendar.current.date(byAdding: .day, value: -30, to: .now)!
+            let recentPredicate = #Predicate<FeedingEvent> { $0.timestamp > limitDate }
+            events = try context.fetch(FetchDescriptor<FeedingEvent>(predicate: recentPredicate))
         } catch {
             widgetLogger.error("Pet/event fetch for widget snapshot failed: \(error.localizedDescription, privacy: .public)")
             return

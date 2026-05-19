@@ -6,14 +6,14 @@ struct NotificationsSettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Pet.name) private var pets: [Pet]
 
-    @AppStorage("lowStockUIWarning", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))     private var lowStockUIWarning = true
-    @AppStorage("lowStockPushEnabled", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))   private var lowStockPushEnabled = true
-    @AppStorage("birthdayPushEnabled", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))   private var birthdayPushEnabled = true
-    @AppStorage("badgeEnabled", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))          private var badgeEnabled = true
-    @AppStorage("overduePushEnabled", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))    private var overduePushEnabled = true
-    @AppStorage("lowStockThreshold", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))     private var lowStockThreshold = 5
-    @AppStorage("overdueThresholdHours", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var overdueThresholdHours = 12
-    @AppStorage("reminderMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))          private var reminderMode: ReminderMode = .none
+    @AppStorage("lowStockUIWarning", store: .sharedGroup)     private var lowStockUIWarning = true
+    @AppStorage("lowStockPushEnabled", store: .sharedGroup)   private var lowStockPushEnabled = true
+    @AppStorage("birthdayPushEnabled", store: .sharedGroup)   private var birthdayPushEnabled = true
+    @AppStorage("badgeEnabled", store: .sharedGroup)          private var badgeEnabled = true
+    @AppStorage("overduePushEnabled", store: .sharedGroup)    private var overduePushEnabled = true
+    @AppStorage("lowStockThreshold", store: .sharedGroup)     private var lowStockThreshold = 5
+    @AppStorage("overdueThresholdHours", store: .sharedGroup) private var overdueThresholdHours = 12
+    @AppStorage("reminderMode", store: .sharedGroup)          private var reminderMode: ReminderMode = .none
 
     @Environment(EntitlementManager.self) private var entitlements
 

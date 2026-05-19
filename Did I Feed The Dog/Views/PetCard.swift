@@ -2,11 +2,11 @@ import SwiftUI
 import SwiftData
 
 struct PetCard: View {
-    @AppStorage("lowStockUIWarning", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var lowStockUIWarning = true
-    @AppStorage("lowStockThreshold", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var lowStockThreshold = 5
-    @AppStorage("stockMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))         private var stockMode: StockMode = .individual
-    @AppStorage("sharedFoodStock", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))   private var sharedFoodStock = 0
-    @AppStorage("reminderMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))      private var reminderMode: ReminderMode = .none
+    @AppStorage("lowStockUIWarning", store: .sharedGroup) private var lowStockUIWarning = true
+    @AppStorage("lowStockThreshold", store: .sharedGroup) private var lowStockThreshold = 5
+    @AppStorage("stockMode", store: .sharedGroup)         private var stockMode: StockMode = .individual
+    @AppStorage("sharedFoodStock", store: .sharedGroup)   private var sharedFoodStock = 0
+    @AppStorage("reminderMode", store: .sharedGroup)      private var reminderMode: ReminderMode = .none
 
     @Environment(\.modelContext) private var modelContext
     @Environment(EntitlementManager.self) private var entitlements

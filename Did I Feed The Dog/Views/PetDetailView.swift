@@ -7,8 +7,8 @@ struct PetDetailView: View {
 
     @Environment(EntitlementManager.self) private var entitlements
 
-    @AppStorage("stockMode", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog"))       private var stockMode: StockMode = .individual
-    @AppStorage("sharedFoodStock", store: UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")) private var sharedFoodStock = 0
+    @AppStorage("stockMode", store: .sharedGroup)       private var stockMode: StockMode = .individual
+    @AppStorage("sharedFoodStock", store: .sharedGroup) private var sharedFoodStock = 0
 
     @State private var editingEvent: FeedingEvent?
 

@@ -9,7 +9,7 @@ enum LoggedBy {
     static let storageKey = "loggedByName"
 
     static var current: String {
-        let stored = UserDefaults(suiteName: "group.com.delon.DidIFeedTheDog")?.string(forKey: storageKey)?
+        let stored = UserDefaults.sharedGroup.string(forKey: storageKey)?
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return stored.isEmpty ? UIDevice.current.name : stored
     }
