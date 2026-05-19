@@ -29,6 +29,7 @@ enum WidgetDataWriter {
     private static let udKey    = "widgetPetData"
 
     // Pass explicit events to avoid stale lazy-relationship data.
+    @MainActor
     static func write(_ pets: [Pet], events: [FeedingEvent]? = nil) {
         let snapshots: [PetWidgetData]
 
@@ -58,17 +59,14 @@ enum WidgetDataWriter {
             return
         }
 
-        // Write to UserDefaults only - it's backed by plist and handles atomic cross-process writes
-        // Removed redundant JSON file to eliminate race conditions between app/intents/widgets
-        Task.detached(priority: .utility) {
-            await MainActor.run {
-                UserDefaults(suiteName: groupID)?.set(data, forKey: udKey)
-                WidgetCenter.shared.reloadAllTimelines()
-            }
-        }
+        // Write synchronously so the widget reload fires before the app can go to background.
+        // UserDefaults.set and reloadAllTimelines are both fast (<1ms); no reason to defer.
+        UserDefaults(suiteName: groupID)?.set(data, forKey: udKey)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     // Fetches both pets and events explicitly so no stale lazy loads.
+    @MainActor
     static func write(from context: ModelContext) {
         do {
             try context.save()
