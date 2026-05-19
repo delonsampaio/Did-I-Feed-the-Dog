@@ -139,7 +139,7 @@ struct PetCard: View {
                         }
                     }
                     modelContext.delete(event)
-                    pet.recomputeFeedingCache()
+                    pet.recomputeFeedingCache(excluding: [event])
                     WidgetDataWriter.write(from: modelContext)
                 }
                 onFed?(event, undo)

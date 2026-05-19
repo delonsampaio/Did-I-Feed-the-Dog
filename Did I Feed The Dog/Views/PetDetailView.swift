@@ -151,16 +151,15 @@ struct PetDetailView: View {
             }
         }
         modelContext.delete(event)
-        pet.recomputeFeedingCache()
+        pet.recomputeFeedingCache(excluding: [event])
         WidgetDataWriter.write(from: modelContext)
     }
 
     private func deleteEvents(_ events: [FeedingEvent], at offsets: IndexSet) {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        for index in offsets {
-            modelContext.delete(events[index])
-        }
-        pet.recomputeFeedingCache()
+        let toDelete = offsets.map { events[$0] }
+        for event in toDelete { modelContext.delete(event) }
+        pet.recomputeFeedingCache(excluding: toDelete)
         WidgetDataWriter.write(from: modelContext)
     }
 

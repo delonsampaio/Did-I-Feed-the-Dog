@@ -82,11 +82,12 @@ final class Pet {
         foodStockCount = max(0, foodStockCount - 1)
     }
 
-    /// Recomputes the denormalized cache fields from the current relationship.
-    /// Call after deleting a FeedingEvent so lastFeedingDate and todaysFeedingCount
-    /// reflect the actual remaining events rather than the deleted one.
-    func recomputeFeedingCache() {
-        let events = feedingEvents ?? []
+    /// Recomputes the denormalized cache fields, explicitly excluding the given
+    /// events. Pass the event(s) being deleted so the result is correct even
+    /// before SwiftData flushes the deletion from the in-memory relationship.
+    func recomputeFeedingCache(excluding excluded: [FeedingEvent] = []) {
+        let excludedIds = Set(excluded.map { ObjectIdentifier($0) })
+        let events = (feedingEvents ?? []).filter { !excludedIds.contains(ObjectIdentifier($0)) }
         lastFeedingDate = events.max(by: { $0.timestamp < $1.timestamp })?.timestamp
         let startOfDay = Calendar.current.startOfDay(for: .now)
         todaysFeedingCount = events.filter { $0.timestamp >= startOfDay }.count
