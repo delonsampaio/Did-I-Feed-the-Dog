@@ -140,6 +140,7 @@ struct PetCard: View {
                     }
                     modelContext.delete(event)
                     pet.recomputeFeedingCache(excluding: [event])
+                    NotificationManager.shared.rescheduleOverdueNotification(for: pet)
                     WidgetDataWriter.write(from: modelContext)
                 }
                 onFed?(event, undo)

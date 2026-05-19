@@ -54,6 +54,18 @@ final class NotificationManager {
         )
     }
 
+    /// Reschedules (or cancels) the overdue notification based on the pet's
+    /// current lastFeedingDate. Call after deleting or undoing a feeding so
+    /// the notification anchors to the actual last-fed time rather than the
+    /// deleted one.
+    func rescheduleOverdueNotification(for pet: Pet) {
+        guard let lastDate = pet.lastFeedingDate else {
+            removeOverdueNotification(for: pet)
+            return
+        }
+        scheduleOverdueNotification(for: pet, lastFedDate: lastDate)
+    }
+
     func scheduleLowStockNotification(for pet: Pet, stockCount: Int? = nil) {
         let identifier = lowStockIdentifier(for: pet)
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])

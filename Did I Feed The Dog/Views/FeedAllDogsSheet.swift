@@ -194,6 +194,7 @@ struct FeedAllDogsSheet: View {
                 for event in createdEvents { context.delete(event) }
                 for pet in affectedPets {
                     pet.recomputeFeedingCache(excluding: createdEvents)
+                    NotificationManager.shared.rescheduleOverdueNotification(for: pet)
                 }
                 if shouldDecrementStock {
                     switch capturedStockMode {

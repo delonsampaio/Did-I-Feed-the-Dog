@@ -152,6 +152,7 @@ struct PetDetailView: View {
         }
         modelContext.delete(event)
         pet.recomputeFeedingCache(excluding: [event])
+        NotificationManager.shared.rescheduleOverdueNotification(for: pet)
         WidgetDataWriter.write(from: modelContext)
         refreshBadge()
     }
@@ -161,6 +162,7 @@ struct PetDetailView: View {
         let toDelete = offsets.map { events[$0] }
         for event in toDelete { modelContext.delete(event) }
         pet.recomputeFeedingCache(excluding: toDelete)
+        NotificationManager.shared.rescheduleOverdueNotification(for: pet)
         WidgetDataWriter.write(from: modelContext)
         refreshBadge()
     }
