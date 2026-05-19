@@ -72,6 +72,19 @@
       color: #6e6e73;
       font-size: 0.95rem;
     }
+    .pro {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #fff;
+      background: #007aff;
+      border-radius: 4px;
+      padding: 1px 6px;
+      margin-left: 7px;
+      vertical-align: middle;
+      line-height: 1.6;
+      flex-shrink: 0;
+    }
     .contact a {
       color: #007aff;
       text-decoration: none;
@@ -110,7 +123,7 @@
       <p>Yes. When logging a meal, turn on the "Set custom time" toggle to choose the exact date and time the feeding happened.</p>
     </details>
     <details>
-      <summary>Can I log a meal for all dogs at once?</summary>
+      <summary>Can I log a meal for all dogs at once? <span class="pro">PRO</span></summary>
       <p>Yes. When you have 2 or more dogs, a fork icon appears in the top-right of the dashboard next to the + button. Tap it to open the Feed All Dogs sheet and log the same meal for everyone in one tap.</p>
     </details>
     <details>
@@ -142,19 +155,19 @@
   <section>
     <h2>Widgets &amp; Quick Actions</h2>
     <details>
-      <summary>How do I add a home screen widget?</summary>
+      <summary>How do I add a home screen widget? <span class="pro">PRO</span></summary>
       <p>Long-press your iPhone or iPad home screen, tap the + button in the top corner, and search for "Did I Feed the Dog?". The widget shows each dog's last fed time and overdue status at a glance.</p>
     </details>
     <details>
-      <summary>What widget sizes are available?</summary>
+      <summary>What widget sizes are available? <span class="pro">PRO</span></summary>
       <p>There are six layouts: Small (shows your most-overdue dog), Medium (shows up to 3 dogs side by side), Large (shows up to 6 dogs in a list), and three Lock Screen variants — Circular (fed count out of total), Rectangular (most-overdue dog with relative time), and Inline (a short summary line). Long-press your Lock Screen and tap Customize to add the lock screen widgets.</p>
     </details>
     <details>
-      <summary>Can I tap the widget to log a meal?</summary>
+      <summary>Can I tap the widget to log a meal? <span class="pro">PRO</span></summary>
       <p>Yes. Tapping any dog on the small or medium widget opens the Log Meal sheet for that dog directly. You don't need to navigate to the dashboard first.</p>
     </details>
     <details>
-      <summary>Why isn't my widget updating?</summary>
+      <summary>Why isn't my widget updating? <span class="pro">PRO</span></summary>
       <p>The widget refreshes automatically every hour and immediately any time you log a meal inside the app. If it looks stale, open the app and log a feeding — the widget will update right away.</p>
     </details>
     <details>
@@ -162,8 +175,12 @@
       <p>Long-press the Did I Feed the Dog? app icon on your home screen. A menu appears with a shortcut to log a meal for each of your dogs — no need to open the app first.</p>
     </details>
     <details>
-      <summary>How do I assign the Action Button to log a feeding?</summary>
+      <summary>How do I assign the Action Button to log a feeding? <span class="pro">PRO</span></summary>
       <p>On supported iPhones, go to iPhone Settings → Action Button → Shortcuts, then choose "Log Feeding" from the Did I Feed the Dog? shortcuts list. Press the Action Button from anywhere — even when the screen is off — to instantly log a meal.</p>
+    </details>
+    <details>
+      <summary>How do I add a Control Center button? <span class="pro">PRO</span></summary>
+      <p>Go to iPhone Settings → Control Center, scroll down, and tap + next to "Log Feeding" under Did I Feed the Dog?. Once added, tap that button from anywhere — even on the lock screen — to open the app and quickly log a meal.</p>
     </details>
   </section>
 
@@ -210,35 +227,35 @@
   <section>
     <h2>Food Stock</h2>
     <details>
-      <summary>How do I track food portions?</summary>
+      <summary>How do I track food portions? <span class="pro">PRO</span></summary>
       <p>Go to Settings → Food Stock and choose a tracking mode: Per Dog, Shared Pool, or Not Tracked. Portions decrease automatically when you log a meal.</p>
     </details>
     <details>
-      <summary>What is Per Dog mode?</summary>
+      <summary>What is Per Dog mode? <span class="pro">PRO</span></summary>
       <p>Each dog has their own food count. Every time you log a meal for a dog, their count decreases by one portion. Snack and Treat meals are the exception — they don't reduce the count. Set each dog's starting count in Settings → Food Stock or by tapping the food stock cell on their card.</p>
     </details>
     <details>
-      <summary>What is Shared Pool mode?</summary>
+      <summary>What is Shared Pool mode? <span class="pro">PRO</span></summary>
       <p>One bag of food shared across all dogs. The pool decreases by one portion each time any dog is fed a meal. Snack and Treat logs do not reduce the shared count. Set the starting count in Settings → Food Stock.</p>
     </details>
     <details>
-      <summary>What is Not Tracked?</summary>
+      <summary>What is Not Tracked? <span class="pro">PRO</span></summary>
       <p>Food stock tracking is turned off. No counts are shown and nothing is subtracted when you log a meal.</p>
     </details>
     <details>
-      <summary>Do Snack or Treat meals count against the food stock?</summary>
+      <summary>Do Snack or Treat meals count against the food stock? <span class="pro">PRO</span></summary>
       <p>Snack and Treat do not reduce the portion count. All standard meal types (Morning, Breakfast, Lunch, Afternoon, Dinner, Evening) reduce the count by one. Custom meals reduce the count by default — but you can turn off the "Deduct a portion" toggle when logging a custom meal (e.g. Medication or Water) to skip the deduction.</p>
     </details>
     <details>
-      <summary>How do I restock?</summary>
+      <summary>How do I restock? <span class="pro">PRO</span></summary>
       <p>Tap the Food Stock cell or the Low Food Stock banner on any dog's card to open the edit sheet and update the count directly. If a Feed All Dogs action drops several dogs to zero at once, the app shows a single restock sheet listing each affected dog so you can adjust them all from one screen.</p>
     </details>
     <details>
-      <summary>Why did the app ask me to update stock after logging a meal?</summary>
+      <summary>Why did the app ask me to update stock after logging a meal? <span class="pro">PRO</span></summary>
       <p>When a feeding drops your stock to zero, the app pops up an alert offering to update your portions — useful when you've just opened a new bag. Tap "Update Stock Now" to add portions, or "Remind Me Later" to dismiss. If you keep feeding while stock stays at zero, the prompt reappears every fourth feeding so you don't forget. You can turn this off entirely in Settings → Food Stock.</p>
     </details>
     <details>
-      <summary>What is the Low Stock Threshold?</summary>
+      <summary>What is the Low Stock Threshold? <span class="pro">PRO</span></summary>
       <p>When a dog's stock drops to or below this number, a warning banner appears on their card and a push notification is sent (if enabled). Adjust it in Settings → Notifications.</p>
     </details>
   </section>
@@ -254,11 +271,11 @@
       <p>One set of reminder times applies to every dog. You get a single notification at each time reminding you to feed all your dogs.</p>
     </details>
     <details>
-      <summary>What is Per Dog mode?</summary>
+      <summary>What is Per Dog mode? <span class="pro">PRO</span></summary>
       <p>Each dog has their own reminder schedule. Tap the dog's name in Settings → Feeding Reminders (or in Settings → Dogs) to set their individual times.</p>
     </details>
     <details>
-      <summary>How many reminder times can I set?</summary>
+      <summary>How many reminder times can I set? <span class="pro">PRO</span></summary>
       <p>Up to 3 daily reminder times per schedule. Most households need a morning and evening reminder, but a midday one is available too.</p>
     </details>
     <details>
@@ -270,43 +287,43 @@
   <section>
     <h2>Siri &amp; Shortcuts</h2>
     <details>
-      <summary>How do I log a feeding with Siri?</summary>
+      <summary>How do I log a feeding with Siri? <span class="pro">PRO</span></summary>
       <p>Say "Log a meal in Fed The Dog?", "I fed the dog in Fed The Dog?", or "Feed my dog in Fed The Dog?". With one dog, Siri logs for them automatically. With multiple dogs, Siri asks which one. Then Siri asks the meal type — say or tap your choice. Siri will tell you the remaining food stock afterward.</p>
     </details>
     <details>
-      <summary>Can I feed all my dogs at once with Siri?</summary>
+      <summary>Can I feed all my dogs at once with Siri? <span class="pro">PRO</span></summary>
       <p>Yes. Say "Feed all dogs in Fed The Dog?", "Mark all dogs as fed in Fed The Dog?", or "I fed all the dogs in Fed The Dog?". Fasting dogs are automatically skipped.</p>
     </details>
     <details>
-      <summary>Why does Siri ask which dog instead of just doing what I said?</summary>
+      <summary>Why does Siri ask which dog instead of just doing what I said? <span class="pro">PRO</span></summary>
       <p>For accuracy. Siri now asks "Which dog?" so you can confirm the right one. If you only have one dog, Siri handles it automatically, so you'll only be asked if you have multiple dogs.</p>
     </details>
     <details>
-      <summary>Does Siri ask me which meal type when I log a feeding?</summary>
+      <summary>Does Siri ask me which meal type when I log a feeding? <span class="pro">PRO</span></summary>
       <p>Yes. After Siri picks the dog (or asks which one), it asks "What type of meal is this?" and presents all the options — Breakfast, Lunch, Dinner, Morning, Afternoon, Evening, Snack, and Treat. Just say or tap the one you want.</p>
     </details>
     <details>
-      <summary>Will Siri recognize a new dog I just added?</summary>
+      <summary>Will Siri recognize a new dog I just added? <span class="pro">PRO</span></summary>
       <p>Yes. As soon as you save or rename a dog, Siri learns their name and will show them as an option the next time you ask. The same applies if a family member adds a dog to your shared home, as long as you open the app once so Siri sees them.</p>
     </details>
     <details>
-      <summary>How do I check if my dog has been fed?</summary>
+      <summary>How do I check if my dog has been fed? <span class="pro">PRO</span></summary>
       <p>Say "Did I feed the dog in Fed The Dog?", "Has the dog been fed in Fed The Dog?", or "When was my dog last fed in Fed The Dog?". With one dog, Siri answers right away. With multiple, Siri asks which one.</p>
     </details>
     <details>
-      <summary>How do I check food stock with Siri?</summary>
+      <summary>How do I check food stock with Siri? <span class="pro">PRO</span></summary>
       <p>Say "Check food stock in Fed The Dog?", "How much dog food is left in Fed The Dog?", or "Is my dog's food running low in Fed The Dog?". Siri reports the remaining count — or tells you that your dog is out of food when stock has hit zero. With multiple dogs in individual stock mode, Siri asks which dog.</p>
     </details>
     <details>
-      <summary>How do I update food stock with Siri?</summary>
+      <summary>How do I update food stock with Siri? <span class="pro">PRO</span></summary>
       <p>Say "Add dog food in Fed The Dog?", "I bought more dog food in Fed The Dog?", or "Update food stock in Fed The Dog?". Siri asks which dog (in individual mode) and how many portions you added.</p>
     </details>
     <details>
-      <summary>Can I add these as shortcuts in the Shortcuts app?</summary>
+      <summary>Can I add these as shortcuts in the Shortcuts app? <span class="pro">PRO</span></summary>
       <p>Yes. Open the Shortcuts app, tap the + button, and search for Fed The Dog? to see all available actions. You can also go to iPhone Settings → Apps → Fed The Dog? to manage them.</p>
     </details>
     <details>
-      <summary>Do I always have to say the full app name with Siri?</summary>
+      <summary>Do I always have to say the full app name with Siri? <span class="pro">PRO</span></summary>
       <p>Yes — include "in Fed The Dog?" so Siri knows which app to use. With repeated use, Siri Suggestions may surface the shortcut on your lock screen or Spotlight for a quick tap, but spoken commands should always include the app name.</p>
     </details>
   </section>
@@ -354,27 +371,27 @@
   <section>
     <h2>Notifications</h2>
     <details>
-      <summary>What is the Low Stock Notification?</summary>
+      <summary>What is the Low Stock Notification? <span class="pro">PRO</span></summary>
       <p>An alert sent to your phone when a dog's food stock drops to or below your warning level. If you have the app open, you'll see an orange warning on the dog's card instead.</p>
     </details>
     <details>
-      <summary>What is the Birthday Notification?</summary>
+      <summary>What is the Birthday Notification? <span class="pro">PRO</span></summary>
       <p>If you set a birthday for your dog, the app sends a celebration alert each year on that day. The field is optional — if you didn't add a birthday, no birthday alert fires.</p>
     </details>
     <details>
-      <summary>What is the In-App Low Stock Banner?</summary>
+      <summary>What is the In-App Low Stock Banner? <span class="pro">PRO</span></summary>
       <p>An orange banner that appears on the dog's card when stock is low. This is separate from the push notification — it shows while you're actively using the app.</p>
     </details>
     <details>
-      <summary>What is the Overdue Notification?</summary>
+      <summary>What is the Overdue Notification? <span class="pro">PRO</span></summary>
       <p>An alert sent when a dog hasn't been fed and is past due (default 12 hours). It only alerts you once, and goes away automatically when you log a meal. Turn it off in Settings → Notifications → Overdue Notification.</p>
     </details>
     <details>
-      <summary>What is the App Icon Badge?</summary>
+      <summary>What is the App Icon Badge? <span class="pro">PRO</span></summary>
       <p>The red number shown on the app's icon on your home screen. It shows how many of your dogs are currently overdue for a meal. It updates automatically when you open the app or log a feeding. Turn it off in Settings → Notifications → App Icon Badge.</p>
     </details>
     <details>
-      <summary>How do I set up a Water Bowl Cleaning Reminder?</summary>
+      <summary>How do I set up a Water Bowl Cleaning Reminder? <span class="pro">PRO</span></summary>
       <p>Go to Settings → Health &amp; Hygiene and enable the Water Bowl Reminder. You can choose the day of the week and time you'd like to be reminded to clean and refill the bowl. The reminder fires weekly.</p>
     </details>
     <details>

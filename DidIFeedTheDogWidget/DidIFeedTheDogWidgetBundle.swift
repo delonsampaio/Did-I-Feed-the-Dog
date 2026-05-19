@@ -7,6 +7,7 @@ struct DidIFeedTheDogWidgetBundle: WidgetBundle {
     var body: some Widget {
         HomeScreenWidget()
         LockScreenWidget()
+        LogFeedingControl()
     }
 }
 

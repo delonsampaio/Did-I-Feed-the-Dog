@@ -16,6 +16,7 @@ struct PaywallSheet: View {
         ("app.badge.fill",      "App icon badge"),
         ("shippingbox.fill",    "Food stock tracking"),
         ("command.circle.fill", "Action Button & Quick Actions"),
+        ("switch.2",            "Control Center button"),
     ]
 
     var body: some View {

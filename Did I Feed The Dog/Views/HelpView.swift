@@ -137,6 +137,11 @@ struct HelpView: View {
                 answer: "On supported iPhones, go to iPhone Settings -> Action Button -> Shortcuts, then choose \"Log Feeding\" from the Did I Feed the Dog? shortcuts list. Press the Action Button from anywhere — even when the screen is off — to instantly log a meal.",
                 isPro: true
             )
+            FAQRow(
+                question: "How do I add a Control Center button?",
+                answer: "Go to iPhone Settings -> Control Center, scroll down, and tap + next to \"Log Feeding\" under Did I Feed the Dog?. Once added, tap that button from anywhere — even on the lock screen — to open the app and quickly log a meal.",
+                isPro: true
+            )
         }
     }
 
@@ -386,6 +391,7 @@ struct HelpView: View {
             .init(section: "Widgets & Quick Actions", question: "Why isn't my widget updating?", answer: "The widget refreshes automatically every hour and immediately any time you log a meal inside the app. If it looks stale, open the app and log a feeding — the widget will update right away.", isPro: true),
             .init(section: "Widgets & Quick Actions", question: "How do I use quick actions from the home screen?", answer: "Long-press the Did I Feed the Dog? app icon on your home screen. A menu appears with a shortcut to log a meal for each of your dogs — no need to open the app first."),
             .init(section: "Widgets & Quick Actions", question: "How do I assign the Action Button to log a feeding?", answer: "On supported iPhones, go to iPhone Settings -> Action Button -> Shortcuts, then choose \"Log Feeding\" from the Did I Feed the Dog? shortcuts list. Press the Action Button from anywhere — even when the screen is off — to instantly log a meal.", isPro: true),
+            .init(section: "Widgets & Quick Actions", question: "How do I add a Control Center button?", answer: "Go to iPhone Settings -> Control Center, scroll down, and tap + next to \"Log Feeding\" under Did I Feed the Dog?. Once added, tap that button from anywhere — even on the lock screen — to open the app and quickly log a meal.", isPro: true),
             .init(section: "Feeding Status", question: "What does overdue mean?", answer: "A dog is marked overdue — their Last Fed badge turns red — when they're past due for a feeding. If you have a feeding reminder schedule set up, overdue is based on your schedule: a dog is overdue as soon as a scheduled meal time has passed without a feeding logged since then. If reminders are off, you can set a manual time limit in Settings -> Notifications -> Overdue After (default 12 hours)."),
             .init(section: "Feeding Status", question: "How far back does the history go?", answer: "All feeding events are kept forever. The card shows the 3 most recent feedings. Tap the dog's name or photo to see the full history."),
             .init(section: "Feeding Status", question: "Can I edit or delete a feeding entry?", answer: "Yes. Tap a dog's card header to open their history, then swipe left on any entry. You'll see an Edit option to change the meal type and notes, and Delete options to remove the entry (and optionally restore the food portion)."),

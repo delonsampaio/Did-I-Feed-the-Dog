@@ -241,10 +241,11 @@ struct OnboardingView: View {
 
             VStack(alignment: .leading, spacing: 14) {
                 ForEach([
-                    ("dog.fill",        "Unlimited dogs"),
-                    ("apps.iphone",     "Home & Lock Screen widgets"),
-                    ("mic.fill",        "Siri & Shortcuts"),
-                    ("bell.badge.fill", "Push notifications"),
+                    ("dog.fill",           "Unlimited dogs"),
+                    ("apps.iphone",        "Home & Lock Screen widgets"),
+                    ("mic.fill",           "Siri & Shortcuts"),
+                    ("bell.badge.fill",    "Push notifications"),
+                    ("switch.2",           "Control Center button"),
                 ], id: \.1) { icon, text in
                     HStack(spacing: 12) {
                         Image(systemName: icon)
