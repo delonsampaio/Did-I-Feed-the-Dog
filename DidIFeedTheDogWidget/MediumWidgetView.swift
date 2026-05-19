@@ -62,16 +62,16 @@ struct MediumWidgetView: View {
     private func petRow(_ pet: PetSnapshot, badgeTextWidth: CGFloat, statusTextWidth: CGFloat) -> some View {
         Link(destination: WidgetDeepLink.url(for: pet.id)) {
             HStack(spacing: 10) {
-                avatarView(pet: pet)
+                PetAvatarView(pet: pet)
                 Text(pet.name)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                 Spacer(minLength: 4)
                 HStack(spacing: 6) {
-                    Text(statusText(for: pet))
+                    Text(pet.statusText)
                         .font((pet.isFasting || pet.isFeedingOverdue) ? .caption.bold() : .caption)
-                        .foregroundStyle(statusColor(for: pet))
+                        .foregroundStyle(pet.statusColor)
                         .lineLimit(1)
                         .frame(width: statusTextWidth, alignment: .leading)
                     lastFedBadge(pet: pet, textWidth: badgeTextWidth)
@@ -107,70 +107,20 @@ struct MediumWidgetView: View {
         }
     }
 
-    private func avatarView(pet: PetSnapshot) -> some View {
-        Group {
-            if let data = pet.photoData,
-               let uiImage = WidgetImage.downsample(data: data, toPointSize: CGSize(width: 30, height: 30)) {
-                Image(uiImage: uiImage).resizable().scaledToFill()
-            } else if let thumb = UIImage(named: DefaultAvatars.defaultFor(id: pet.id))?
-                .preparingThumbnail(of: CGSize(width: 30 * 3, height: 30 * 3)) {
-                Image(uiImage: thumb).resizable().scaledToFill()
-            } else {
-                Image(DefaultAvatars.defaultFor(id: pet.id))
-                    .resizable().scaledToFill()
-            }
-        }
-        .frame(width: 30, height: 30)
-        .clipShape(Circle())
-    }
-
     private func lastFedBadge(pet: PetSnapshot, textWidth: CGFloat) -> some View {
-        let (icon, _, color) = badgeDetails(for: pet)
-        return HStack(spacing: 4) {
-            Image(systemName: icon)
-            Text(relativeTime(pet.lastFedDate))
+        HStack(spacing: 4) {
+            Image(systemName: pet.badgeIcon)
+            Text(pet.relativeLastFed())
                 .lineLimit(1)
                 .frame(width: textWidth, alignment: .center)
         }
-            .font(.system(size: 11, weight: .semibold))
-            .foregroundStyle(color)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background(color.opacity(0.2))
-            .clipShape(RoundedRectangle(cornerRadius: 7))
-            .fixedSize(horizontal: true, vertical: false)
-    }
-
-    private func badgeDetails(for pet: PetSnapshot) -> (icon: String, text: String, color: Color) {
-        if pet.isFasting {
-            return ("exclamationmark.octagon.fill", "Fasting", .orange)
-        }
-        if pet.isFeedingOverdue {
-            return ("exclamationmark.triangle.fill", "Overdue", .red)
-        }
-        return ("checkmark.circle.fill", "Fed", .green)
-    }
-
-    private func statusText(for pet: PetSnapshot) -> String {
-        if pet.isFasting { return "Fasting" }
-        return pet.isFeedingOverdue ? "Overdue" : "Fed"
-    }
-
-    private func statusColor(for pet: PetSnapshot) -> Color {
-        if pet.isFasting { return .orange }
-        if pet.isFeedingOverdue { return .red }
-        return .secondary
-    }
-
-    private static let relativeFormatter: RelativeDateTimeFormatter = {
-        let f = RelativeDateTimeFormatter()
-        f.unitsStyle = .abbreviated
-        return f
-    }()
-
-    private func relativeTime(_ date: Date?) -> String {
-        guard let date else { return "Never" }
-        return Self.relativeFormatter.localizedString(for: date, relativeTo: .now)
+        .font(.system(size: 11, weight: .semibold))
+        .foregroundStyle(pet.badgeColor)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3)
+        .background(pet.badgeColor.opacity(0.2))
+        .clipShape(RoundedRectangle(cornerRadius: 7))
+        .fixedSize(horizontal: true, vertical: false)
     }
 
     // Measures the widest time string across the currently-shown pets so
@@ -180,7 +130,7 @@ struct MediumWidgetView: View {
 
     private var maxBadgeTextWidth: CGFloat {
         let widths = entry.pets.prefix(3).map {
-            (relativeTime($0.lastFedDate) as NSString)
+            ($0.relativeLastFed() as NSString)
                 .size(withAttributes: [.font: Self.badgeFont]).width
         }
         return ceil(widths.max() ?? 0)
@@ -196,7 +146,7 @@ struct MediumWidgetView: View {
     private var maxStatusTextWidth: CGFloat {
         let widths = entry.pets.prefix(3).map { pet -> CGFloat in
             let font = (pet.isFasting || pet.isFeedingOverdue) ? Self.statusFontBold : Self.statusFontRegular
-            return (statusText(for: pet) as NSString)
+            return (pet.statusText as NSString)
                 .size(withAttributes: [.font: font]).width
         }
         return ceil(widths.max() ?? 0)

@@ -34,9 +34,9 @@ final class CloudKitSyncMonitor {
                        let realError = partialErrors.values.first {
                         self?.lastError = realError
                     } else {
-                        // Force the deep dictionary to be visible in the alert
                         let nsError = error as NSError
-                        self?.lastError = DetailedSyncError(message: "\(nsError.domain) Code \(nsError.code)\n\n\(nsError.userInfo)")
+                        print("CloudKit Sync Error detail: \(nsError.userInfo)")
+                        self?.lastError = DetailedSyncError(message: "\(nsError.domain) Code \(nsError.code)")
                     }
                     print("CloudKit Sync Error: \(error.localizedDescription)")
                 } else if event.succeeded {

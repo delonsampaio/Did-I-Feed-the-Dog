@@ -1,6 +1,5 @@
 // DidIFeedTheDogWidget/SmallWidgetView.swift
 import SwiftUI
-import UIKit
 import WidgetKit
 
 struct SmallWidgetView: View {
@@ -37,7 +36,7 @@ struct SmallWidgetView: View {
     private func filledView(pet: PetSnapshot) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top) {
-                avatarView(pet: pet)
+                PetAvatarView(pet: pet, size: 36)
                 Spacer()
                 lastFedBadge(pet: pet)
             }
@@ -46,9 +45,9 @@ struct SmallWidgetView: View {
                 .font(.system(size: 20, weight: .heavy, design: .rounded))
                 .foregroundStyle(.primary)
                 .lineLimit(1)
-            Text(statusText(for: pet))
+            Text(pet.statusText)
                 .font((pet.isFasting || pet.isFeedingOverdue) ? .caption.bold() : .caption2)
-                .foregroundStyle(statusColor(for: pet))
+                .foregroundStyle(pet.statusColor)
             Spacer()
             Text(entry.isPro ? "Fed The Dog?" : "Add more dogs with Pro")
                 .font(.system(size: 9, weight: .medium))
@@ -71,70 +70,20 @@ struct SmallWidgetView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private func avatarView(pet: PetSnapshot) -> some View {
-        Group {
-            if let data = pet.photoData,
-               let uiImage = WidgetImage.downsample(data: data, toPointSize: CGSize(width: 36, height: 36)) {
-                Image(uiImage: uiImage).resizable().scaledToFill()
-            } else if let thumb = UIImage(named: DefaultAvatars.defaultFor(id: pet.id))?
-                .preparingThumbnail(of: CGSize(width: 36 * 3, height: 36 * 3)) {
-                Image(uiImage: thumb).resizable().scaledToFill()
-            } else {
-                Image(DefaultAvatars.defaultFor(id: pet.id))
-                    .resizable().scaledToFill()
-            }
-        }
-        .frame(width: 36, height: 36)
-        .clipShape(Circle())
-    }
-
     private func lastFedBadge(pet: PetSnapshot) -> some View {
-        let (icon, _, color) = badgeDetails(for: pet)
-        return VStack(spacing: 2) {
-            Image(systemName: icon)
+        VStack(spacing: 2) {
+            Image(systemName: pet.badgeIcon)
                 .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(color)
-            Text(relativeTime(pet.lastFedDate))
+                .foregroundStyle(pet.badgeColor)
+            Text(pet.relativeLastFed())
                 .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(color)
+                .foregroundStyle(pet.badgeColor)
                 .lineLimit(1)
         }
         .padding(.horizontal, 7)
         .padding(.vertical, 4)
-        .background(color.opacity(0.2))
+        .background(pet.badgeColor.opacity(0.2))
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .fixedSize(horizontal: true, vertical: false)
-    }
-
-    private func badgeDetails(for pet: PetSnapshot) -> (icon: String, text: String, color: Color) {
-        if pet.isFasting {
-            return ("exclamationmark.octagon.fill", "Fasting", .orange)
-        }
-        if pet.isFeedingOverdue {
-            return ("exclamationmark.triangle.fill", "Overdue", .red)
-        }
-        return ("checkmark.circle.fill", "Fed", .green)
-    }
-
-    private func statusText(for pet: PetSnapshot) -> String {
-        if pet.isFasting { return "Fasting" }
-        return pet.isFeedingOverdue ? "Overdue" : "Fed"
-    }
-
-    private func statusColor(for pet: PetSnapshot) -> Color {
-        if pet.isFasting { return .orange }
-        if pet.isFeedingOverdue { return .red }
-        return .secondary
-    }
-
-    private static let relativeFormatter: RelativeDateTimeFormatter = {
-        let f = RelativeDateTimeFormatter()
-        f.unitsStyle = .abbreviated
-        return f
-    }()
-
-    private func relativeTime(_ date: Date?) -> String {
-        guard let date else { return "Never" }
-        return Self.relativeFormatter.localizedString(for: date, relativeTo: .now)
     }
 }

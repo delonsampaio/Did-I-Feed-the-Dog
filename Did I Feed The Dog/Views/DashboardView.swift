@@ -118,7 +118,7 @@ struct DashboardView: View {
                             .alert("iCloud Sync Error", isPresented: $showSyncError) {
                                 Button("OK", role: .cancel) { }
                             } message: {
-                                Text(String(describing: error))
+                                Text("Some data may not have synced with iCloud. This usually resolves on its own — your local data is safe.")
                             }
                         }
                     }

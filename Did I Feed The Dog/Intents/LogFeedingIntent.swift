@@ -49,6 +49,7 @@ struct LogFeedingIntent: AppIntent {
                 in: context
             )
         } catch {
+            print("LogFeedingIntent failed: \(error)")
             return .result(dialog: "Failed to save meal. Please try again or open the app.")
         }
 

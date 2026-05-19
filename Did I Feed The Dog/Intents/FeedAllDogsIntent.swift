@@ -45,6 +45,7 @@ struct FeedAllDogsIntent: AppIntent {
                 in: context
             )
         } catch {
+            print("FeedAllDogsIntent failed: \(error)")
             return .result(dialog: "Failed to save meals. Please try again or open the app.")
         }
 
