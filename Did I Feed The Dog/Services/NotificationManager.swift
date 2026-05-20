@@ -234,11 +234,9 @@ final class NotificationManager {
     }
 
     func scheduleMedicationReminder(for medication: Medication, petName: String) {
-        let identifier = medicationIdentifier(for: medication)
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
+        removeMedicationReminder(for: medication)
         guard EntitlementManager.shared.isPro else { return }
         guard medication.notificationsEnabled else { return }
-        guard let triggerDate = medication.nextNotificationDate() else { return }
 
         let content = UNMutableNotificationContent()
         content.title = "💊 Medication Due: \(medication.name)"
@@ -247,20 +245,37 @@ final class NotificationManager {
             : "\(petName) is due for \(medication.name) (\(medication.dose))."
         content.sound = .default
 
-        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: triggerDate)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
-        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request)
+        let base = medicationIdentifier(for: medication)
+
+        if medication.reminderMinutes.isEmpty {
+            // Relative mode: one-shot notification at lastGiven + frequencyHours
+            guard let triggerDate = medication.nextNotificationDate() else { return }
+            let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: triggerDate)
+            let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+            UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: base, content: content, trigger: trigger))
+        } else {
+            // Fixed-time mode: one repeating daily notification per configured time
+            for (index, minutes) in medication.reminderMinutes.enumerated() {
+                var components = DateComponents()
+                components.hour = minutes / 60
+                components.minute = minutes % 60
+                let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+                UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "\(base)-\(index)", content: content, trigger: trigger))
+            }
+        }
     }
 
     func removeMedicationReminder(for medication: Medication) {
-        UNUserNotificationCenter.current().removePendingNotificationRequests(
-            withIdentifiers: [medicationIdentifier(for: medication)]
-        )
+        let base = medicationIdentifier(for: medication)
+        let ids = [base] + (0..<3).map { "\(base)-\($0)" }
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
     }
 
     func removeAllMedicationReminders(for pet: Pet) {
-        let ids = (pet.medications ?? []).map { medicationIdentifier(for: $0) }
+        let ids = (pet.medications ?? []).flatMap { med -> [String] in
+            let base = medicationIdentifier(for: med)
+            return [base] + (0..<3).map { "\(base)-\($0)" }
+        }
         guard !ids.isEmpty else { return }
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
     }
