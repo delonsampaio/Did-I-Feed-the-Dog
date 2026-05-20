@@ -24,7 +24,7 @@ struct PetCard: View {
     @State private var showMedicationSheet = false
 
     private var recentEvents: [FeedingEvent] {
-        pet.recentFeedings(limit: 4)
+        pet.recentFeedings(limit: 3)
     }
 
     private var lastFedBadgeColor: Color {
@@ -402,34 +402,25 @@ struct PetCard: View {
     }
 
     private var miniHistory: some View {
-        let columns = [GridItem(.flexible()), GridItem(.flexible())]
-        return VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 6) {
             Text("Recent")
                 .font(.caption2).fontWeight(.semibold)
                 .textCase(.uppercase).foregroundStyle(.secondary)
-            LazyVGrid(columns: columns, alignment: .leading, spacing: 6) {
-                ForEach(recentEvents) { event in
-                    historyCell(event)
+            ForEach(recentEvents) { event in
+                HStack {
+                    Text(MealType.emoji(for: event.mealType ?? "") + " " + (event.mealType ?? "Feeding"))
+                        .font(.subheadline)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                    Spacer(minLength: 8)
+                    Text(abbreviatedRelative(event.timestamp))
+                        .font(.caption).foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
             }
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 14)
-    }
-
-    private func historyCell(_ event: FeedingEvent) -> some View {
-        HStack(spacing: 4) {
-            Text(MealType.emoji(for: event.mealType ?? "") + " " + (event.mealType ?? "Feeding"))
-                .font(.caption).fontWeight(.medium)
-                .lineLimit(1)
-                .truncationMode(.tail)
-            Spacer(minLength: 0)
-            Text(abbreviatedRelative(event.timestamp))
-                .font(.caption2).foregroundStyle(.secondary)
-                .lineLimit(1)
-                .layoutPriority(1)
-        }
-        .frame(maxWidth: .infinity)
     }
 
     private var feedButton: some View {
