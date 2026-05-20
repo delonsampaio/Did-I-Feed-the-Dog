@@ -56,7 +56,7 @@ struct HelpView: View {
         }
         .searchable(text: $searchText, prompt: "Search Help")
         .navigationTitle("Help & FAQ")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     private var gettingStartedSection: some View {

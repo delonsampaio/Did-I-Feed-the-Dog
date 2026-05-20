@@ -110,7 +110,7 @@ struct PetDetailView: View {
             }
         }
         .navigationTitle(pet.name ?? "Unknown")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Picker("History", selection: $selectedTab) {

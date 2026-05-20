@@ -52,7 +52,7 @@ struct SafetyGuideView: View {
             }
         }
         .navigationTitle("Safety Guide")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $searchText, prompt: "Search foods…")
     }
 
