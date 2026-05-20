@@ -418,16 +418,18 @@ struct PetCard: View {
     }
 
     private func historyCell(_ event: FeedingEvent) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+        HStack(spacing: 4) {
             Text(MealType.emoji(for: event.mealType ?? "") + " " + (event.mealType ?? "Feeding"))
                 .font(.caption).fontWeight(.medium)
                 .lineLimit(1)
                 .truncationMode(.tail)
+            Spacer(minLength: 0)
             Text(abbreviatedRelative(event.timestamp))
                 .font(.caption2).foregroundStyle(.secondary)
                 .lineLimit(1)
+                .layoutPriority(1)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity)
     }
 
     private var feedButton: some View {
