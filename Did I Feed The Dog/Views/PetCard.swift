@@ -350,12 +350,16 @@ struct PetCard: View {
                     .buttonStyle(.plain)
                     .accessibilityHint("Double tap to edit food stock")
                 }
-                statCell(
-                    title: "Today's Meals",
-                    value: "\(pet.todaysFeedingCount)",
-                    unit: "meals",
-                    accent: .primary
-                )
+                NavigationLink(value: pet) {
+                    statCell(
+                        title: "Today's Meals",
+                        value: "\(pet.todaysFeedingCount)",
+                        unit: "meals",
+                        accent: .primary
+                    )
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("Double tap to view meal history")
             }
             if let info = nextMealInfo {
                 HStack(spacing: 6) {
