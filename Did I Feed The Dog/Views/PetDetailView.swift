@@ -22,6 +22,9 @@ struct PetDetailView: View {
     @State private var filterStartDate: Date? = nil
     @State private var filterEndDate: Date? = nil
     @State private var sortAscending = false
+    @State private var isSelecting = false
+    @State private var selectedEventIDs: Set<PersistentIdentifier> = []
+    @State private var showDeleteConfirmation = false
 
     private enum HistoryTab { case meals, medications }
 
@@ -102,7 +105,7 @@ struct PetDetailView: View {
     // MARK: - Body
 
     var body: some View {
-        List {
+        List(selection: $selectedEventIDs) {
             if selectedTab == .meals {
                 mealsContent
             } else {
@@ -111,18 +114,30 @@ struct PetDetailView: View {
         }
         .navigationTitle(pet.name ?? "Unknown")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Picker("History", selection: $selectedTab) {
-                    Text("Meals").tag(HistoryTab.meals)
-                    Text("Medications").tag(HistoryTab.medications)
-                }
-                .pickerStyle(.segmented)
-                .frame(width: 220)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            Picker("History", selection: $selectedTab) {
+                Text("Meals").tag(HistoryTab.meals)
+                Text("Medications").tag(HistoryTab.medications)
             }
+            .pickerStyle(.segmented)
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+            .background(.bar)
+        }
+        .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if selectedTab == .meals {
-                    EditButton()
+                    if isSelecting {
+                        Button("Cancel") {
+                            isSelecting = false
+                            selectedEventIDs = []
+                        }
+                    } else {
+                        Button("Select") {
+                            isSelecting = true
+                        }
+                        .disabled((pet.feedingEvents ?? []).isEmpty)
+                    }
                 } else {
                     Button { showAddMedication = true } label: {
                         Image(systemName: "plus")
@@ -161,6 +176,32 @@ struct PetDetailView: View {
                 availableLoggers: availableLoggers
             )
         }
+        .environment(\.editMode, .constant(selectedTab == .meals && isSelecting ? .active : .inactive))
+        .safeAreaInset(edge: .bottom) {
+            if isSelecting && !selectedEventIDs.isEmpty {
+                Button(role: .destructive) {
+                    showDeleteConfirmation = true
+                } label: {
+                    Label("Delete \(selectedEventIDs.count) Meal\(selectedEventIDs.count == 1 ? "" : "s")", systemImage: "trash")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.red)
+                .padding()
+                .background(.bar)
+            }
+        }
+        .confirmationDialog(
+            "Delete \(selectedEventIDs.count) Meal\(selectedEventIDs.count == 1 ? "" : "s")?",
+            isPresented: $showDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) { deleteSelectedEventIDs() }
+        }
+        .onChange(of: selectedTab) { _, _ in
+            isSelecting = false
+            selectedEventIDs = []
+        }
     }
 
     // MARK: - Meals tab
@@ -191,36 +232,38 @@ struct PetDetailView: View {
             ForEach(groups, id: \.date) { group in
                 Section(header: Text(sectionTitle(for: group.date))) {
                     ForEach(group.events) { event in
-                        Button { editingEvent = event } label: {
+                        if isSelecting {
                             eventRow(event)
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("\(event.mealType ?? "Feeding"), \(Self.timeFormatter.string(from: event.timestamp))\((event.loggedBy ?? "").isEmpty ? "" : ", by \(event.loggedBy!)")")
-                        .accessibilityHint("Double tap to edit note")
-                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                            Button(role: .destructive) {
-                                deleteEvent(event, restoreStock: false)
-                            } label: {
-                                Label("Delete", systemImage: "trash")
+                                .accessibilityLabel("\(event.mealType ?? "Feeding"), \(Self.timeFormatter.string(from: event.timestamp))\((event.loggedBy ?? "").isEmpty ? "" : ", by \(event.loggedBy!)")")
+                        } else {
+                            Button { editingEvent = event } label: {
+                                eventRow(event)
                             }
-                            if entitlements.isPro && stockMode != .none && event.actuallyDeductedStock {
-                                Button {
-                                    deleteEvent(event, restoreStock: true)
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("\(event.mealType ?? "Feeding"), \(Self.timeFormatter.string(from: event.timestamp))\((event.loggedBy ?? "").isEmpty ? "" : ", by \(event.loggedBy!)")")
+                            .accessibilityHint("Double tap to edit note")
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button(role: .destructive) {
+                                    deleteEvent(event, restoreStock: false)
                                 } label: {
-                                    Label("Delete & Restore Portion", systemImage: "arrow.uturn.backward")
+                                    Label("Delete", systemImage: "trash")
                                 }
-                                .tint(.blue)
+                                if entitlements.isPro && stockMode != .none && event.actuallyDeductedStock {
+                                    Button {
+                                        deleteEvent(event, restoreStock: true)
+                                    } label: {
+                                        Label("Delete & Restore Portion", systemImage: "arrow.uturn.backward")
+                                    }
+                                    .tint(.blue)
+                                }
+                                Button {
+                                    editingEvent = event
+                                } label: {
+                                    Label("Edit", systemImage: "pencil")
+                                }
+                                .tint(.orange)
                             }
-                            Button {
-                                editingEvent = event
-                            } label: {
-                                Label("Edit", systemImage: "pencil")
-                            }
-                            .tint(.orange)
                         }
-                    }
-                    .onDelete { offsets in
-                        deleteEvents(group.events, at: offsets)
                     }
                 }
             }
@@ -404,14 +447,16 @@ struct PetDetailView: View {
         refreshBadge()
     }
 
-    private func deleteEvents(_ events: [FeedingEvent], at offsets: IndexSet) {
+    private func deleteSelectedEventIDs() {
+        let toDelete = (pet.feedingEvents ?? []).filter { selectedEventIDs.contains($0.persistentModelID) }
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        let toDelete = offsets.map { events[$0] }
         for event in toDelete { modelContext.delete(event) }
         pet.recomputeFeedingCache(excluding: toDelete)
         NotificationManager.shared.rescheduleOverdueNotification(for: pet)
         WidgetDataWriter.write(from: modelContext)
         refreshBadge()
+        selectedEventIDs = []
+        isSelecting = false
     }
 
     private func deleteMedLog(_ log: MedicationLog) {
