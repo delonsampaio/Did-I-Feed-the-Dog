@@ -10,7 +10,12 @@ struct PetDetailView: View {
     @AppStorage("stockMode", store: .sharedGroup)       private var stockMode: StockMode = .individual
     @AppStorage("sharedFoodStock", store: .sharedGroup) private var sharedFoodStock = 0
 
+    @State private var selectedTab: HistoryTab = .meals
     @State private var editingEvent: FeedingEvent?
+
+    private enum HistoryTab { case meals, medications }
+
+    // MARK: - Feeding
 
     private var groupedEvents: [(date: Date, events: [FeedingEvent])] {
         let sorted = (pet.feedingEvents ?? []).sorted { $0.timestamp > $1.timestamp }
@@ -21,6 +26,22 @@ struct PetDetailView: View {
             .sorted { $0.key > $1.key }
             .map { (date: $0.key, events: $0.value) }
     }
+
+    // MARK: - Medication logs
+
+    private var allMedLogs: [(date: Date, logs: [MedicationLog])] {
+        let logs = (pet.medications ?? [])
+            .flatMap { $0.logs ?? [] }
+            .sorted { $0.timestamp > $1.timestamp }
+        let grouped = Dictionary(grouping: logs) {
+            Calendar.current.startOfDay(for: $0.timestamp)
+        }
+        return grouped
+            .sorted { $0.key > $1.key }
+            .map { (date: $0.key, logs: $0.value) }
+    }
+
+    // MARK: - Formatters
 
     private static let timeFormatter: DateFormatter = {
         let f = DateFormatter()
@@ -42,63 +63,121 @@ struct PetDetailView: View {
         return f
     }()
 
+    // MARK: - Body
+
     var body: some View {
         List {
-            if groupedEvents.isEmpty {
-                ContentUnavailableView(
-                    "No Meals Yet",
-                    systemImage: "fork.knife",
-                    description: Text("Tap Log Meal on \(pet.name ?? "Unknown")'s card to get started.")
-                )
-                .frame(maxWidth: 500)
-                .frame(maxWidth: .infinity)
-                .listRowBackground(Color.clear)
+            if selectedTab == .meals {
+                mealsContent
             } else {
-                ForEach(groupedEvents, id: \.date) { group in
-                    Section(header: Text(sectionTitle(for: group.date))) {
-                        ForEach(group.events) { event in
-                            Button { editingEvent = event } label: {
-                                eventRow(event)
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel("\(event.mealType ?? "Feeding"), \(Self.timeFormatter.string(from: event.timestamp))\((event.loggedBy ?? "").isEmpty ? "" : ", by \(event.loggedBy!)")")
-                            .accessibilityHint("Double tap to edit note")
-                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                Button(role: .destructive) {
-                                    deleteEvent(event, restoreStock: false)
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
-                                if entitlements.isPro && stockMode != .none && event.actuallyDeductedStock {
-                                    Button {
-                                        deleteEvent(event, restoreStock: true)
-                                    } label: {
-                                        Label("Delete & Restore Portion", systemImage: "arrow.uturn.backward")
-                                    }
-                                    .tint(.blue)
-                                }
-                                Button {
-                                    editingEvent = event
-                                } label: {
-                                    Label("Edit", systemImage: "pencil")
-                                }
-                                .tint(.orange)
-                            }
-                        }
-                        .onDelete { offsets in
-                            deleteEvents(group.events, at: offsets)
-                        }
-                    }
-                }
+                medicationsContent
             }
         }
         .navigationTitle(pet.name ?? "Unknown")
         .navigationBarTitleDisplayMode(.large)
-        .toolbar { EditButton() }
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Picker("History", selection: $selectedTab) {
+                    Text("Meals").tag(HistoryTab.meals)
+                    Text("Medications").tag(HistoryTab.medications)
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 220)
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                if selectedTab == .meals { EditButton() }
+            }
+        }
         .sheet(item: $editingEvent) { event in
             EditEventSheet(event: event)
         }
     }
+
+    // MARK: - Meals tab
+
+    @ViewBuilder
+    private var mealsContent: some View {
+        if groupedEvents.isEmpty {
+            ContentUnavailableView(
+                "No Meals Yet",
+                systemImage: "fork.knife",
+                description: Text("Tap Log Meal on \(pet.name ?? "Unknown")'s card to get started.")
+            )
+            .frame(maxWidth: 500)
+            .frame(maxWidth: .infinity)
+            .listRowBackground(Color.clear)
+        } else {
+            ForEach(groupedEvents, id: \.date) { group in
+                Section(header: Text(sectionTitle(for: group.date))) {
+                    ForEach(group.events) { event in
+                        Button { editingEvent = event } label: {
+                            eventRow(event)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("\(event.mealType ?? "Feeding"), \(Self.timeFormatter.string(from: event.timestamp))\((event.loggedBy ?? "").isEmpty ? "" : ", by \(event.loggedBy!)")")
+                        .accessibilityHint("Double tap to edit note")
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) {
+                                deleteEvent(event, restoreStock: false)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                            if entitlements.isPro && stockMode != .none && event.actuallyDeductedStock {
+                                Button {
+                                    deleteEvent(event, restoreStock: true)
+                                } label: {
+                                    Label("Delete & Restore Portion", systemImage: "arrow.uturn.backward")
+                                }
+                                .tint(.blue)
+                            }
+                            Button {
+                                editingEvent = event
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
+                            .tint(.orange)
+                        }
+                    }
+                    .onDelete { offsets in
+                        deleteEvents(group.events, at: offsets)
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Medications tab
+
+    @ViewBuilder
+    private var medicationsContent: some View {
+        if allMedLogs.isEmpty {
+            ContentUnavailableView(
+                "No Doses Logged",
+                systemImage: "pills",
+                description: Text("Logged doses for \(pet.name ?? "Unknown")'s medications will appear here.")
+            )
+            .frame(maxWidth: 500)
+            .frame(maxWidth: .infinity)
+            .listRowBackground(Color.clear)
+        } else {
+            ForEach(allMedLogs, id: \.date) { group in
+                Section(header: Text(sectionTitle(for: group.date))) {
+                    ForEach(group.logs) { log in
+                        medLogRow(log)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button(role: .destructive) {
+                                    deleteMedLog(log)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Row views
 
     private func eventRow(_ event: FeedingEvent) -> some View {
         HStack(spacing: 12) {
@@ -129,6 +208,46 @@ struct PetDetailView: View {
         }
     }
 
+    private func medLogRow(_ log: MedicationLog) -> some View {
+        HStack(spacing: 12) {
+            Text("💊")
+                .font(.title3)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 4) {
+                    Text(log.medication?.name ?? "Medication")
+                        .font(.subheadline).fontWeight(.medium)
+                    if let dose = log.medication?.dose, !dose.isEmpty {
+                        Text("·")
+                            .foregroundStyle(.secondary)
+                        Text(dose)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                HStack(spacing: 4) {
+                    Text(Self.timeFormatter.string(from: log.timestamp))
+                    if !log.loggedBy.isEmpty {
+                        Text("·")
+                        Text("by \(log.loggedBy)")
+                    }
+                }
+                .font(.caption).foregroundStyle(.secondary)
+                if !log.notes.isEmpty {
+                    Text(log.notes)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .italic()
+                }
+            }
+            Spacer()
+            Text(Self.relativeFormatter.localizedString(for: log.timestamp, relativeTo: .now))
+                .font(.caption2).foregroundStyle(.tertiary)
+        }
+    }
+
+    // MARK: - Helpers
+
     private func sectionTitle(for date: Date) -> String {
         let calendar = Calendar.current
         if calendar.isDateInToday(date)     { return "Today" }
@@ -138,8 +257,6 @@ struct PetDetailView: View {
 
     private func deleteEvent(_ event: FeedingEvent, restoreStock: Bool) {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        // Only credit a portion if this event actually deducted one when it
-        // was logged — guarded against double-credit on custom no-deduct meals.
         if restoreStock, event.actuallyDeductedStock {
             switch stockMode {
             case .individual:
@@ -167,13 +284,23 @@ struct PetDetailView: View {
         refreshBadge()
     }
 
+    private func deleteMedLog(_ log: MedicationLog) {
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        if let med = log.medication {
+            // Roll back lastGivenDate to the previous log's timestamp if this was the most recent
+            let remaining = (med.logs ?? []).filter { $0.id != log.id }.sorted { $0.timestamp > $1.timestamp }
+            med.lastGivenDate = remaining.first?.timestamp
+        }
+        modelContext.delete(log)
+    }
+
     private func refreshBadge() {
         let pets = (try? modelContext.fetch(FetchDescriptor<Pet>())) ?? []
         NotificationManager.shared.updateBadgeCount(pets: pets)
     }
-
-
 }
+
+// MARK: - Edit event sheet
 
 private struct EditEventSheet: View {
     @Environment(\.modelContext) private var modelContext
