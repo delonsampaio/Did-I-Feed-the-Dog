@@ -21,6 +21,7 @@ struct PetCard: View {
     @State private var showQuickStockSheet = false
     @State private var showStockOutAlert = false
     @State private var showStockOutRestockSheet = false
+    @State private var showMedicationSheet = false
 
     private var recentEvents: [FeedingEvent] {
         pet.recentFeedings(limit: 3)
@@ -50,16 +51,36 @@ struct PetCard: View {
         return currentStockCount <= lowStockThreshold
     }
 
+    private var dueMedications: [Medication] {
+        (pet.medications ?? []).filter { $0.isDue }
+    }
+
+    private var hasDueMedications: Bool { !dueMedications.isEmpty }
+
+    private var medicationBannerTitle: String {
+        let due = dueMedications
+        if due.count == 1 { return due[0].name }
+        return "\(due.count) meds due"
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             NavigationLink(value: pet) { headerRow }
                 .buttonStyle(.plain)
 
-            if isLowStock {
-                Button {
-                    showQuickStockSheet = true
-                } label: { lowStockBanner }
-                .buttonStyle(.plain)
+            if isLowStock || hasDueMedications {
+                HStack(spacing: 8) {
+                    if isLowStock {
+                        Button { showQuickStockSheet = true } label: { lowStockBanner }
+                            .buttonStyle(.plain)
+                    }
+                    if hasDueMedications {
+                        Button { showMedicationSheet = true } label: { medicationBanner }
+                            .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 10)
             }
 
             statsRow
@@ -175,6 +196,9 @@ struct PetCard: View {
                 ), title: "\(pet.name ?? "Dog")'s Stock", petId: pet.id)
             }
         }
+        .sheet(isPresented: $showMedicationSheet) {
+            LogMedicationSheet(pet: pet, dueMedications: dueMedications)
+        }
         .alert("Meal logged", isPresented: $showStockOutAlert) {
             Button("Update Stock Now") { showStockOutRestockSheet = true }
             Button("Remind Me Later", role: .cancel) { }
@@ -262,12 +286,32 @@ struct PetCard: View {
                 .font(.caption).foregroundStyle(.tertiary)
                 .accessibilityHidden(true)
         }
+        .frame(maxWidth: .infinity)
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .background(Color.orange.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .padding(.horizontal, 16)
-        .padding(.bottom, 10)
+    }
+
+    private var medicationBanner: some View {
+        HStack(spacing: 8) {
+            Text("💊").font(.subheadline).accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(medicationBannerTitle)
+                    .font(.subheadline).fontWeight(.semibold).foregroundStyle(.purple)
+                Text("Tap to log")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption).foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color.purple.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
     private var nextMealInfo: (value: String, unit: String)? {

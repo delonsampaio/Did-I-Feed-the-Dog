@@ -229,9 +229,46 @@ final class NotificationManager {
         }
     }
 
+    func medicationIdentifier(for medication: Medication) -> String {
+        "medication-\(medication.id.uuidString)"
+    }
+
+    func scheduleMedicationReminder(for medication: Medication, petName: String) {
+        let identifier = medicationIdentifier(for: medication)
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
+        guard EntitlementManager.shared.isPro else { return }
+        guard medication.notificationsEnabled else { return }
+        guard let triggerDate = medication.nextDueDate, triggerDate > Date() else { return }
+
+        let content = UNMutableNotificationContent()
+        content.title = "💊 Medication Due: \(medication.name)"
+        content.body = medication.dose.isEmpty
+            ? "\(petName) is due for \(medication.name)."
+            : "\(petName) is due for \(medication.name) (\(medication.dose))."
+        content.sound = .default
+
+        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: triggerDate)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+        UNUserNotificationCenter.current().add(request)
+    }
+
+    func removeMedicationReminder(for medication: Medication) {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(
+            withIdentifiers: [medicationIdentifier(for: medication)]
+        )
+    }
+
+    func removeAllMedicationReminders(for pet: Pet) {
+        let ids = (pet.medications ?? []).map { medicationIdentifier(for: $0) }
+        guard !ids.isEmpty else { return }
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
+    }
+
     func removeAllAlerts(for pet: Pet) {
         removeOverdueNotification(for: pet)
         removePerDogReminders(for: pet)
+        removeAllMedicationReminders(for: pet)
         UNUserNotificationCenter.current().removePendingNotificationRequests(
             withIdentifiers: [lowStockIdentifier(for: pet), birthdayIdentifier(for: pet)]
         )
@@ -276,6 +313,7 @@ final class NotificationManager {
                 id.hasPrefix("overdue-") ||
                 id.hasPrefix("lowstock-") ||
                 id.hasPrefix("birthday-") ||
+                id.hasPrefix("medication-") ||
                 (id.hasPrefix("feeding-") && !id.hasPrefix("feeding-all-")) ||
                 id == "waterBowlReminder"
             }

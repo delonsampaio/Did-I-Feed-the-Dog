@@ -17,6 +17,7 @@ final class Pet {
     var todaysFeedingCount: Int = 0
 
     @Relationship(deleteRule: .cascade, inverse: \FeedingEvent.pet) var feedingEvents: [FeedingEvent]?
+    @Relationship(deleteRule: .cascade, inverse: \Medication.pet) var medications: [Medication]?
 
     var feedingScheduleTimes: [Int] {
         get { feedingScheduleTimesRaw.split(separator: ",").compactMap { Int($0) } }

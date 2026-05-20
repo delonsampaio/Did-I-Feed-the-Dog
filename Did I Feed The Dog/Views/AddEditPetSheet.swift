@@ -28,6 +28,9 @@ struct AddEditPetSheet: View {
     @State private var isFasting = false
     // Feature #28
     @State private var notificationsMuted = false
+    // Feature #53
+    @State private var showAddEditMedication = false
+    @State private var editingMedication: Medication? = nil
 
     var body: some View {
         NavigationStack {
@@ -69,6 +72,37 @@ struct AddEditPetSheet: View {
                         Text("All alerts for this dog — reminders, overdue, low stock, and birthday — are silenced. The card still shows overdue status.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                    }
+                }
+
+                if let editingPet = pet {
+                    Section("Medications") {
+                        ForEach(editingPet.medications ?? []) { med in
+                            Button {
+                                editingMedication = med
+                                showAddEditMedication = true
+                            } label: {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(med.name)
+                                            .foregroundStyle(.primary)
+                                        Text(med.dose.isEmpty ? med.frequencyLabel : "\(med.dose) · \(med.frequencyLabel)")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundStyle(.tertiary)
+                                }
+                            }
+                        }
+                        Button {
+                            editingMedication = nil
+                            showAddEditMedication = true
+                        } label: {
+                            Label("Add Medication", systemImage: "plus.circle.fill")
+                        }
                     }
                 }
 
@@ -150,6 +184,11 @@ struct AddEditPetSheet: View {
             .onAppear { prefillIfEditing() }
             .sheet(isPresented: $showAvatarPicker) {
                 AvatarPickerSheet(selectedAvatarName: $selectedAvatarName, photoData: $photoData)
+            }
+            .sheet(isPresented: $showAddEditMedication) {
+                if let editingPet = pet {
+                    AddEditMedicationSheet(pet: editingPet, medication: editingMedication)
+                }
             }
             .sheet(isPresented: $showPaywall) {
                 PaywallSheet(source: "addSecondDog", petName: pendingPetName)

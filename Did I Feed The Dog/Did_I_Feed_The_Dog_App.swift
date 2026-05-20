@@ -8,7 +8,7 @@ import StoreKit
 // CKScheduler activity identifier that has already been registered" and
 // breaks sync.
 let sharedModelContainer: ModelContainer = {
-    let schema = Schema([Pet.self, FeedingEvent.self])
+    let schema = Schema([Pet.self, FeedingEvent.self, Medication.self, MedicationLog.self])
     let config = ModelConfiguration(
         schema: schema,
         allowsSave: true,
