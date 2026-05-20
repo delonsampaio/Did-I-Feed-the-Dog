@@ -12,6 +12,10 @@ struct PetDetailView: View {
 
     @State private var selectedTab: HistoryTab = .meals
     @State private var editingEvent: FeedingEvent?
+    @State private var showAddMedication = false
+    @State private var editingMedication: Medication?
+    @State private var pendingDeleteMedId: UUID?
+    @State private var deleteTask: Task<Void, Never>?
 
     private enum HistoryTab { case meals, medications }
 
@@ -85,11 +89,23 @@ struct PetDetailView: View {
                 .frame(width: 220)
             }
             ToolbarItem(placement: .topBarTrailing) {
-                if selectedTab == .meals { EditButton() }
+                if selectedTab == .meals {
+                    EditButton()
+                } else {
+                    Button { showAddMedication = true } label: {
+                        Image(systemName: "plus")
+                    }
+                }
             }
         }
         .sheet(item: $editingEvent) { event in
             EditEventSheet(event: event)
+        }
+        .sheet(isPresented: $showAddMedication) {
+            AddEditMedicationSheet(pet: pet, medication: nil)
+        }
+        .sheet(item: $editingMedication) { med in
+            AddEditMedicationSheet(pet: pet, medication: med)
         }
     }
 
@@ -150,30 +166,79 @@ struct PetDetailView: View {
 
     @ViewBuilder
     private var medicationsContent: some View {
-        if allMedLogs.isEmpty {
-            ContentUnavailableView(
-                "No Doses Logged",
-                systemImage: "pills",
-                description: Text("Logged doses for \(pet.name ?? "Unknown")'s medications will appear here.")
-            )
-            .frame(maxWidth: 500)
-            .frame(maxWidth: .infinity)
-            .listRowBackground(Color.clear)
-        } else {
-            ForEach(allMedLogs, id: \.date) { group in
-                Section(header: Text(sectionTitle(for: group.date))) {
-                    ForEach(group.logs) { log in
-                        medLogRow(log)
-                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                Button(role: .destructive) {
-                                    deleteMedLog(log)
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
-                            }
+        let medications = (pet.medications ?? []).filter { $0.id != pendingDeleteMedId }
+
+        Section("Medications") {
+            ForEach(medications) { med in
+                Button { editingMedication = med } label: {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(med.name)
+                                .foregroundStyle(.primary)
+                            Text(med.dose.isEmpty ? med.frequencyLabel : "\(med.dose) · \(med.frequencyLabel)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                .swipeActions(edge: .trailing) {
+                    Button(role: .destructive) {
+                        scheduleMedicationDelete(med)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
                     }
                 }
             }
+            if let id = pendingDeleteMedId,
+               let name = (pet.medications ?? []).first(where: { $0.id == id })?.name {
+                HStack {
+                    Text("\"\(name)\" will be deleted")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button("Undo") {
+                        deleteTask?.cancel()
+                        pendingDeleteMedId = nil
+                    }
+                    .foregroundStyle(.purple)
+                    .fontWeight(.semibold)
+                }
+            }
+            Button { showAddMedication = true } label: {
+                Label("Add Medication", systemImage: "plus.circle.fill")
+            }
+        }
+
+        ForEach(allMedLogs, id: \.date) { group in
+            Section(header: Text(sectionTitle(for: group.date))) {
+                ForEach(group.logs) { log in
+                    medLogRow(log)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) {
+                                deleteMedLog(log)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
+                }
+            }
+        }
+    }
+
+    private func scheduleMedicationDelete(_ med: Medication) {
+        deleteTask?.cancel()
+        pendingDeleteMedId = med.id
+        deleteTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(4))
+            guard !Task.isCancelled else { return }
+            NotificationManager.shared.removeMedicationReminder(for: med)
+            modelContext.delete(med)
+            try? modelContext.save()
+            pendingDeleteMedId = nil
         }
     }
 
