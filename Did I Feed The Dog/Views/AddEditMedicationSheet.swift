@@ -41,10 +41,10 @@ struct AddEditMedicationSheet: View {
                             Text("Dose Reminder")
                             if !entitlements.isPro {
                                 Text("PRO")
-                                    .font(.caption2).fontWeight(.bold)
-                                    .padding(.horizontal, 5).padding(.vertical, 2)
-                                    .background(Color.accentColor.opacity(0.15))
-                                    .foregroundStyle(Color.accentColor)
+                                    .font(.caption2.bold())
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 6).padding(.vertical, 2)
+                                    .background(Color.accentColor)
                                     .clipShape(RoundedRectangle(cornerRadius: 4))
                             }
                         }

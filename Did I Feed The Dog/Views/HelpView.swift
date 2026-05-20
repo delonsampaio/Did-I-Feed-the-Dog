@@ -469,12 +469,12 @@ private struct FAQRow: View {
                     .foregroundStyle(.primary)
                 if isPro && !entitlements.isPro {
                     Text("PRO")
-                        .font(.system(size: 9, weight: .bold))
+                        .font(.caption2.bold())
                         .foregroundStyle(.white)
-                        .padding(.horizontal, 5)
+                        .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(Color.accentColor)
-                        .clipShape(Capsule())
+                        .clipShape(RoundedRectangle(cornerRadius: 4))
                 }
             }
         }
