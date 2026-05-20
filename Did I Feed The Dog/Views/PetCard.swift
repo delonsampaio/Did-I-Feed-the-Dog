@@ -278,8 +278,10 @@ struct PetCard: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text("Low Food Stock")
                     .font(.subheadline).fontWeight(.semibold).foregroundStyle(.orange)
-                Text("Only \(currentStockCount) portion\(currentStockCount == 1 ? "" : "s") remaining — tap to restock")
+                    .lineLimit(1)
+                Text("Only \(currentStockCount) portion\(currentStockCount == 1 ? "" : "s") remaining")
                     .font(.caption).foregroundStyle(.secondary)
+                    .lineLimit(1).truncationMode(.tail)
             }
             Spacer()
             Image(systemName: "chevron.right")
