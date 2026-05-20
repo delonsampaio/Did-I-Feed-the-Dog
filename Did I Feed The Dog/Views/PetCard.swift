@@ -69,13 +69,14 @@ struct PetCard: View {
                 .buttonStyle(.plain)
 
             if isLowStock || hasDueMedications {
+                let bothVisible = isLowStock && hasDueMedications
                 HStack(spacing: 8) {
                     if isLowStock {
-                        Button { showQuickStockSheet = true } label: { lowStockBanner }
+                        Button { showQuickStockSheet = true } label: { lowStockBanner(compact: bothVisible) }
                             .buttonStyle(.plain)
                     }
                     if hasDueMedications {
-                        Button { showMedicationSheet = true } label: { medicationBanner }
+                        Button { showMedicationSheet = true } label: { medicationBanner(compact: bothVisible) }
                             .buttonStyle(.plain)
                     }
                 }
@@ -270,18 +271,22 @@ struct PetCard: View {
             : "Last fed \(lastFedLabel)")
     }
 
-    private var lowStockBanner: some View {
+    private func lowStockBanner(compact: Bool) -> some View {
         HStack(spacing: 8) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(.orange)
                 .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Low Food Stock")
+            if compact {
+                Text("Low Stock")
                     .font(.subheadline).fontWeight(.semibold).foregroundStyle(.orange)
                     .lineLimit(1)
-                Text("Only \(currentStockCount) portion\(currentStockCount == 1 ? "" : "s") remaining")
-                    .font(.caption).foregroundStyle(.secondary)
-                    .lineLimit(1).truncationMode(.tail)
+            } else {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Low Food Stock")
+                        .font(.subheadline).fontWeight(.semibold).foregroundStyle(.orange)
+                    Text("Only \(currentStockCount) portion\(currentStockCount == 1 ? "" : "s") remaining")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
             }
             Spacer()
             Image(systemName: "chevron.right")
@@ -290,19 +295,25 @@ struct PetCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.vertical, compact ? 12 : 10)
         .background(Color.orange.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
-    private var medicationBanner: some View {
+    private func medicationBanner(compact: Bool) -> some View {
         HStack(spacing: 8) {
             Text("💊").font(.subheadline).accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 1) {
+            if compact {
                 Text(medicationBannerTitle)
                     .font(.subheadline).fontWeight(.semibold).foregroundStyle(.purple)
-                Text("Tap to log")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .lineLimit(1)
+            } else {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(medicationBannerTitle)
+                        .font(.subheadline).fontWeight(.semibold).foregroundStyle(.purple)
+                    Text("Tap to log")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
             }
             Spacer()
             Image(systemName: "chevron.right")
@@ -311,7 +322,7 @@ struct PetCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.vertical, compact ? 12 : 10)
         .background(Color.purple.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
