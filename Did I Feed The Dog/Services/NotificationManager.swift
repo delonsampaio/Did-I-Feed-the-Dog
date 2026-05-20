@@ -41,6 +41,7 @@ final class NotificationManager {
         content.title = "⚠️ \(pet.name ?? "Your dog") is overdue for a meal"
         content.body = "It's been over \(thresholdHours) hours since their last feeding."
         content.sound = .default
+        content.threadIdentifier = "dog-\(pet.id.uuidString)"
 
         let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: triggerDate)
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
@@ -79,6 +80,7 @@ final class NotificationManager {
             ? "\(name) is out of food — time to restock!"
             : "Only \(count) portion\(count == 1 ? "" : "s") remaining for \(name)."
         content.sound = .default
+        content.threadIdentifier = "dog-\(pet.id.uuidString)"
 
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 30, repeats: false)
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
@@ -112,6 +114,7 @@ final class NotificationManager {
         content.title = "🎂 Happy Birthday \(pet.name ?? "your dog")!"
         content.body = "Give \(pet.name ?? "them") extra love and pets today!"
         content.sound = .default
+        content.threadIdentifier = "dog-\(pet.id.uuidString)"
 
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
@@ -166,7 +169,8 @@ final class NotificationManager {
                 identifier: "feeding-\(pet.id.uuidString)-\(i)",
                 title: "Time to Feed \(pet.name ?? "your dog")",
                 body: "Don't forget to feed \(pet.name ?? "your dog")!",
-                minutesSinceMidnight: minutes
+                minutesSinceMidnight: minutes,
+                threadIdentifier: "dog-\(pet.id.uuidString)"
             )
         }
     }
@@ -244,6 +248,9 @@ final class NotificationManager {
             ? "\(petName) is due for \(medication.name)."
             : "\(petName) is due for \(medication.name) (\(medication.dose))."
         content.sound = .default
+        if let petId = medication.pet?.id {
+            content.threadIdentifier = "dog-\(petId.uuidString)"
+        }
 
         let base = medicationIdentifier(for: medication)
 
@@ -337,11 +344,12 @@ final class NotificationManager {
         clearBadge()
     }
 
-    private func scheduleReminder(identifier: String, title: String, body: String, minutesSinceMidnight: Int) {
+    private func scheduleReminder(identifier: String, title: String, body: String, minutesSinceMidnight: Int, threadIdentifier: String? = nil) {
         let content = UNMutableNotificationContent()
         content.title = title
         content.body  = body
         content.sound = .default
+        if let thread = threadIdentifier { content.threadIdentifier = thread }
 
         var components = DateComponents()
         components.hour   = minutesSinceMidnight / 60
