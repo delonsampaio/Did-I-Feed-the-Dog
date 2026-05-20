@@ -143,6 +143,8 @@ struct PetCard: View {
                     pet.recomputeFeedingCache(excluding: [event])
                     NotificationManager.shared.rescheduleOverdueNotification(for: pet)
                     WidgetDataWriter.write(from: modelContext)
+                    let allPets = (try? modelContext.fetch(FetchDescriptor<Pet>())) ?? []
+                    NotificationManager.shared.updateBadgeCount(pets: allPets)
                 }
                 onFed?(event, undo)
                 if entitlements.isPro && result.shouldPromptStockOut && AppSettings.stockOutPromptEnabled {
