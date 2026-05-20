@@ -9,14 +9,12 @@ final class MedicationLog {
     var loggedBy: String = ""
 
     var medication: Medication?
-    var pet: Pet?
 
-    init(timestamp: Date = .now, notes: String = "", loggedBy: String, medication: Medication?, pet: Pet?) {
+    init(timestamp: Date = .now, notes: String = "", loggedBy: String, medication: Medication?) {
         self.id = UUID()
         self.timestamp = timestamp
         self.notes = notes
         self.loggedBy = loggedBy
         self.medication = medication
-        self.pet = pet
     }
 }

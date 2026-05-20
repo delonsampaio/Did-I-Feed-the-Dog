@@ -116,8 +116,7 @@ struct LogMedicationSheet: View {
             timestamp: timestamp,
             notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
             loggedBy: LoggedBy.current,
-            medication: med,
-            pet: pet
+            medication: med
         )
         modelContext.insert(log)
         med.lastGivenDate = timestamp
