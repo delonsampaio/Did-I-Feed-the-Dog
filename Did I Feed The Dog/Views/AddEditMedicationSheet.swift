@@ -19,7 +19,7 @@ struct AddEditMedicationSheet: View {
     ]
     @State private var showDeleteConfirm = false
 
-    private let frequencyOptions = [8, 12, 24, 48, 72, 168]
+    private let frequencyOptions = [8, 12, 24, 48, 72, 168, 720]
 
     private var requiredReminderCount: Int {
         switch frequencyHours {
@@ -174,6 +174,7 @@ struct AddEditMedicationSheet: View {
         case 48:  return "Every 2 days"
         case 72:  return "Every 3 days"
         case 168: return "Weekly"
+        case 720: return "Monthly"
         default:  return "Every \(hours)h"
         }
     }
