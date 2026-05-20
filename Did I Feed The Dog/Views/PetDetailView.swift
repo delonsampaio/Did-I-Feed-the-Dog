@@ -197,6 +197,11 @@ struct PetDetailView: View {
             titleVisibility: .visible
         ) {
             Button("Delete", role: .destructive) { deleteSelectedEventIDs() }
+            if canBulkRestoreStock {
+                Button("Delete & Restore Portions", role: .destructive) {
+                    deleteSelectedEventIDs(restoreStock: true)
+                }
+            }
         }
         .onChange(of: selectedTab) { _, _ in
             isSelecting = false
@@ -447,9 +452,28 @@ struct PetDetailView: View {
         refreshBadge()
     }
 
-    private func deleteSelectedEventIDs() {
+    private var canBulkRestoreStock: Bool {
+        guard entitlements.isPro && stockMode != .none else { return false }
+        let selected = (pet.feedingEvents ?? []).filter { selectedEventIDs.contains($0.persistentModelID) }
+        return selected.contains { $0.actuallyDeductedStock }
+    }
+
+    private func deleteSelectedEventIDs(restoreStock: Bool = false) {
         let toDelete = (pet.feedingEvents ?? []).filter { selectedEventIDs.contains($0.persistentModelID) }
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        if restoreStock {
+            let count = toDelete.filter { $0.actuallyDeductedStock }.count
+            if count > 0 {
+                switch stockMode {
+                case .individual:
+                    pet.foodStockCount = min(AppConstants.perPetStockCap, pet.foodStockCount + count)
+                case .shared:
+                    sharedFoodStock = min(AppConstants.sharedStockCap, sharedFoodStock + count)
+                case .none:
+                    break
+                }
+            }
+        }
         for event in toDelete { modelContext.delete(event) }
         pet.recomputeFeedingCache(excluding: toDelete)
         NotificationManager.shared.rescheduleOverdueNotification(for: pet)
