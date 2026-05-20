@@ -19,6 +19,29 @@ struct LogFeedingSheet: View {
     @State private var logDate = Date()
     @State private var showSaveError = false
     @State private var saveErrorMessage = ""
+    @FocusState private var notesFocused: Bool
+
+    @Query(sort: \FeedingEvent.timestamp, order: .reverse)
+    private var recentEvents: [FeedingEvent]
+
+    private var noteSuggestions: [String] {
+        var seen = Set<String>()
+        var result: [String] = []
+        for event in recentEvents.prefix(200) {
+            let note = event.notes.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !note.isEmpty, seen.insert(note).inserted else { continue }
+            result.append(note)
+            if result.count == 8 { break }
+        }
+        return result
+    }
+
+    private var filteredSuggestions: [String] {
+        let trimmed = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return noteSuggestions }
+        let q = trimmed.lowercased()
+        return noteSuggestions.filter { $0.lowercased().contains(q) && $0.lowercased() != q }
+    }
 
     var body: some View {
         NavigationStack {
@@ -46,7 +69,32 @@ struct LogFeedingSheet: View {
                 TextField("Add a note (optional)", text: $notes, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
                     .lineLimit(2...3)
+                    .focused($notesFocused)
                     .padding(.horizontal)
+
+                let suggestions = filteredSuggestions
+                if (notesFocused || !notes.isEmpty) && !suggestions.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(suggestions, id: \.self) { suggestion in
+                                Button {
+                                    notes = suggestion
+                                    notesFocused = false
+                                } label: {
+                                    Text(suggestion)
+                                        .font(.caption)
+                                        .lineLimit(1)
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 6)
+                                        .background(Color(.secondarySystemBackground))
+                                        .clipShape(Capsule())
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                }
 
                 Spacer()
             }
