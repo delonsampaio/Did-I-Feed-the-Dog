@@ -1,9 +1,11 @@
+import StoreKit
 import SwiftUI
 import SwiftData
 
 struct LogFeedingSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.requestReview) private var requestReview
 
     let pet: Pet
     var onLogged: ((FeedingLogService.LogResult) -> Void)? = nil
@@ -180,6 +182,12 @@ struct LogFeedingSheet: View {
 
             onLogged?(result)
             dismiss()
+            if result.shouldRequestReview {
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(800))
+                    requestReview()
+                }
+            }
         } catch {
             saveErrorMessage = "Failed to save meal: \(error.localizedDescription)"
             showSaveError = true

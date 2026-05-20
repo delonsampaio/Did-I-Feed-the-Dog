@@ -39,6 +39,7 @@ enum AppSettings {
         static let seenOverdueTeaseAt      = "seenOverdueTeaseAt"
         static let paywallShownFromPrefix  = "paywallShownFrom_"
         static let paywallConvertedFromPrefix = "paywallConvertedFrom_"
+        static let lifetimeFeedingsLogged  = "lifetimeFeedingsLogged"
     }
 
     static let sharedDefaults = UserDefaults.sharedGroup
@@ -176,6 +177,21 @@ enum AppSettings {
             sharedDefaults.set(newValue?.timeIntervalSinceReferenceDate ?? 0,
                                forKey: Key.seenOverdueTeaseAt)
         }
+    }
+
+    // MARK: - App Store Review
+
+    private static let reviewMilestones = [10, 30, 100]
+
+    /// Increments the lifetime feeding counter and returns true if the count
+    /// just crossed a review milestone (10, 30, or 100). iOS caps review
+    /// prompts at 3 per year, which aligns with our three milestones.
+    @discardableResult
+    static func recordFeedingAndCheckReviewMilestone() -> Bool {
+        let before = sharedDefaults.integer(forKey: Key.lifetimeFeedingsLogged)
+        let after = before + 1
+        sharedDefaults.set(after, forKey: Key.lifetimeFeedingsLogged)
+        return reviewMilestones.contains { before < $0 && after >= $0 }
     }
 
     // MARK: - Telemetry

@@ -1,9 +1,11 @@
+import StoreKit
 import SwiftUI
 import SwiftData
 
 struct FeedAllDogsSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.requestReview) private var requestReview
 
     // Retained only for the undo path — we need to know which counter to
     // restore. The service owns the live decrement.
@@ -213,6 +215,12 @@ struct FeedAllDogsSheet: View {
 
             onLogged?(result, undo)
             dismiss()
+            if result.shouldRequestReview {
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(800))
+                    requestReview()
+                }
+            }
         } catch {
             saveErrorMessage = "Failed to save meals: \(error.localizedDescription)"
             showSaveError = true

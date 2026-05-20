@@ -23,6 +23,9 @@ enum FeedingLogService {
         /// AND the per-scope feeding-at-zero counter landed on a prompt step
         /// (1, 4, 7, …). Callers use this to surface the restock alert.
         let shouldPromptStockOut: Bool
+        /// True when this feeding crossed a lifetime milestone (10, 30, 100).
+        /// Callers should present SKStoreReviewRequest after dismissing their sheet.
+        let shouldRequestReview: Bool
     }
 
     struct BatchResult {
@@ -35,6 +38,9 @@ enum FeedingLogService {
         /// Pets in this batch whose individual stock is at 0 after deduction.
         /// Empty in shared mode — the shared pool is implied by the scope.
         let petsAtZeroStock: [Pet]
+        /// True when this batch crossed a lifetime milestone (10, 30, 100).
+        /// Callers should present SKStoreReviewRequest after dismissing their sheet.
+        let shouldRequestReview: Bool
     }
 
     static func logFeeding(
@@ -63,6 +69,7 @@ enum FeedingLogService {
 
         let triggered = applyStockSideEffects(for: pet, deductsStock: deductsStock)
         let shouldPromptStockOut = recordZeroStockIfNeeded(pet: pet, didDeduct: didDeduct)
+        let shouldRequestReview = AppSettings.recordFeedingAndCheckReviewMilestone()
         NotificationManager.shared.scheduleOverdueNotification(for: pet, lastFedDate: timestamp)
         suppressNextReminder(for: pet)
 
@@ -70,7 +77,7 @@ enum FeedingLogService {
         WidgetDataWriter.write(from: context)
         refreshBadge(in: context)
 
-        return LogResult(event: event, didTriggerLowStock: triggered, shouldPromptStockOut: shouldPromptStockOut)
+        return LogResult(event: event, didTriggerLowStock: triggered, shouldPromptStockOut: shouldPromptStockOut, shouldRequestReview: shouldRequestReview)
     }
 
     static func logFeedingForAll(
@@ -86,10 +93,12 @@ enum FeedingLogService {
         var sharedTriggered = false
         var anyIndividualTriggered = false
         var petsAtZeroStock: [Pet] = []
+        var shouldRequestReview = false
         let mode = AppSettings.stockMode
         let didDeduct = deductsStock && mode != .none
 
         for pet in pets {
+            shouldRequestReview = AppSettings.recordFeedingAndCheckReviewMilestone() || shouldRequestReview
             let event = FeedingEvent(
                 timestamp: timestamp,
                 mealType: mealLabel,
@@ -161,7 +170,8 @@ enum FeedingLogService {
             events: created,
             didTriggerLowStock: sharedTriggered || anyIndividualTriggered,
             shouldPromptStockOut: shouldPromptStockOut,
-            petsAtZeroStock: mode == .individual ? petsAtZeroStock : []
+            petsAtZeroStock: mode == .individual ? petsAtZeroStock : [],
+            shouldRequestReview: shouldRequestReview
         )
     }
 
