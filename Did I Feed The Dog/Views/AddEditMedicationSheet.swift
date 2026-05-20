@@ -13,6 +13,8 @@ struct AddEditMedicationSheet: View {
     @State private var dose = ""
     @State private var frequencyHours = 24
     @State private var notificationsEnabled = false
+    @State private var useFixedTime = false
+    @State private var preferredReminderTime = Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: .now) ?? .now
     @State private var showDeleteConfirm = false
 
     private let frequencyOptions = [12, 24, 48, 72, 168]
@@ -37,6 +39,17 @@ struct AddEditMedicationSheet: View {
                     Toggle("Dose Reminder", isOn: $notificationsEnabled)
                         .tint(.purple)
                         .disabled(!entitlements.isPro)
+                    if notificationsEnabled && entitlements.isPro {
+                        Toggle("Remind me at a specific time", isOn: $useFixedTime.animation())
+                            .tint(.purple)
+                        if useFixedTime {
+                            DatePicker("Reminder time", selection: $preferredReminderTime, displayedComponents: .hourAndMinute)
+                        } else {
+                            Text("Reminder fires \(frequencyLabel(frequencyHours).lowercased()) after your last logged dose.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                     if !entitlements.isPro {
                         Text("Upgrade to Pro to get a push reminder when a dose is due.")
                             .font(.caption)
@@ -88,6 +101,15 @@ struct AddEditMedicationSheet: View {
         dose = med.dose
         frequencyHours = med.frequencyHours
         notificationsEnabled = med.notificationsEnabled
+        if let minutes = med.preferredReminderMinutes {
+            useFixedTime = true
+            preferredReminderTime = Calendar.current.date(bySettingHour: minutes / 60, minute: minutes % 60, second: 0, of: .now) ?? .now
+        }
+    }
+
+    private func reminderMinutes(from date: Date) -> Int {
+        let c = Calendar.current.dateComponents([.hour, .minute], from: date)
+        return (c.hour ?? 8) * 60 + (c.minute ?? 0)
     }
 
     private func frequencyLabel(_ hours: Int) -> String {
@@ -105,12 +127,14 @@ struct AddEditMedicationSheet: View {
         let trimmedName = name.trimmingCharacters(in: .whitespaces)
         let trimmedDose = dose.trimmingCharacters(in: .whitespaces)
         let enableNotifs = notificationsEnabled && entitlements.isPro
+        let resolvedReminderMinutes: Int? = (enableNotifs && useFixedTime) ? reminderMinutes(from: preferredReminderTime) : nil
 
         if let med = medication {
             med.name = trimmedName
             med.dose = trimmedDose
             med.frequencyHours = frequencyHours
             med.notificationsEnabled = enableNotifs
+            med.preferredReminderMinutes = resolvedReminderMinutes
             if enableNotifs {
                 NotificationManager.shared.scheduleMedicationReminder(for: med, petName: pet.name ?? "your dog")
             } else {
@@ -118,6 +142,7 @@ struct AddEditMedicationSheet: View {
             }
         } else {
             let newMed = Medication(name: trimmedName, dose: trimmedDose, frequencyHours: frequencyHours, notificationsEnabled: enableNotifs)
+            newMed.preferredReminderMinutes = resolvedReminderMinutes
             newMed.pet = pet
             modelContext.insert(newMed)
         }

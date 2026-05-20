@@ -238,7 +238,7 @@ final class NotificationManager {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
         guard EntitlementManager.shared.isPro else { return }
         guard medication.notificationsEnabled else { return }
-        guard let triggerDate = medication.nextDueDate, triggerDate > Date() else { return }
+        guard let triggerDate = medication.nextNotificationDate() else { return }
 
         let content = UNMutableNotificationContent()
         content.title = "💊 Medication Due: \(medication.name)"
