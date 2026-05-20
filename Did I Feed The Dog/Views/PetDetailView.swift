@@ -16,19 +16,51 @@ struct PetDetailView: View {
     @State private var editingMedication: Medication?
     @State private var pendingDeleteMedId: UUID?
     @State private var deleteTask: Task<Void, Never>?
+    @State private var showFilters = false
+    @State private var filterMealTypes: Set<String> = []
+    @State private var filterLoggedBy: Set<String> = []
+    @State private var filterStartDate: Date? = nil
+    @State private var filterEndDate: Date? = nil
+    @State private var sortAscending = false
 
     private enum HistoryTab { case meals, medications }
 
     // MARK: - Feeding
 
-    private var groupedEvents: [(date: Date, events: [FeedingEvent])] {
-        let sorted = (pet.feedingEvents ?? []).sorted { $0.timestamp > $1.timestamp }
-        let grouped = Dictionary(grouping: sorted) {
-            Calendar.current.startOfDay(for: $0.timestamp)
+    private var availableMealTypes: [String] {
+        let types = (pet.feedingEvents ?? []).compactMap { $0.mealType }.filter { !$0.isEmpty }
+        return Array(Set(types)).sorted()
+    }
+
+    private var availableLoggers: [String] {
+        let loggers = (pet.feedingEvents ?? []).compactMap { $0.loggedBy }.filter { !$0.isEmpty }
+        return Array(Set(loggers)).sorted()
+    }
+
+    private var activeFilterCount: Int {
+        (filterMealTypes.isEmpty ? 0 : 1) +
+        (filterLoggedBy.isEmpty ? 0 : 1) +
+        (filterStartDate != nil || filterEndDate != nil ? 1 : 0)
+    }
+
+    private var filteredGroupedEvents: [(date: Date, events: [FeedingEvent])] {
+        var events = pet.feedingEvents ?? []
+        if !filterMealTypes.isEmpty {
+            events = events.filter { filterMealTypes.contains($0.mealType ?? "") }
         }
-        return grouped
-            .sorted { $0.key > $1.key }
-            .map { (date: $0.key, events: $0.value) }
+        if !filterLoggedBy.isEmpty {
+            events = events.filter { filterLoggedBy.contains($0.loggedBy ?? "") }
+        }
+        if let start = filterStartDate {
+            events = events.filter { $0.timestamp >= Calendar.current.startOfDay(for: start) }
+        }
+        if let end = filterEndDate {
+            let endOfDay = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: end)) ?? end
+            events = events.filter { $0.timestamp < endOfDay }
+        }
+        events.sort { sortAscending ? $0.timestamp < $1.timestamp : $0.timestamp > $1.timestamp }
+        let grouped = Dictionary(grouping: events) { Calendar.current.startOfDay(for: $0.timestamp) }
+        return grouped.sorted { sortAscending ? $0.key < $1.key : $0.key > $1.key }.map { (date: $0.key, events: $0.value) }
     }
 
     // MARK: - Medication logs
@@ -97,6 +129,17 @@ struct PetDetailView: View {
                     }
                 }
             }
+            ToolbarItem(placement: .topBarTrailing) {
+                if selectedTab == .meals {
+                    Button { showFilters = true } label: {
+                        Image(systemName: activeFilterCount > 0
+                              ? "line.3.horizontal.decrease.circle.fill"
+                              : "line.3.horizontal.decrease.circle")
+                        .foregroundStyle(activeFilterCount > 0 ? Color.accentColor : .primary)
+                    }
+                    .accessibilityLabel(activeFilterCount > 0 ? "Filters active — \(activeFilterCount)" : "Filter meals")
+                }
+            }
         }
         .sheet(item: $editingEvent) { event in
             EditEventSheet(event: event)
@@ -107,13 +150,26 @@ struct PetDetailView: View {
         .sheet(item: $editingMedication) { med in
             AddEditMedicationSheet(pet: pet, medication: med)
         }
+        .sheet(isPresented: $showFilters) {
+            MealFilterSheet(
+                filterMealTypes: $filterMealTypes,
+                filterLoggedBy: $filterLoggedBy,
+                filterStartDate: $filterStartDate,
+                filterEndDate: $filterEndDate,
+                sortAscending: $sortAscending,
+                availableMealTypes: availableMealTypes,
+                availableLoggers: availableLoggers
+            )
+        }
     }
 
     // MARK: - Meals tab
 
     @ViewBuilder
     private var mealsContent: some View {
-        if groupedEvents.isEmpty {
+        let groups = filteredGroupedEvents
+        let hasAnyEvents = !(pet.feedingEvents ?? []).isEmpty
+        if groups.isEmpty && !hasAnyEvents {
             ContentUnavailableView(
                 "No Meals Yet",
                 systemImage: "fork.knife",
@@ -122,8 +178,17 @@ struct PetDetailView: View {
             .frame(maxWidth: 500)
             .frame(maxWidth: .infinity)
             .listRowBackground(Color.clear)
+        } else if groups.isEmpty {
+            ContentUnavailableView(
+                "No Results",
+                systemImage: "line.3.horizontal.decrease.circle",
+                description: Text("No meals match the current filters.")
+            )
+            .frame(maxWidth: 500)
+            .frame(maxWidth: .infinity)
+            .listRowBackground(Color.clear)
         } else {
-            ForEach(groupedEvents, id: \.date) { group in
+            ForEach(groups, id: \.date) { group in
                 Section(header: Text(sectionTitle(for: group.date))) {
                     ForEach(group.events) { event in
                         Button { editingEvent = event } label: {
@@ -362,6 +427,110 @@ struct PetDetailView: View {
     private func refreshBadge() {
         let pets = (try? modelContext.fetch(FetchDescriptor<Pet>())) ?? []
         NotificationManager.shared.updateBadgeCount(pets: pets)
+    }
+}
+
+// MARK: - Filter sheet
+
+private struct MealFilterSheet: View {
+    @Binding var filterMealTypes: Set<String>
+    @Binding var filterLoggedBy: Set<String>
+    @Binding var filterStartDate: Date?
+    @Binding var filterEndDate: Date?
+    @Binding var sortAscending: Bool
+    let availableMealTypes: [String]
+    let availableLoggers: [String]
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var hasStartDate = false
+    @State private var hasEndDate = false
+    @State private var startDate = Calendar.current.date(byAdding: .month, value: -1, to: .now) ?? .now
+    @State private var endDate = Date()
+
+    private var isClean: Bool {
+        filterMealTypes.isEmpty && filterLoggedBy.isEmpty &&
+        filterStartDate == nil && filterEndDate == nil && !sortAscending
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Sort Order") {
+                    Picker("Sort", selection: $sortAscending) {
+                        Text("Newest First").tag(false)
+                        Text("Oldest First").tag(true)
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                if !availableMealTypes.isEmpty {
+                    Section("Meal Type") {
+                        ForEach(availableMealTypes, id: \.self) { type in
+                            Toggle(type, isOn: Binding(
+                                get: { filterMealTypes.contains(type) },
+                                set: { if $0 { filterMealTypes.insert(type) } else { filterMealTypes.remove(type) } }
+                            ))
+                        }
+                    }
+                }
+
+                if availableLoggers.count > 1 {
+                    Section("Logged By") {
+                        ForEach(availableLoggers, id: \.self) { logger in
+                            Toggle(logger, isOn: Binding(
+                                get: { filterLoggedBy.contains(logger) },
+                                set: { if $0 { filterLoggedBy.insert(logger) } else { filterLoggedBy.remove(logger) } }
+                            ))
+                        }
+                    }
+                }
+
+                Section("Date Range") {
+                    Toggle("From date", isOn: $hasStartDate.animation())
+                    if hasStartDate {
+                        DatePicker("From", selection: $startDate, in: ...Date(), displayedComponents: .date)
+                            .onChange(of: startDate) { _, v in filterStartDate = v }
+                    }
+                    Toggle("To date", isOn: $hasEndDate.animation())
+                    if hasEndDate {
+                        DatePicker("To", selection: $endDate, in: ...Date(), displayedComponents: .date)
+                            .onChange(of: endDate) { _, v in filterEndDate = v }
+                    }
+                }
+            }
+            .navigationTitle("Filter & Sort")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Clear All") {
+                        filterMealTypes = []
+                        filterLoggedBy = []
+                        filterStartDate = nil
+                        filterEndDate = nil
+                        sortAscending = false
+                        hasStartDate = false
+                        hasEndDate = false
+                    }
+                    .disabled(isClean)
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .onAppear {
+            hasStartDate = filterStartDate != nil
+            hasEndDate = filterEndDate != nil
+            if let s = filterStartDate { startDate = s }
+            if let e = filterEndDate { endDate = e }
+        }
+        .onChange(of: hasStartDate) { _, show in
+            filterStartDate = show ? startDate : nil
+        }
+        .onChange(of: hasEndDate) { _, show in
+            filterEndDate = show ? endDate : nil
+        }
     }
 }
 
