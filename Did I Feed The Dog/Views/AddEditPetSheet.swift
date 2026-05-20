@@ -37,15 +37,7 @@ struct AddEditPetSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Dog Info") {
-                    TextField("Name", text: $name)
-                    Toggle("Add Birthday", isOn: $hasBirthday.animation())
-                    if hasBirthday {
-                        DatePicker("Birthday", selection: $birthday, in: ...Date.now, displayedComponents: .date)
-                    }
-                }
-
-                Section("Photo") {
+                Section {
                     Button { showAvatarPicker = true } label: {
                         HStack(spacing: 14) {
                             photoPreview
@@ -58,24 +50,24 @@ struct AddEditPetSheet: View {
                         }
                     }
                     .buttonStyle(.plain)
+                    TextField("Name", text: $name)
+                    Toggle("Add Birthday", isOn: $hasBirthday.animation())
+                    if hasBirthday {
+                        DatePicker("Birthday", selection: $birthday, in: ...Date.now, displayedComponents: .date)
+                    }
+                } header: {
+                    Text("Dog Info")
+                } footer: {
+                    if pet == nil {
+                        Text("Medications can be added after saving by editing this dog.")
+                    }
                 }
-                
-                Section("Medical") {
+
+                Section("Health") {
                     Toggle("Fasting Mode", isOn: $isFasting)
                         .tint(.red)
                     if isFasting {
                         Text("Reminders and overdue alerts are disabled. A DO NOT FEED warning will appear on the dashboard.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    Toggle("Mute Notifications", isOn: $notificationsMuted)
-                        .tint(.orange)
-                    if notificationsMuted {
-                        Text("All alerts for this dog — reminders, overdue, low stock, and birthday — are silenced. The card still shows overdue status.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    } else if !entitlements.isPro {
-                        Text("Silences Pro push alerts for this dog when enabled.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -157,8 +149,9 @@ struct AddEditPetSheet: View {
                     }
                 }
 
-                if reminderMode == .perDog {
-                    Section("Feeding Reminders") {
+                Section("Alerts & Reminders") {
+                    Toggle("Mute Notifications", isOn: $notificationsMuted)
+                    if reminderMode == .perDog {
                         ForEach(Array(feedingTimes.enumerated()), id: \.offset) { index, time in
                             HStack {
                                 DatePicker(
