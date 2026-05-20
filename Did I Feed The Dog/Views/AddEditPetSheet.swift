@@ -29,8 +29,10 @@ struct AddEditPetSheet: View {
     // Feature #28
     @State private var notificationsMuted = false
     // Feature #53
-    @State private var showAddEditMedication = false
+    @State private var showAddMedication = false
     @State private var editingMedication: Medication? = nil
+    @State private var pendingDeleteMedId: UUID? = nil
+    @State private var deleteTask: Task<Void, Never>? = nil
 
     var body: some View {
         NavigationStack {
@@ -72,15 +74,18 @@ struct AddEditPetSheet: View {
                         Text("All alerts for this dog — reminders, overdue, low stock, and birthday — are silenced. The card still shows overdue status.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                    } else if !entitlements.isPro {
+                        Text("Silences Pro push alerts for this dog when enabled.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                 }
 
                 if let editingPet = pet {
                     Section("Medications") {
-                        ForEach(editingPet.medications ?? []) { med in
+                        ForEach((editingPet.medications ?? []).filter { $0.id != pendingDeleteMedId }) { med in
                             Button {
                                 editingMedication = med
-                                showAddEditMedication = true
                             } label: {
                                 HStack {
                                     VStack(alignment: .leading, spacing: 2) {
@@ -96,10 +101,31 @@ struct AddEditPetSheet: View {
                                         .foregroundStyle(.tertiary)
                                 }
                             }
+                            .swipeActions(edge: .trailing) {
+                                Button(role: .destructive) {
+                                    scheduleMedicationDelete(med)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                        }
+                        if let id = pendingDeleteMedId,
+                           let name = (pet?.medications ?? []).first(where: { $0.id == id })?.name {
+                            HStack {
+                                Text("\"\(name)\" will be deleted")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                Button("Undo") {
+                                    deleteTask?.cancel()
+                                    pendingDeleteMedId = nil
+                                }
+                                .foregroundStyle(.purple)
+                                .fontWeight(.semibold)
+                            }
                         }
                         Button {
-                            editingMedication = nil
-                            showAddEditMedication = true
+                            showAddMedication = true
                         } label: {
                             Label("Add Medication", systemImage: "plus.circle.fill")
                         }
@@ -185,9 +211,14 @@ struct AddEditPetSheet: View {
             .sheet(isPresented: $showAvatarPicker) {
                 AvatarPickerSheet(selectedAvatarName: $selectedAvatarName, photoData: $photoData)
             }
-            .sheet(isPresented: $showAddEditMedication) {
+            .sheet(item: $editingMedication) { med in
                 if let editingPet = pet {
-                    AddEditMedicationSheet(pet: editingPet, medication: editingMedication)
+                    AddEditMedicationSheet(pet: editingPet, medication: med)
+                }
+            }
+            .sheet(isPresented: $showAddMedication) {
+                if let editingPet = pet {
+                    AddEditMedicationSheet(pet: editingPet, medication: nil)
                 }
             }
             .sheet(isPresented: $showPaywall) {
@@ -215,6 +246,19 @@ struct AddEditPetSheet: View {
                     .clipShape(Circle())
                     .accessibilityHidden(true)
             }
+        }
+    }
+
+    private func scheduleMedicationDelete(_ med: Medication) {
+        deleteTask?.cancel()
+        pendingDeleteMedId = med.id
+        deleteTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(4))
+            guard !Task.isCancelled else { return }
+            NotificationManager.shared.removeMedicationReminder(for: med)
+            modelContext.delete(med)
+            try? modelContext.save()
+            pendingDeleteMedId = nil
         }
     }
 

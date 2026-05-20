@@ -17,7 +17,7 @@ struct AddEditMedicationSheet: View {
     @State private var preferredReminderTime = Calendar.current.date(bySettingHour: 8, minute: 0, second: 0, of: .now) ?? .now
     @State private var showDeleteConfirm = false
 
-    private let frequencyOptions = [12, 24, 48, 72, 168]
+    private let frequencyOptions = [8, 12, 24, 48, 72, 168]
 
     var body: some View {
         NavigationStack {
@@ -36,9 +36,21 @@ struct AddEditMedicationSheet: View {
                 }
 
                 Section {
-                    Toggle("Dose Reminder", isOn: $notificationsEnabled)
-                        .tint(.purple)
-                        .disabled(!entitlements.isPro)
+                    Toggle(isOn: $notificationsEnabled) {
+                        HStack(spacing: 6) {
+                            Text("Dose Reminder")
+                            if !entitlements.isPro {
+                                Text("PRO")
+                                    .font(.caption2).fontWeight(.bold)
+                                    .padding(.horizontal, 5).padding(.vertical, 2)
+                                    .background(Color.accentColor.opacity(0.15))
+                                    .foregroundStyle(Color.accentColor)
+                                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                            }
+                        }
+                    }
+                    .tint(.purple)
+                    .disabled(!entitlements.isPro)
                     if notificationsEnabled && entitlements.isPro {
                         Toggle("Remind me at a specific time", isOn: $useFixedTime.animation())
                             .tint(.purple)
@@ -114,6 +126,7 @@ struct AddEditMedicationSheet: View {
 
     private func frequencyLabel(_ hours: Int) -> String {
         switch hours {
+        case 8:   return "3 times daily"
         case 12:  return "Twice daily"
         case 24:  return "Daily"
         case 48:  return "Every 2 days"

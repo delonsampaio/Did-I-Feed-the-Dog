@@ -57,6 +57,7 @@ final class Medication {
 
     var frequencyLabel: String {
         switch frequencyHours {
+        case 8:   return "3 times daily"
         case 12:  return "Twice daily"
         case 24:  return "Daily"
         case 48:  return "Every 2 days"
