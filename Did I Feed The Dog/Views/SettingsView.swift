@@ -31,16 +31,14 @@ struct SettingsView: View {
     var body: some View {
         Form {
             appearanceSection
+            displayNameSection
             if !entitlements.isPro {
                 proUpgradeSection
             }
             petsSection
-            displayNameSection
             foodStockSection
-            feedingRemindersSection
-            notificationsSection
+            alertsAndRemindersSection
             hygieneSection
-            safetySection
             supportSection
             aboutSection
             if isTestingEnvironment {
@@ -150,7 +148,7 @@ struct SettingsView: View {
             TextField("e.g. Mom, Dad, Alex", text: $loggedByName)
                 .textInputAutocapitalization(.words)
         } header: {
-            Text("Your Name")
+            Text("Profile")
         } footer: {
             Text("Shown next to feedings you log so family members know who fed the dog.")
         }
@@ -257,8 +255,8 @@ struct SettingsView: View {
 
     private var reminderTimeLimit: Int { entitlements.isPro ? 3 : 1 }
 
-    private var feedingRemindersSection: some View {
-        Section("Feeding Reminders") {
+    private var alertsAndRemindersSection: some View {
+        Section("Alerts & Reminders") {
             Picker("Schedule", selection: $reminderMode) {
                 ForEach(ReminderMode.allCases, id: \.self) { mode in
                     if mode == .perDog && !entitlements.isPro {
@@ -358,6 +356,9 @@ struct SettingsView: View {
                 Text("Tap a dog to set their reminder times.")
                     .font(.caption).foregroundStyle(.secondary)
             }
+            NavigationLink(destination: NotificationsSettingsView()) {
+                Label("Notification Settings", systemImage: "bell.fill")
+            }
         }
     }
 
@@ -369,14 +370,6 @@ struct SettingsView: View {
             .padding(.vertical, 2)
             .background(Color.accentColor)
             .clipShape(RoundedRectangle(cornerRadius: 4))
-    }
-
-    private var notificationsSection: some View {
-        Section {
-            NavigationLink(destination: NotificationsSettingsView()) {
-                Label("Notifications", systemImage: "bell.fill")
-            }
-        }
     }
 
     private var hygieneSection: some View {
@@ -437,8 +430,8 @@ struct SettingsView: View {
         }
     }
 
-    private var safetySection: some View {
-        Section {
+    private var supportSection: some View {
+        Section("Support") {
             NavigationLink(destination: SafetyGuideView()) {
                 HStack(spacing: 14) {
                     ZStack {
@@ -461,13 +454,6 @@ struct SettingsView: View {
                 }
                 .padding(.vertical, 4)
             }
-        } header: {
-            Text("Safety Guide")
-        }
-    }
-
-    private var supportSection: some View {
-        Section("Support") {
             NavigationLink(destination: HelpView()) {
                 Label("Help & FAQ", systemImage: "questionmark.circle")
             }
