@@ -20,6 +20,16 @@ struct SettingsView: View {
     @AppStorage(LoggedBy.storageKey, store: .sharedGroup)       private var loggedByName = ""
     @AppStorage("appearanceMode", store: .sharedGroup)          private var appearanceMode: AppearanceMode = .system
 
+    // Portion sizes — one key per preset meal type, default matches legacy behaviour
+    @AppStorage("portionSize.Breakfast",  store: .sharedGroup) private var psBreakfast  = 1
+    @AppStorage("portionSize.Lunch",      store: .sharedGroup) private var psLunch      = 1
+    @AppStorage("portionSize.Dinner",     store: .sharedGroup) private var psDinner     = 1
+    @AppStorage("portionSize.Morning",    store: .sharedGroup) private var psMorning    = 1
+    @AppStorage("portionSize.Afternoon",  store: .sharedGroup) private var psAfternoon  = 1
+    @AppStorage("portionSize.Evening",    store: .sharedGroup) private var psEvening    = 1
+    @AppStorage("portionSize.Snack",      store: .sharedGroup) private var psSnack      = 0
+    @AppStorage("portionSize.Treat",      store: .sharedGroup) private var psTreat      = 0
+
     @Environment(EntitlementManager.self) private var entitlements
 
     @State private var editingPet: Pet?
@@ -37,6 +47,9 @@ struct SettingsView: View {
             }
             petsSection
             foodStockSection
+            if entitlements.isPro && stockMode != .none {
+                portionSizesSection
+            }
             alertsAndRemindersSection
             hygieneSection
             supportSection
@@ -217,9 +230,40 @@ struct SettingsView: View {
             Text("Food Stock")
         } footer: {
             if entitlements.isPro && stockMode != .none {
-                Text("Snack and Treat meals do not reduce the portion count.")
+                Text("Configure how many portions each meal type removes in Portion Sizes below.")
             }
         }
+    }
+
+    private var portionSizesSection: some View {
+        Section {
+            portionRow("🍳", "Breakfast", binding: $psBreakfast)
+            portionRow("🥗", "Lunch",     binding: $psLunch)
+            portionRow("🍽️", "Dinner",    binding: $psDinner)
+            portionRow("🌅", "Morning",   binding: $psMorning)
+            portionRow("☀️", "Afternoon", binding: $psAfternoon)
+            portionRow("🌙", "Evening",   binding: $psEvening)
+            portionRow("🐾", "Snack",     binding: $psSnack)
+            portionRow("🦴", "Treat",     binding: $psTreat)
+        } header: {
+            Text("Portion Sizes")
+        } footer: {
+            Text("How many portions each meal type removes from stock. Set to 0 to leave that meal type untracked.")
+        }
+    }
+
+    private func portionRow(_ emoji: String, _ label: String, binding: Binding<Int>) -> some View {
+        Stepper(value: binding, in: 0...5) {
+            HStack {
+                Text(emoji).accessibilityHidden(true)
+                Text(label)
+                Spacer()
+                Text(binding.wrappedValue == 1 ? "1 portion" : "\(binding.wrappedValue) portions")
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+        }
+        .accessibilityLabel("\(label): \(binding.wrappedValue) portions")
     }
 
     private var allDogsReminderTimes: [Int] {

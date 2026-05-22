@@ -435,12 +435,13 @@ struct PetDetailView: View {
 
     private func deleteEvent(_ event: FeedingEvent, restoreStock: Bool) {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        if restoreStock, event.actuallyDeductedStock {
+        let portions = event.deductedPortionCount
+        if restoreStock, portions > 0 {
             switch stockMode {
             case .individual:
-                pet.foodStockCount = min(AppConstants.perPetStockCap, pet.foodStockCount + 1)
+                pet.foodStockCount = min(AppConstants.perPetStockCap, pet.foodStockCount + portions)
             case .shared:
-                sharedFoodStock = min(AppConstants.sharedStockCap, sharedFoodStock + 1)
+                sharedFoodStock = min(AppConstants.sharedStockCap, sharedFoodStock + portions)
             case .none:
                 break
             }

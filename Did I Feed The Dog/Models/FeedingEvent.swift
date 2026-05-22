@@ -17,16 +17,21 @@ final class FeedingEvent {
     // with events created before the field existed; nil is treated as "infer
     // from meal type" by callers.
     var didDeductStock: Bool?
+    /// Portions actually removed from stock when this event was logged.
+    /// Nil on events created before portion-size support — callers fall back
+    /// to the legacy bool + meal-type heuristic via deductedPortionCount.
+    var portionsDeducted: Int?
 
     var resolvedMealType: MealType { MealType.from(mealType ?? "") }
 
-    /// True iff we know this event actually decremented stock when it was
-    /// logged. Used by undo and "Delete & Restore Portion" to avoid granting
-    /// free portions for treats, snacks, or no-deduct custom meals.
-    var actuallyDeductedStock: Bool {
-        // For events from older app versions (didDeductStock is nil), fall back
-        // to the meal-type heuristic — the same logic the legacy code used.
-        didDeductStock ?? resolvedMealType.decrementsStock
+    var actuallyDeductedStock: Bool { deductedPortionCount > 0 }
+
+    /// How many stock portions this event removed. Used by all restore paths
+    /// (undo, delete & restore, bulk delete & restore).
+    var deductedPortionCount: Int {
+        if let p = portionsDeducted { return p }
+        // Legacy events: stored as a bool; treat as 0 or 1 portion.
+        return (didDeductStock ?? resolvedMealType.decrementsStock) ? 1 : 0
     }
 
     init(

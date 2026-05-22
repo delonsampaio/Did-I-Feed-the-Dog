@@ -150,14 +150,14 @@ struct PetCard: View {
                 // meal type would notionally deduct. Custom meals with the
                 // "Deduct a portion" toggle off must NOT credit a portion.
                 let event = result.event
-                let didDeduct = event.actuallyDeductedStock
+                let portionsToRestore = event.deductedPortionCount
                 let undo: () -> Void = {
-                    if didDeduct {
+                    if portionsToRestore > 0 {
                         switch stockMode {
                         case .individual:
-                            pet.foodStockCount = min(AppConstants.perPetStockCap, pet.foodStockCount + 1)
+                            pet.foodStockCount = min(AppConstants.perPetStockCap, pet.foodStockCount + portionsToRestore)
                         case .shared:
-                            AppSettings.sharedFoodStock = min(AppConstants.sharedStockCap, AppSettings.sharedFoodStock + 1)
+                            AppSettings.sharedFoodStock = min(AppConstants.sharedStockCap, AppSettings.sharedFoodStock + portionsToRestore)
                         case .none: break
                         }
                     }

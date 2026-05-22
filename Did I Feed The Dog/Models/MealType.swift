@@ -39,6 +39,15 @@ enum MealType: Hashable {
         }
     }
 
+    /// Default portions deducted when a user hasn't customised this meal type.
+    /// Matches the pre-portion-size behaviour (Snack/Treat = 0, all others = 1).
+    var defaultPortionSize: Int {
+        switch self {
+        case .snack, .treat: return 0
+        default:             return 1
+        }
+    }
+
     static let presets: [MealType] = [.breakfast, .lunch, .dinner, .morning, .afternoon, .evening, .snack, .treat]
 
     static func emoji(for label: String) -> String {

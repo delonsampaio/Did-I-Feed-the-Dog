@@ -52,7 +52,8 @@ enum FeedingLogService {
         logger: String,
         in context: ModelContext
     ) throws -> LogResult {
-        let didDeduct = deductsStock && AppSettings.stockMode != .none
+        let portionsToDeduct = resolvePortions(mealLabel: mealLabel, deductsStock: deductsStock)
+        let didDeduct = portionsToDeduct > 0 && AppSettings.stockMode != .none
 
         let event = FeedingEvent(
             timestamp: timestamp,
@@ -62,12 +63,13 @@ enum FeedingLogService {
             pet: pet,
             didDeductStock: didDeduct
         )
+        event.portionsDeducted = didDeduct ? portionsToDeduct : 0
         context.insert(event)
 
         // Update denormalized fields to avoid O(N) faulting
         pet.updateFeedingCache(timestamp: timestamp)
 
-        let triggered = applyStockSideEffects(for: pet, deductsStock: deductsStock)
+        let triggered = applyStockSideEffects(for: pet, portionsToDeduct: portionsToDeduct)
         let shouldPromptStockOut = recordZeroStockIfNeeded(pet: pet, didDeduct: didDeduct)
         let shouldRequestReview = AppSettings.recordFeedingAndCheckReviewMilestone()
         NotificationManager.shared.scheduleOverdueNotification(for: pet, lastFedDate: timestamp)
@@ -95,7 +97,8 @@ enum FeedingLogService {
         var petsAtZeroStock: [Pet] = []
         var shouldRequestReview = false
         let mode = AppSettings.stockMode
-        let didDeduct = deductsStock && mode != .none
+        let portionsToDeduct = resolvePortions(mealLabel: mealLabel, deductsStock: deductsStock)
+        let didDeduct = portionsToDeduct > 0 && mode != .none
 
         for pet in pets {
             shouldRequestReview = AppSettings.recordFeedingAndCheckReviewMilestone() || shouldRequestReview
@@ -107,6 +110,7 @@ enum FeedingLogService {
                 pet: pet,
                 didDeductStock: didDeduct
             )
+            event.portionsDeducted = didDeduct ? portionsToDeduct : 0
             context.insert(event)
             created.append(event)
 
@@ -115,10 +119,10 @@ enum FeedingLogService {
 
             NotificationManager.shared.scheduleOverdueNotification(for: pet, lastFedDate: timestamp)
 
-            guard deductsStock else { continue }
+            guard portionsToDeduct > 0 else { continue }
             switch mode {
             case .individual:
-                pet.decrementStock()
+                pet.decrementStock(by: portionsToDeduct)
                 if pet.foodStockCount <= AppSettings.lowStockThreshold {
                     anyIndividualTriggered = true
                     if AppSettings.lowStockPushEnabled {
@@ -127,7 +131,7 @@ enum FeedingLogService {
                 }
                 if pet.foodStockCount == 0 { petsAtZeroStock.append(pet) }
             case .shared:
-                let next = max(0, AppSettings.sharedFoodStock - 1)
+                let next = max(0, AppSettings.sharedFoodStock - portionsToDeduct)
                 AppSettings.sharedFoodStock = next
                 if next <= AppSettings.lowStockThreshold { sharedTriggered = true }
             case .none:
@@ -191,19 +195,32 @@ enum FeedingLogService {
         }
     }
 
+    /// Returns the number of stock portions to deduct for this meal.
+    /// Custom meals use the explicit deductsStock toggle (0 or 1).
+    /// Preset meals always look up the configured portion size from AppSettings,
+    /// so user-configured multipliers (e.g. Dinner = 2) apply regardless of
+    /// what the call site passes for deductsStock.
+    private static func resolvePortions(mealLabel: String, deductsStock: Bool) -> Int {
+        let mealType = MealType.from(mealLabel)
+        switch mealType {
+        case .custom: return deductsStock ? 1 : 0
+        default:      return AppSettings.portionSize(for: mealType)
+        }
+    }
+
     @discardableResult
-    private static func applyStockSideEffects(for pet: Pet, deductsStock: Bool) -> Bool {
-        guard deductsStock else { return false }
+    private static func applyStockSideEffects(for pet: Pet, portionsToDeduct: Int) -> Bool {
+        guard portionsToDeduct > 0 else { return false }
         switch AppSettings.stockMode {
         case .individual:
-            pet.decrementStock()
+            pet.decrementStock(by: portionsToDeduct)
             let triggered = pet.foodStockCount <= AppSettings.lowStockThreshold
             if triggered, AppSettings.lowStockPushEnabled {
                 NotificationManager.shared.scheduleLowStockNotification(for: pet)
             }
             return triggered
         case .shared:
-            let next = max(0, AppSettings.sharedFoodStock - 1)
+            let next = max(0, AppSettings.sharedFoodStock - portionsToDeduct)
             AppSettings.sharedFoodStock = next
             let triggered = next <= AppSettings.lowStockThreshold
             if triggered, AppSettings.lowStockPushEnabled {

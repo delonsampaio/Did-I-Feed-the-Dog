@@ -79,8 +79,8 @@ final class Pet {
         todaysFeedingCount = 0
     }
 
-    func decrementStock() {
-        foodStockCount = max(0, foodStockCount - 1)
+    func decrementStock(by amount: Int = 1) {
+        foodStockCount = max(0, foodStockCount - amount)
     }
 
     /// Recomputes the denormalized cache fields, explicitly excluding the given

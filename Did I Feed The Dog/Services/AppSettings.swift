@@ -40,6 +40,7 @@ enum AppSettings {
         static let paywallShownFromPrefix  = "paywallShownFrom_"
         static let paywallConvertedFromPrefix = "paywallConvertedFrom_"
         static let lifetimeFeedingsLogged  = "lifetimeFeedingsLogged"
+        static func portionSize(for mealType: MealType) -> String { "portionSize.\(mealType.label)" }
     }
 
     static let sharedDefaults = UserDefaults.sharedGroup
@@ -157,6 +158,19 @@ enum AppSettings {
             return [:]
         }
         return dict
+    }
+
+    // MARK: - Portion Sizes
+
+    /// Portions deducted from stock for the given meal type.
+    /// Returns the user-configured value if set, otherwise the meal type's default.
+    static func portionSize(for mealType: MealType) -> Int {
+        let key = Key.portionSize(for: mealType)
+        return sharedDefaults.object(forKey: key) as? Int ?? mealType.defaultPortionSize
+    }
+
+    static func setPortionSize(_ size: Int, for mealType: MealType) {
+        sharedDefaults.set(size, forKey: Key.portionSize(for: mealType))
     }
 
     // MARK: - Entitlement

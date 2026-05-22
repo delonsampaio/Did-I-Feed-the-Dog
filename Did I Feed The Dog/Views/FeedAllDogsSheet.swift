@@ -165,7 +165,7 @@ struct FeedAllDogsSheet: View {
         isSubmitting = true
         UINotificationFeedbackGenerator().notificationOccurred(.success)
 
-        let shouldDecrementStock = showCustomField || selectedMealType.decrementsStock
+        let shouldDecrementStock = showCustomField || AppSettings.portionSize(for: selectedMealType) > 0
 
         // Capture stock snapshot for undo BEFORE the service decrements.
         let capturedStockMode = stockMode
