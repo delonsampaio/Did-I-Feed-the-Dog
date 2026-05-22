@@ -47,9 +47,6 @@ struct SettingsView: View {
             }
             petsSection
             foodStockSection
-            if entitlements.isPro && stockMode != .none {
-                portionSizesSection
-            }
             alertsAndRemindersSection
             hygieneSection
             supportSection
@@ -224,46 +221,31 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+                NavigationLink {
+                    PortionSizesView()
+                } label: {
+                    LabeledContent("Portion Sizes", value: portionSizesSummary)
+                }
             }
             } // end else (isPro)
         } header: {
             Text("Food Stock")
-        } footer: {
-            if entitlements.isPro && stockMode != .none {
-                Text("Configure how many portions each meal type removes in Portion Sizes below.")
-            }
         }
     }
 
-    private var portionSizesSection: some View {
-        Section {
-            portionRow("🍳", "Breakfast", binding: $psBreakfast)
-            portionRow("🥗", "Lunch",     binding: $psLunch)
-            portionRow("🍽️", "Dinner",    binding: $psDinner)
-            portionRow("🌅", "Morning",   binding: $psMorning)
-            portionRow("☀️", "Afternoon", binding: $psAfternoon)
-            portionRow("🌙", "Evening",   binding: $psEvening)
-            portionRow("🐾", "Snack",     binding: $psSnack)
-            portionRow("🦴", "Treat",     binding: $psTreat)
-        } header: {
-            Text("Portion Sizes")
-        } footer: {
-            Text("How many portions each meal type removes from stock. Set to 0 to leave that meal type untracked.")
+    private var portionSizesSummary: String {
+        let pairs: [(String, Int, Int)] = [
+            ("Breakfast", psBreakfast, 1), ("Lunch", psLunch, 1), ("Dinner", psDinner, 1),
+            ("Morning", psMorning, 1), ("Afternoon", psAfternoon, 1), ("Evening", psEvening, 1),
+            ("Snack", psSnack, 0), ("Treat", psTreat, 0)
+        ]
+        let changed = pairs.filter { $0.1 != $0.2 }
+        if changed.isEmpty { return "All defaults" }
+        if changed.count == 1 {
+            let (label, value, _) = changed[0]
+            return "\(label): \(value) portion\(value == 1 ? "" : "s")"
         }
-    }
-
-    private func portionRow(_ emoji: String, _ label: String, binding: Binding<Int>) -> some View {
-        Stepper(value: binding, in: 0...5) {
-            HStack {
-                Text(emoji).accessibilityHidden(true)
-                Text(label)
-                Spacer()
-                Text(binding.wrappedValue == 1 ? "1 portion" : "\(binding.wrappedValue) portions")
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
-            }
-        }
-        .accessibilityLabel("\(label): \(binding.wrappedValue) portions")
+        return "\(changed.count) customized"
     }
 
     private var allDogsReminderTimes: [Int] {
@@ -591,5 +573,75 @@ struct SettingsView: View {
         QuickActionManager.shared.update(with: survivors)
         WidgetDataWriter.write(from: modelContext)
         NotificationManager.shared.updateBadgeCount(pets: survivors)
+    }
+}
+
+// MARK: - Portion Sizes sub-page
+
+private struct PortionSizesView: View {
+    @AppStorage("portionSize.Breakfast",  store: .sharedGroup) private var psBreakfast  = 1
+    @AppStorage("portionSize.Lunch",      store: .sharedGroup) private var psLunch      = 1
+    @AppStorage("portionSize.Dinner",     store: .sharedGroup) private var psDinner     = 1
+    @AppStorage("portionSize.Morning",    store: .sharedGroup) private var psMorning    = 1
+    @AppStorage("portionSize.Afternoon",  store: .sharedGroup) private var psAfternoon  = 1
+    @AppStorage("portionSize.Evening",    store: .sharedGroup) private var psEvening    = 1
+    @AppStorage("portionSize.Snack",      store: .sharedGroup) private var psSnack      = 0
+    @AppStorage("portionSize.Treat",      store: .sharedGroup) private var psTreat      = 0
+
+    @State private var showResetConfirm = false
+
+    private var isAllDefaults: Bool {
+        psBreakfast == 1 && psLunch == 1 && psDinner == 1 &&
+        psMorning == 1 && psAfternoon == 1 && psEvening == 1 &&
+        psSnack == 0 && psTreat == 0
+    }
+
+    var body: some View {
+        Form {
+            Section {
+                row("🍳", "Breakfast", binding: $psBreakfast)
+                row("🥗", "Lunch",     binding: $psLunch)
+                row("🍽️", "Dinner",    binding: $psDinner)
+                row("🌅", "Morning",   binding: $psMorning)
+                row("☀️", "Afternoon", binding: $psAfternoon)
+                row("🌙", "Evening",   binding: $psEvening)
+                row("🐾", "Snack",     binding: $psSnack)
+                row("🦴", "Treat",     binding: $psTreat)
+            } footer: {
+                Text("How many portions each meal type removes from stock. Set to 0 to leave a meal type untracked. Changes apply to new meals logged from this point on.")
+            }
+
+            Section {
+                Button("Reset to Defaults", role: .destructive) {
+                    showResetConfirm = true
+                }
+                .disabled(isAllDefaults)
+            }
+        }
+        .navigationTitle("Portion Sizes")
+        .navigationBarTitleDisplayMode(.inline)
+        .confirmationDialog("Reset all portion sizes to their defaults?",
+                            isPresented: $showResetConfirm,
+                            titleVisibility: .visible) {
+            Button("Reset to Defaults", role: .destructive) {
+                psBreakfast = 1; psLunch = 1; psDinner = 1
+                psMorning = 1; psAfternoon = 1; psEvening = 1
+                psSnack = 0; psTreat = 0
+            }
+        }
+    }
+
+    private func row(_ emoji: String, _ label: String, binding: Binding<Int>) -> some View {
+        Stepper(value: binding, in: 0...5) {
+            HStack {
+                Text(emoji).accessibilityHidden(true)
+                Text(label)
+                Spacer()
+                Text(binding.wrappedValue == 1 ? "1 portion" : "\(binding.wrappedValue) portions")
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+        }
+        .accessibilityLabel("\(label): \(binding.wrappedValue) portions")
     }
 }
