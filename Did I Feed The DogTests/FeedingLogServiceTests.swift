@@ -39,7 +39,7 @@ final class FeedingLogServiceTests: XCTestCase {
         let pet = Pet(name: "Max", foodStockCount: 5)
         context.insert(pet)
 
-        let result = FeedingLogService.logFeeding(
+        let result = try FeedingLogService.logFeeding(
             for: pet, mealLabel: "Breakfast", deductsStock: true,
             logger: "Tester", in: context
         )
@@ -55,7 +55,7 @@ final class FeedingLogServiceTests: XCTestCase {
         let pet = Pet(name: "Max", foodStockCount: 5)
         context.insert(pet)
 
-        let result = FeedingLogService.logFeeding(
+        let result = try FeedingLogService.logFeeding(
             for: pet, mealLabel: "Treat", deductsStock: false,
             logger: "Tester", in: context
         )
@@ -71,7 +71,7 @@ final class FeedingLogServiceTests: XCTestCase {
         let pet = Pet(name: "Max", foodStockCount: 5)
         context.insert(pet)
 
-        let result = FeedingLogService.logFeeding(
+        let result = try FeedingLogService.logFeeding(
             for: pet, mealLabel: "Breakfast", deductsStock: true,
             logger: "Tester", in: context
         )
@@ -88,7 +88,7 @@ final class FeedingLogServiceTests: XCTestCase {
         let pet = Pet(name: "Max")
         context.insert(pet)
 
-        _ = FeedingLogService.logFeeding(
+        _ = try FeedingLogService.logFeeding(
             for: pet, mealLabel: "Dinner", deductsStock: true,
             logger: "Tester", in: context
         )
@@ -103,7 +103,7 @@ final class FeedingLogServiceTests: XCTestCase {
         let pet = Pet(name: "Max", foodStockCount: 6) // -> 5 = at threshold
         context.insert(pet)
 
-        let result = FeedingLogService.logFeeding(
+        let result = try FeedingLogService.logFeeding(
             for: pet, mealLabel: "Breakfast", deductsStock: true,
             logger: "Tester", in: context
         )
@@ -122,7 +122,7 @@ final class FeedingLogServiceTests: XCTestCase {
         context.insert(p1)
         context.insert(p2)
 
-        let result = FeedingLogService.logFeedingForAll(
+        let result = try FeedingLogService.logFeedingForAll(
             pets: [p1, p2], mealLabel: "Dinner", deductsStock: false,
             logger: "Tester", in: context
         )
@@ -139,7 +139,7 @@ final class FeedingLogServiceTests: XCTestCase {
         let p3 = Pet(name: "C")
         [p1, p2, p3].forEach { context.insert($0) }
 
-        _ = FeedingLogService.logFeedingForAll(
+        _ = try FeedingLogService.logFeedingForAll(
             pets: [p1, p2, p3], mealLabel: "Dinner", deductsStock: true,
             logger: "Tester", in: context
         )
