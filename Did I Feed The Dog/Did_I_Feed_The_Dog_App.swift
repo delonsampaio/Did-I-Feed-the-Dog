@@ -33,6 +33,7 @@ struct Did_I_Feed_The_Dog_App: App {
     init() {
         // Migrate existing users: populate denormalized fields on first launch after update
         migrateDenormalizedFieldsIfNeeded()
+        migrateMedLogPetIdsIfNeeded()
     }
 
     var body: some Scene {
@@ -45,6 +46,23 @@ struct Did_I_Feed_The_Dog_App: App {
                 .task { await entitlements.initialize() }
         }
         .modelContainer(sharedModelContainer)
+    }
+
+    private func migrateMedLogPetIdsIfNeeded() {
+        let migrationKey = "didMigrateMedLogPetIds_v1"
+        guard !UserDefaults.sharedGroup.bool(forKey: migrationKey) else { return }
+
+        let context = sharedModelContainer.mainContext
+        do {
+            let logs = try context.fetch(FetchDescriptor<MedicationLog>())
+            for log in logs where log.petId == nil {
+                log.petId = log.medication?.pet?.id
+            }
+            try context.save()
+            UserDefaults.sharedGroup.set(true, forKey: migrationKey)
+        } catch {
+            print("MedLog petId migration failed: \(error)")
+        }
     }
 
     private func migrateDenormalizedFieldsIfNeeded() {

@@ -69,8 +69,10 @@ struct PetDetailView: View {
     // MARK: - Medication logs
 
     private var allMedLogs: [(date: Date, logs: [MedicationLog])] {
-        let logs = (pet.medications ?? [])
-            .flatMap { $0.logs ?? [] }
+        let petId = pet.id
+        let all = (try? modelContext.fetch(FetchDescriptor<MedicationLog>())) ?? []
+        let logs = all
+            .filter { $0.petId == petId }
             .sorted { $0.timestamp > $1.timestamp }
         let grouped = Dictionary(grouping: logs) {
             Calendar.current.startOfDay(for: $0.timestamp)

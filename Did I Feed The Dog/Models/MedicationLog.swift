@@ -9,6 +9,8 @@ final class MedicationLog {
     var loggedBy: String = ""
     /// Denormalized name captured at log time so history survives medication deletion.
     var medicationName: String = ""
+    /// Denormalized pet ID so logs remain queryable after medication deletion.
+    var petId: UUID?
 
     var medication: Medication?
 
@@ -19,5 +21,6 @@ final class MedicationLog {
         self.loggedBy = loggedBy
         self.medication = medication
         self.medicationName = medication?.name ?? ""
+        self.petId = medication?.pet?.id
     }
 }
