@@ -2,6 +2,7 @@ import SwiftUI
 
 struct UndoToast: View {
     let message: String
+    var tint: Color = .green
     let onUndo: (() -> Void)?
     let onDismiss: () -> Void
 
@@ -21,7 +22,7 @@ struct UndoToast: View {
                         onUndo()
                     }
                     .font(.subheadline.bold())
-                    .foregroundStyle(.green)
+                    .foregroundStyle(tint)
                 }
             }
             GeometryReader { geo in
@@ -30,7 +31,7 @@ struct UndoToast: View {
                         .fill(Color.secondary.opacity(0.2))
                         .frame(height: 3)
                     Capsule()
-                        .fill(Color.green)
+                        .fill(tint)
                         .frame(width: geo.size.width * progress, height: 3)
                 }
             }

@@ -16,6 +16,8 @@ struct PetDetailView: View {
     @State private var editingMedication: Medication?
     @State private var pendingDeleteMedId: UUID?
     @State private var deleteTask: Task<Void, Never>?
+    @State private var showMedDeleteToast = false
+    @State private var medDeleteToastName = ""
     @State private var showFilters = false
     @State private var filterMealTypes: Set<String> = []
     @State private var filterLoggedBy: Set<String> = []
@@ -205,6 +207,24 @@ struct PetDetailView: View {
                 }
             }
         }
+        .overlay(alignment: .bottom) {
+            if showMedDeleteToast {
+                UndoToast(
+                    message: "\"\(medDeleteToastName)\" will be deleted",
+                    tint: .purple
+                ) {
+                    deleteTask?.cancel()
+                    pendingDeleteMedId = nil
+                    showMedDeleteToast = false
+                } onDismiss: {
+                    showMedDeleteToast = false
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 8)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.spring(duration: 0.3), value: showMedDeleteToast)
         .onChange(of: selectedTab) { _, _ in
             isSelecting = false
             selectedEventIDs = []
@@ -308,21 +328,6 @@ struct PetDetailView: View {
                     }
                 }
             }
-            if let id = pendingDeleteMedId,
-               let name = (pet.medications ?? []).first(where: { $0.id == id })?.name {
-                HStack {
-                    Text("\"\(name)\" will be deleted")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Button("Undo") {
-                        deleteTask?.cancel()
-                        pendingDeleteMedId = nil
-                    }
-                    .foregroundStyle(.purple)
-                    .fontWeight(.semibold)
-                }
-            }
             Button { showAddMedication = true } label: {
                 Label("Add Medication", systemImage: "plus.circle.fill")
             }
@@ -347,14 +352,17 @@ struct PetDetailView: View {
     private func scheduleMedicationDelete(_ med: Medication) {
         deleteTask?.cancel()
         pendingDeleteMedId = med.id
+        medDeleteToastName = med.name
+        showMedDeleteToast = true
         deleteTask = Task { @MainActor in
-            try? await Task.sleep(for: .seconds(4))
+            try? await Task.sleep(for: .seconds(AppConstants.undoToastSeconds))
             guard !Task.isCancelled else { return }
             NotificationManager.shared.removeMedicationReminder(for: med)
             for log in med.logs ?? [] { log.medication = nil }
             modelContext.delete(med)
             try? modelContext.save()
             pendingDeleteMedId = nil
+            showMedDeleteToast = false
         }
     }
 
