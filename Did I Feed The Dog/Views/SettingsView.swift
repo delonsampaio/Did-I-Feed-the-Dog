@@ -248,140 +248,20 @@ struct SettingsView: View {
         return "\(changed.count) customized"
     }
 
-    private var allDogsReminderTimes: [Int] {
-        get { allDogsReminderTimesRaw.split(separator: ",").compactMap { Int($0) } }
-        nonmutating set { allDogsReminderTimesRaw = newValue.map(String.init).joined(separator: ",") }
+    private var reminderSummary: String {
+        switch reminderMode {
+        case .none: return "Off"
+        case .allDogs:
+            let count = allDogsReminderTimesRaw.split(separator: ",").filter { !$0.isEmpty }.count
+            return count == 0 ? "All Dogs" : "All Dogs · \(count) time\(count == 1 ? "" : "s")"
+        case .perDog: return "Per Dog"
+        }
     }
-
-    private var hasReminderOverlap: Bool {
-        let times = allDogsReminderTimes.sorted()
-        guard times.count >= 2 else { return false }
-        return zip(times, times.dropFirst()).contains { $1 - $0 < 30 }
-    }
-
-    private func minutesToDate(_ m: Int) -> Date {
-        Calendar.current.date(bySettingHour: m / 60, minute: m % 60, second: 0, of: .now) ?? .now
-    }
-
-    private func dateToMinutes(_ d: Date) -> Int {
-        let c = Calendar.current.dateComponents([.hour, .minute], from: d)
-        return (c.hour ?? 0) * 60 + (c.minute ?? 0)
-    }
-
-    private func scheduleLabel(for pet: Pet) -> String {
-        let times = pet.feedingScheduleTimes
-        guard !times.isEmpty else { return "No reminders" }
-        let f = DateFormatter(); f.timeStyle = .short; f.dateStyle = .none
-        return times.map { f.string(from: minutesToDate($0)) }.joined(separator: ", ")
-    }
-
-    private func updateReminders() {
-        RemindersCoordinator.refresh(pets: pets)
-        WidgetDataWriter.write(from: modelContext)
-    }
-
-    private var reminderTimeLimit: Int { entitlements.isPro ? 3 : 1 }
 
     private var alertsAndRemindersSection: some View {
         Section("Alerts & Reminders") {
-            Picker("Schedule", selection: $reminderMode) {
-                ForEach(ReminderMode.allCases, id: \.self) { mode in
-                    if mode == .perDog && !entitlements.isPro {
-                        HStack {
-                            Text(mode.label)
-                            Spacer()
-                            proBadge
-                        }.tag(mode)
-                    } else {
-                        Text(mode.label).tag(mode)
-                    }
-                }
-            }
-            .onChange(of: reminderMode) { _, newMode in
-                if newMode == .perDog && !entitlements.isPro {
-                    reminderMode = .allDogs
-                    paywallSource = "notifications"
-                    showPaywall = true
-                    return
-                }
-                if newMode == .allDogs && allDogsReminderTimes.isEmpty {
-                    allDogsReminderTimes = [7 * 60, 18 * 60]
-                }
-                updateReminders()
-            }
-
-            if reminderMode == .allDogs {
-                ForEach(Array(allDogsReminderTimes.enumerated()), id: \.offset) { index, minutes in
-                    HStack {
-                        DatePicker(
-                            "Time \(index + 1)",
-                            selection: Binding(
-                                get: { minutesToDate(minutes) },
-                                set: {
-                                    var t = allDogsReminderTimes
-                                    t[index] = dateToMinutes($0)
-                                    allDogsReminderTimes = t
-                                    updateReminders()
-                                }
-                            ),
-                            displayedComponents: .hourAndMinute
-                        )
-                        Button(role: .destructive) {
-                            var t = allDogsReminderTimes
-                            t.remove(at: index)
-                            allDogsReminderTimes = t
-                            updateReminders()
-                        } label: {
-                            Image(systemName: "minus.circle.fill").foregroundStyle(.red)
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Delete reminder time \(index + 1)")
-                    }
-                }
-                if allDogsReminderTimes.count < reminderTimeLimit {
-                    Button {
-                        var t = allDogsReminderTimes
-                        t.append(12 * 60)
-                        allDogsReminderTimes = t
-                        updateReminders()
-                    } label: {
-                        Label("Add Reminder Time", systemImage: "plus.circle.fill")
-                    }
-                } else if !entitlements.isPro && allDogsReminderTimes.count >= 1 {
-                    Button {
-                        paywallSource = "notifications"
-                        showPaywall = true
-                    } label: {
-                        HStack {
-                            Label("Add More Reminder Times", systemImage: "plus.circle.fill")
-                                .foregroundStyle(.primary)
-                            Spacer()
-                            proBadge
-                        }
-                    }
-                }
-                if hasReminderOverlap {
-                    Label("Two reminder times are within 30 minutes of each other.", systemImage: "exclamationmark.triangle.fill")
-                        .font(.caption)
-                        .foregroundStyle(.orange)
-                }
-            } else if reminderMode == .perDog {
-                ForEach(pets) { pet in
-                    Button { editingPet = pet } label: {
-                        HStack {
-                            Text(pet.name ?? "Unknown").foregroundStyle(.primary)
-                            Spacer()
-                            Text(scheduleLabel(for: pet))
-                                .font(.caption).foregroundStyle(.secondary)
-                            Image(systemName: "chevron.right")
-                                .font(.caption).foregroundStyle(.tertiary)
-                                .accessibilityHidden(true)
-                        }
-                    }
-                    .accessibilityHint("Double tap to set reminder times for \(pet.name ?? "this dog")")
-                }
-                Text("Tap a dog to set their reminder times.")
-                    .font(.caption).foregroundStyle(.secondary)
+            NavigationLink(destination: RemindersSettingsView()) {
+                LabeledContent("Reminders", value: reminderSummary)
             }
             NavigationLink(destination: NotificationsSettingsView()) {
                 Label("Notification Settings", systemImage: "bell.fill")
@@ -643,5 +523,174 @@ private struct PortionSizesView: View {
             }
         }
         .accessibilityLabel("\(label): \(binding.wrappedValue) portions")
+    }
+}
+
+// MARK: - Reminders sub-page
+
+private struct RemindersSettingsView: View {
+    @Query(sort: \Pet.name) private var pets: [Pet]
+    @Environment(EntitlementManager.self) private var entitlements
+    @Environment(\.modelContext) private var modelContext
+
+    @AppStorage("reminderMode", store: .sharedGroup)            private var reminderMode: ReminderMode = .none
+    @AppStorage("allDogsReminderTimesRaw", store: .sharedGroup) private var allDogsReminderTimesRaw = ""
+
+    @State private var editingPet: Pet?
+    @State private var showPaywall = false
+    @State private var paywallSource = ""
+
+    private var allDogsReminderTimes: [Int] {
+        get { allDogsReminderTimesRaw.split(separator: ",").compactMap { Int($0) } }
+        nonmutating set { allDogsReminderTimesRaw = newValue.map(String.init).joined(separator: ",") }
+    }
+
+    private var hasReminderOverlap: Bool {
+        let times = allDogsReminderTimes.sorted()
+        guard times.count >= 2 else { return false }
+        return zip(times, times.dropFirst()).contains { $1 - $0 < 30 }
+    }
+
+    private var reminderTimeLimit: Int { entitlements.isPro ? 3 : 1 }
+
+    private func minutesToDate(_ m: Int) -> Date {
+        Calendar.current.date(bySettingHour: m / 60, minute: m % 60, second: 0, of: .now) ?? .now
+    }
+
+    private func dateToMinutes(_ d: Date) -> Int {
+        let c = Calendar.current.dateComponents([.hour, .minute], from: d)
+        return (c.hour ?? 0) * 60 + (c.minute ?? 0)
+    }
+
+    private func scheduleLabel(for pet: Pet) -> String {
+        let times = pet.feedingScheduleTimes
+        guard !times.isEmpty else { return "No reminders" }
+        let f = DateFormatter(); f.timeStyle = .short; f.dateStyle = .none
+        return times.map { f.string(from: minutesToDate($0)) }.joined(separator: ", ")
+    }
+
+    private func updateReminders() {
+        RemindersCoordinator.refresh(pets: pets)
+        WidgetDataWriter.write(from: modelContext)
+    }
+
+    private var proBadge: some View {
+        Text("PRO")
+            .font(.caption2.bold())
+            .foregroundStyle(.white)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(Color.accentColor)
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+    }
+
+    var body: some View {
+        Form {
+            Section {
+                Picker("Schedule", selection: $reminderMode) {
+                    ForEach(ReminderMode.allCases, id: \.self) { mode in
+                        if mode == .perDog && !entitlements.isPro {
+                            HStack {
+                                Text(mode.label)
+                                Spacer()
+                                proBadge
+                            }.tag(mode)
+                        } else {
+                            Text(mode.label).tag(mode)
+                        }
+                    }
+                }
+                .onChange(of: reminderMode) { _, newMode in
+                    if newMode == .perDog && !entitlements.isPro {
+                        reminderMode = .allDogs
+                        paywallSource = "notifications"
+                        showPaywall = true
+                        return
+                    }
+                    if newMode == .allDogs && allDogsReminderTimes.isEmpty {
+                        allDogsReminderTimes = [7 * 60, 18 * 60]
+                    }
+                    updateReminders()
+                }
+
+                if reminderMode == .allDogs {
+                    ForEach(Array(allDogsReminderTimes.enumerated()), id: \.offset) { index, minutes in
+                        HStack {
+                            DatePicker(
+                                "Time \(index + 1)",
+                                selection: Binding(
+                                    get: { minutesToDate(minutes) },
+                                    set: {
+                                        var t = allDogsReminderTimes
+                                        t[index] = dateToMinutes($0)
+                                        allDogsReminderTimes = t
+                                        updateReminders()
+                                    }
+                                ),
+                                displayedComponents: .hourAndMinute
+                            )
+                            Button(role: .destructive) {
+                                var t = allDogsReminderTimes
+                                t.remove(at: index)
+                                allDogsReminderTimes = t
+                                updateReminders()
+                            } label: {
+                                Image(systemName: "minus.circle.fill").foregroundStyle(.red)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Delete reminder time \(index + 1)")
+                        }
+                    }
+                    if allDogsReminderTimes.count < reminderTimeLimit {
+                        Button {
+                            var t = allDogsReminderTimes
+                            t.append(12 * 60)
+                            allDogsReminderTimes = t
+                            updateReminders()
+                        } label: {
+                            Label("Add Reminder Time", systemImage: "plus.circle.fill")
+                        }
+                    } else if !entitlements.isPro && allDogsReminderTimes.count >= 1 {
+                        Button {
+                            paywallSource = "notifications"
+                            showPaywall = true
+                        } label: {
+                            HStack {
+                                Label("Add More Reminder Times", systemImage: "plus.circle.fill")
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                                proBadge
+                            }
+                        }
+                    }
+                    if hasReminderOverlap {
+                        Label("Two reminder times are within 30 minutes of each other.", systemImage: "exclamationmark.triangle.fill")
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                    }
+                } else if reminderMode == .perDog {
+                    ForEach(pets) { pet in
+                        Button { editingPet = pet } label: {
+                            HStack {
+                                Text(pet.name ?? "Unknown").foregroundStyle(.primary)
+                                Spacer()
+                                Text(scheduleLabel(for: pet))
+                                    .font(.caption).foregroundStyle(.secondary)
+                                Image(systemName: "chevron.right")
+                                    .font(.caption).foregroundStyle(.tertiary)
+                                    .accessibilityHidden(true)
+                            }
+                        }
+                        .accessibilityHint("Double tap to set reminder times for \(pet.name ?? "this dog")")
+                    }
+                    Text("Tap a dog to set their reminder times.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+            }
+        }
+        .navigationTitle("Reminders")
+        .navigationBarTitleDisplayMode(.inline)
+        .sheet(item: $editingPet) { pet in AddEditPetSheet(pet: pet) }
+        .sheet(isPresented: $showPaywall) { PaywallSheet(source: paywallSource) }
     }
 }

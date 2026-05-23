@@ -207,7 +207,7 @@ struct HelpView: View {
         Section("Alerts & Reminders") {
             FAQRow(
                 question: "How do I set up feeding reminders?",
-                answer: "Go to Settings -> Alerts & Reminders. Choose a schedule mode: Off, All Dogs, or Per Dog. Then add one or more daily reminder times."
+                answer: "Go to Settings -> Alerts & Reminders -> Reminders. Choose a schedule mode: Off, All Dogs, or Per Dog. Then add one or more daily reminder times."
             )
             FAQRow(
                 question: "What is All Dogs mode?",
@@ -215,7 +215,7 @@ struct HelpView: View {
             )
             FAQRow(
                 question: "What is Per Dog mode?",
-                answer: "Each dog has their own reminder schedule. Tap the dog's name in Settings -> Alerts & Reminders (or tap the dog's name in Settings -> Dogs) to set their individual times.",
+                answer: "Each dog has their own reminder schedule. Tap the dog's name in Settings -> Alerts & Reminders -> Reminders (or tap the dog's name in Settings -> Dogs) to set their individual times.",
                 isPro: true
             )
             FAQRow(
