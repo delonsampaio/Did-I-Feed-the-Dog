@@ -393,7 +393,7 @@ struct PetDetailView: View {
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 4) {
-                    Text(log.medication?.name ?? "Medication")
+                    Text(log.medication?.name ?? (log.medicationName.isEmpty ? "Medication" : log.medicationName))
                         .font(.subheadline).fontWeight(.medium)
                     if let dose = log.medication?.dose, !dose.isEmpty {
                         Text("·")

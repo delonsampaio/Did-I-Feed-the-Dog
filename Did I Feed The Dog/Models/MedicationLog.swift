@@ -7,6 +7,8 @@ final class MedicationLog {
     var timestamp: Date = Date()
     var notes: String = ""
     var loggedBy: String = ""
+    /// Denormalized name captured at log time so history survives medication deletion.
+    var medicationName: String = ""
 
     var medication: Medication?
 
@@ -16,5 +18,6 @@ final class MedicationLog {
         self.notes = notes
         self.loggedBy = loggedBy
         self.medication = medication
+        self.medicationName = medication?.name ?? ""
     }
 }

@@ -12,7 +12,7 @@ final class Medication {
     var lastGivenDate: Date?
 
     var pet: Pet?
-    @Relationship(deleteRule: .cascade, inverse: \MedicationLog.medication)
+    @Relationship(deleteRule: .nullify, inverse: \MedicationLog.medication)
     var logs: [MedicationLog]?
 
     init(name: String, dose: String = "", frequencyHours: Int = 24, notificationsEnabled: Bool = false) {
