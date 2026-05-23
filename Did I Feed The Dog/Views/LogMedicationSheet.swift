@@ -126,6 +126,7 @@ struct LogMedicationSheet: View {
         }
 
         try? modelContext.save()
+        WidgetDataWriter.write(from: modelContext)
         dismiss()
     }
 }
