@@ -212,6 +212,7 @@ struct AddEditMedicationSheet: View {
     private func delete() {
         guard let med = medication else { return }
         NotificationManager.shared.removeMedicationReminder(for: med)
+        for log in med.logs ?? [] { log.medication = nil }
         modelContext.delete(med)
         try? modelContext.save()
         dismiss()
