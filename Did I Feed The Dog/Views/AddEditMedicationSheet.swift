@@ -67,7 +67,7 @@ struct AddEditMedicationSheet: View {
                         if useFixedTime {
                             ForEach(reminderTimes.indices, id: \.self) { i in
                                 DatePicker(
-                                    requiredReminderCount == 1 ? "Reminder time" : "Dose \(i + 1)",
+                                    "Dose \(i + 1)",
                                     selection: $reminderTimes[i],
                                     displayedComponents: .hourAndMinute
                                 )

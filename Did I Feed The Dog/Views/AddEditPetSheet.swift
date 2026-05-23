@@ -90,6 +90,22 @@ struct AddEditPetSheet: View {
                                 .frame(width: 60)
                         }
                     }
+                } else if !entitlements.isPro {
+                    Section(
+                        header: Text("Food Stock"),
+                        footer: Text("Track portions per dog and get low-stock alerts with Pro.")
+                    ) {
+                        Button { showPaywall = true } label: {
+                            HStack {
+                                Label("Track Food Stock", systemImage: "bag.fill")
+                                Spacer()
+                                Image(systemName: "lock.fill")
+                                    .foregroundStyle(.secondary)
+                                    .font(.caption)
+                            }
+                            .foregroundStyle(.primary)
+                        }
+                    }
                 }
 
                 Section("Alerts & Reminders") {

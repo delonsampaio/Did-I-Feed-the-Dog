@@ -3,6 +3,7 @@ import SwiftUI
 struct UndoToast: View {
     let message: String
     var tint: Color = .green
+    var systemImage: String? = nil
     let onUndo: (() -> Void)?
     let onDismiss: () -> Void
 
@@ -12,6 +13,11 @@ struct UndoToast: View {
     var body: some View {
         VStack(spacing: 8) {
             HStack(spacing: 12) {
+                if let systemImage {
+                    Image(systemName: systemImage)
+                        .foregroundStyle(tint)
+                        .accessibilityHidden(true)
+                }
                 Text(message)
                     .font(.subheadline)
                     .foregroundStyle(.primary)

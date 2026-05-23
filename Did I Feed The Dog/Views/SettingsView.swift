@@ -494,10 +494,17 @@ private struct PortionSizesView: View {
                 row("🌅", "Morning",   binding: $psMorning)
                 row("☀️", "Afternoon", binding: $psAfternoon)
                 row("🌙", "Evening",   binding: $psEvening)
-                row("🐾", "Snack",     binding: $psSnack)
-                row("🦴", "Treat",     binding: $psTreat)
+            } header: {
+                Text("Meals")
+            }
+
+            Section {
+                row("🐾", "Snack", binding: $psSnack)
+                row("🦴", "Treat", binding: $psTreat)
+            } header: {
+                Text("Extras")
             } footer: {
-                Text("How many portions each meal type removes from stock. Set to 0 to leave a meal type untracked. Changes apply to new meals logged from this point on.")
+                Text("How many portions each meal type removes from stock. Set to 0 to leave a type untracked. Changes apply to new meals logged from this point on.")
             }
 
             Section {
@@ -677,6 +684,8 @@ private struct RemindersSettingsView: View {
                             .foregroundStyle(.orange)
                     }
                 } else if reminderMode == .perDog {
+                    Text("Tap a dog below to set its reminder times.")
+                        .font(.caption).foregroundStyle(.secondary)
                     ForEach(pets) { pet in
                         NavigationLink(destination: PerDogReminderView(pet: pet)) {
                             HStack {
@@ -687,8 +696,6 @@ private struct RemindersSettingsView: View {
                             }
                         }
                     }
-                    Text("Tap a dog to set their reminder times.")
-                        .font(.caption).foregroundStyle(.secondary)
                 }
             }
         }

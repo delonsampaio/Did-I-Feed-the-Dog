@@ -176,7 +176,7 @@ struct DashboardView: View {
             }
             .overlay(alignment: .bottom) {
                 if showUndoToast {
-                    UndoToast(message: toastMessage) {
+                    UndoToast(message: toastMessage, systemImage: "fork.knife") {
                         undoAction?()
                         undoVersion += 1
                         showUndoToast = false

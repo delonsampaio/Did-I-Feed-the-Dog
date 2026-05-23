@@ -210,8 +210,9 @@ struct PetDetailView: View {
         .overlay(alignment: .bottom) {
             if showMedDeleteToast {
                 UndoToast(
-                    message: "\"\(medDeleteToastName)\" will be deleted",
-                    tint: .purple
+                    message: "Medication \"\(medDeleteToastName)\" will be deleted",
+                    tint: .purple,
+                    systemImage: "pill.fill"
                 ) {
                     deleteTask?.cancel()
                     pendingDeleteMedId = nil
@@ -279,7 +280,7 @@ struct PetDetailView: View {
                                     Button {
                                         deleteEvent(event, restoreStock: true)
                                     } label: {
-                                        Label("Delete & Restore Portion", systemImage: "arrow.uturn.backward")
+                                        Label("Delete & Restore Portions", systemImage: "arrow.uturn.backward")
                                     }
                                     .tint(.blue)
                                 }

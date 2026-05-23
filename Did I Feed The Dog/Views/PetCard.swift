@@ -22,6 +22,7 @@ struct PetCard: View {
     @State private var showStockOutAlert = false
     @State private var showStockOutRestockSheet = false
     @State private var showMedicationSheet = false
+    @State private var showFastingAlert = false
 
     private var recentEvents: [FeedingEvent] {
         pet.recentFeedings(limit: 3)
@@ -69,14 +70,13 @@ struct PetCard: View {
                 .buttonStyle(.plain)
 
             if isLowStock || hasDueMedications {
-                let bothVisible = isLowStock && hasDueMedications
-                HStack(spacing: 8) {
+                VStack(spacing: 6) {
                     if isLowStock {
-                        Button { showQuickStockSheet = true } label: { lowStockBanner(compact: bothVisible) }
+                        Button { showQuickStockSheet = true } label: { lowStockBanner }
                             .buttonStyle(.plain)
                     }
                     if hasDueMedications {
-                        Button { showMedicationSheet = true } label: { medicationBanner(compact: bothVisible) }
+                        Button { showMedicationSheet = true } label: { medicationBanner }
                             .buttonStyle(.plain)
                     }
                 }
@@ -271,22 +271,16 @@ struct PetCard: View {
             : "Last fed \(lastFedLabel)")
     }
 
-    private func lowStockBanner(compact: Bool) -> some View {
+    private var lowStockBanner: some View {
         HStack(spacing: 8) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(.orange)
                 .accessibilityHidden(true)
-            if compact {
-                Text("Low Stock")
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Low Food Stock")
                     .font(.subheadline).fontWeight(.semibold).foregroundStyle(.orange)
-                    .lineLimit(1)
-            } else {
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("Low Food Stock")
-                        .font(.subheadline).fontWeight(.semibold).foregroundStyle(.orange)
-                    Text("Only \(currentStockCount) portion\(currentStockCount == 1 ? "" : "s") remaining")
-                        .font(.caption).foregroundStyle(.secondary)
-                }
+                Text("Only \(currentStockCount) portion\(currentStockCount == 1 ? "" : "s") remaining · Tap to restock")
+                    .font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
             Image(systemName: "chevron.right")
@@ -295,25 +289,21 @@ struct PetCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 12)
-        .padding(.vertical, compact ? 12 : 10)
+        .padding(.vertical, 10)
         .background(Color.orange.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
-    private func medicationBanner(compact: Bool) -> some View {
+    private var medicationBanner: some View {
         HStack(spacing: 8) {
-            Text("💊").font(.subheadline).accessibilityHidden(true)
-            if compact {
+            Image(systemName: "pill.fill")
+                .foregroundStyle(.purple)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 1) {
                 Text(medicationBannerTitle)
                     .font(.subheadline).fontWeight(.semibold).foregroundStyle(.purple)
-                    .lineLimit(1)
-            } else {
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(medicationBannerTitle)
-                        .font(.subheadline).fontWeight(.semibold).foregroundStyle(.purple)
-                    Text("Tap to log")
-                        .font(.caption).foregroundStyle(.secondary)
-                }
+                Text("Tap to log dose")
+                    .font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
             Image(systemName: "chevron.right")
@@ -322,7 +312,7 @@ struct PetCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 12)
-        .padding(.vertical, compact ? 12 : 10)
+        .padding(.vertical, 10)
         .background(Color.purple.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
@@ -425,7 +415,11 @@ struct PetCard: View {
 
     private var feedButton: some View {
         Button {
-            showFeedSheet = true
+            if pet.isFasting {
+                showFastingAlert = true
+            } else {
+                showFeedSheet = true
+            }
         } label: {
             Label(
                 pet.isFasting ? "Fasting" : "Log Meal",
@@ -438,9 +432,19 @@ struct PetCard: View {
                 .foregroundStyle(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
         }
-        .disabled(pet.isFasting)
         .padding(.horizontal, 16)
         .padding(.bottom, 16)
+        .alert("Fasting Mode Active", isPresented: $showFastingAlert) {
+            Button("End Fasting") {
+                pet.isFasting = false
+                NotificationManager.shared.rescheduleOverdueNotification(for: pet)
+                AppSettings.needsReminderReschedule = true
+                WidgetDataWriter.write(from: modelContext)
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("\(pet.name ?? "This dog") is in fasting mode. End fasting to log a meal.")
+        }
     }
 
     private var overdueTeaseBanner: some View {
