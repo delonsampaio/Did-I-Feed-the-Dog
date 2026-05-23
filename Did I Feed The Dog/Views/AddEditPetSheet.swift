@@ -94,42 +94,6 @@ struct AddEditPetSheet: View {
 
                 Section("Alerts & Reminders") {
                     Toggle("Mute Notifications", isOn: $notificationsMuted)
-                    if reminderMode == .perDog {
-                        ForEach(Array(feedingTimes.enumerated()), id: \.offset) { index, time in
-                            HStack {
-                                DatePicker(
-                                    "Time \(index + 1)",
-                                    selection: Binding(
-                                        get: { feedingTimes[index] },
-                                        set: { feedingTimes[index] = $0 }
-                                    ),
-                                    displayedComponents: .hourAndMinute
-                                )
-                                Button(role: .destructive) {
-                                    feedingTimes.remove(at: index)
-                                } label: {
-                                    Image(systemName: "minus.circle.fill")
-                                        .foregroundStyle(.red)
-                                }
-                                .buttonStyle(.plain)
-                                .accessibilityLabel("Delete reminder time \(index + 1)")
-                            }
-                        }
-                        if feedingTimes.count < 3 {
-                            Button {
-                                feedingTimes.append(
-                                    Calendar.current.date(bySettingHour: 7, minute: 0, second: 0, of: .now) ?? .now
-                                )
-                            } label: {
-                                Label("Add Reminder Time", systemImage: "plus.circle.fill")
-                            }
-                        }
-                        if hasReminderOverlap {
-                            Label("Two reminder times are within 30 minutes of each other.", systemImage: "exclamationmark.triangle.fill")
-                                .font(.caption)
-                                .foregroundStyle(.orange)
-                        }
-                    }
                 }
             }
             .navigationTitle(pet == nil ? "Add Dog" : "Edit \(pet?.name ?? "Unknown")")
@@ -194,14 +158,6 @@ struct AddEditPetSheet: View {
         }
     }
 
-    private var hasReminderOverlap: Bool {
-        guard feedingTimes.count >= 2 else { return false }
-        let minutes = feedingTimes.map { date -> Int in
-            let c = Calendar.current.dateComponents([.hour, .minute], from: date)
-            return (c.hour ?? 0) * 60 + (c.minute ?? 0)
-        }.sorted()
-        return zip(minutes, minutes.dropFirst()).contains { $1 - $0 < 30 }
-    }
 
     private func save() {
         // Sunk-cost paywall: user has filled out the form; show paywall only now.
