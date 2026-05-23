@@ -545,7 +545,6 @@ private struct RemindersSettingsView: View {
     @AppStorage("reminderMode", store: .sharedGroup)            private var reminderMode: ReminderMode = .none
     @AppStorage("allDogsReminderTimesRaw", store: .sharedGroup) private var allDogsReminderTimesRaw = ""
 
-    @State private var editingPet: Pet?
     @State private var showPaywall = false
     @State private var paywallSource = ""
 
@@ -679,18 +678,14 @@ private struct RemindersSettingsView: View {
                     }
                 } else if reminderMode == .perDog {
                     ForEach(pets) { pet in
-                        Button { editingPet = pet } label: {
+                        NavigationLink(destination: PerDogReminderView(pet: pet)) {
                             HStack {
                                 Text(pet.name ?? "Unknown").foregroundStyle(.primary)
                                 Spacer()
                                 Text(scheduleLabel(for: pet))
                                     .font(.caption).foregroundStyle(.secondary)
-                                Image(systemName: "chevron.right")
-                                    .font(.caption).foregroundStyle(.tertiary)
-                                    .accessibilityHidden(true)
                             }
                         }
-                        .accessibilityHint("Double tap to set reminder times for \(pet.name ?? "this dog")")
                     }
                     Text("Tap a dog to set their reminder times.")
                         .font(.caption).foregroundStyle(.secondary)
@@ -699,7 +694,86 @@ private struct RemindersSettingsView: View {
         }
         .navigationTitle("Reminders")
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(item: $editingPet) { pet in AddEditPetSheet(pet: pet) }
         .sheet(isPresented: $showPaywall) { PaywallSheet(source: paywallSource) }
+    }
+}
+
+// MARK: - Per-dog reminder sub-page
+
+private struct PerDogReminderView: View {
+    let pet: Pet
+    @Environment(\.modelContext) private var modelContext
+
+    private func minutesToDate(_ m: Int) -> Date {
+        Calendar.current.date(bySettingHour: m / 60, minute: m % 60, second: 0, of: .now) ?? .now
+    }
+
+    private func dateToMinutes(_ d: Date) -> Int {
+        let c = Calendar.current.dateComponents([.hour, .minute], from: d)
+        return (c.hour ?? 0) * 60 + (c.minute ?? 0)
+    }
+
+    private var hasOverlap: Bool {
+        let times = pet.feedingScheduleTimes.sorted()
+        guard times.count >= 2 else { return false }
+        return zip(times, times.dropFirst()).contains { $1 - $0 < 30 }
+    }
+
+    private func updateReminders() {
+        let all = (try? modelContext.fetch(FetchDescriptor<Pet>())) ?? []
+        RemindersCoordinator.refresh(pets: all)
+    }
+
+    var body: some View {
+        Form {
+            Section {
+                ForEach(Array(pet.feedingScheduleTimes.enumerated()), id: \.offset) { index, minutes in
+                    HStack {
+                        DatePicker(
+                            "Time \(index + 1)",
+                            selection: Binding(
+                                get: { minutesToDate(minutes) },
+                                set: {
+                                    var times = pet.feedingScheduleTimes
+                                    times[index] = dateToMinutes($0)
+                                    pet.feedingScheduleTimes = times
+                                    updateReminders()
+                                }
+                            ),
+                            displayedComponents: .hourAndMinute
+                        )
+                        Button(role: .destructive) {
+                            var times = pet.feedingScheduleTimes
+                            times.remove(at: index)
+                            pet.feedingScheduleTimes = times
+                            updateReminders()
+                        } label: {
+                            Image(systemName: "minus.circle.fill").foregroundStyle(.red)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Delete reminder time \(index + 1)")
+                    }
+                }
+                if pet.feedingScheduleTimes.count < 3 {
+                    Button {
+                        var times = pet.feedingScheduleTimes
+                        times.append(12 * 60)
+                        pet.feedingScheduleTimes = times
+                        updateReminders()
+                    } label: {
+                        Label("Add Reminder Time", systemImage: "plus.circle.fill")
+                    }
+                }
+                if hasOverlap {
+                    Label("Two reminder times are within 30 minutes of each other.", systemImage: "exclamationmark.triangle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
+            } footer: {
+                Text("Reminders fire at these times each day unless a meal has already been logged.")
+            }
+        }
+        .navigationTitle(pet.name ?? "Reminders")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
