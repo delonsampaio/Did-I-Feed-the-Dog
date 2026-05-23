@@ -248,6 +248,15 @@ struct SettingsView: View {
         return "\(changed.count) customized"
     }
 
+    private func minutesToDate(_ m: Int) -> Date {
+        Calendar.current.date(bySettingHour: m / 60, minute: m % 60, second: 0, of: .now) ?? .now
+    }
+
+    private func dateToMinutes(_ d: Date) -> Int {
+        let c = Calendar.current.dateComponents([.hour, .minute], from: d)
+        return (c.hour ?? 0) * 60 + (c.minute ?? 0)
+    }
+
     private var reminderSummary: String {
         switch reminderMode {
         case .none: return "Off"
