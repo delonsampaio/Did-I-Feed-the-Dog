@@ -51,19 +51,31 @@ struct PetAvatarView: View {
     var size: CGFloat = 30
 
     var body: some View {
-        Group {
-            if let data = pet.photoData,
-               let uiImage = WidgetImage.downsample(data: data, toPointSize: CGSize(width: size, height: size)) {
-                Image(uiImage: uiImage).resizable().scaledToFill()
-            } else if let thumb = UIImage(named: DefaultAvatars.defaultFor(id: pet.id))?
-                .preparingThumbnail(of: CGSize(width: size * 3, height: size * 3)) {
-                Image(uiImage: thumb).resizable().scaledToFill()
-            } else {
-                Image(DefaultAvatars.defaultFor(id: pet.id))
-                    .resizable().scaledToFill()
+        ZStack(alignment: .bottomTrailing) {
+            Group {
+                if let data = pet.photoData,
+                   let uiImage = WidgetImage.downsample(data: data, toPointSize: CGSize(width: size, height: size)) {
+                    Image(uiImage: uiImage).resizable().scaledToFill()
+                } else if let thumb = UIImage(named: DefaultAvatars.defaultFor(id: pet.id))?
+                    .preparingThumbnail(of: CGSize(width: size * 3, height: size * 3)) {
+                    Image(uiImage: thumb).resizable().scaledToFill()
+                } else {
+                    Image(DefaultAvatars.defaultFor(id: pet.id))
+                        .resizable().scaledToFill()
+                }
+            }
+            .frame(width: size, height: size)
+            .clipShape(Circle())
+
+            if pet.hasMedicationDue {
+                Image(systemName: "pill.fill")
+                    .font(.system(size: size * 0.32, weight: .bold))
+                    .foregroundStyle(.white)
+                    .padding(size * 0.08)
+                    .background(Color.purple)
+                    .clipShape(Circle())
+                    .offset(x: size * 0.08, y: size * 0.08)
             }
         }
-        .frame(width: size, height: size)
-        .clipShape(Circle())
     }
 }

@@ -9,6 +9,7 @@ struct PetSnapshot: Identifiable {
     let lastFedDate: Date?
     let isFeedingOverdue: Bool
     let isFasting: Bool
+    let hasMedicationDue: Bool
 
     init(data: PetWidgetData, at date: Date = .now) {
         self.id = data.id
@@ -16,6 +17,7 @@ struct PetSnapshot: Identifiable {
         self.photoData = data.photoData
         self.lastFedDate = data.lastFedDate
         self.isFasting = data.isFasting ?? false
+        self.hasMedicationDue = data.hasMedicationDue ?? false
         
         let isFasting = data.isFasting ?? false
         let scheduleTimes = data.scheduleTimes ?? []

@@ -13,6 +13,7 @@ struct PetWidgetData: Codable {
     let isFasting: Bool?
     let scheduleTimes: [Int]?
     let thresholdHours: Int?
+    let hasMedicationDue: Bool?
 }
 
 enum WidgetDataStore {

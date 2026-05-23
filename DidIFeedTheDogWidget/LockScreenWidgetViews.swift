@@ -46,9 +46,16 @@ struct RectangularWidgetView: View {
                             Text(pet.isFeedingOverdue ? "\(pet.name) needs feeding" : "\(pet.name) is fed")
                                 .font(.system(size: 12, weight: .bold))
                         }
-                        Text(relativeTime(pet.lastFedDate))
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                        HStack(spacing: 6) {
+                            Text(relativeTime(pet.lastFedDate))
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                            if pet.hasMedicationDue {
+                                Label("Meds due", systemImage: "pill.fill")
+                                    .font(.caption2.bold())
+                                    .foregroundStyle(.purple)
+                            }
+                        }
                     }
                 }
             }
