@@ -26,9 +26,9 @@ struct Provider: TimelineProvider {
         let now = Date()
         return WidgetEntry(date: now, pets: [
             PetSnapshot(data: PetWidgetData(id: UUID(), name: "Max", photoData: nil,
-                        lastFedDate: now.addingTimeInterval(-1800), isFasting: false, scheduleTimes: [], thresholdHours: 12)),
+                        lastFedDate: now.addingTimeInterval(-1800), isFasting: false, scheduleTimes: [], thresholdHours: 12, hasMedicationDue: false)),
             PetSnapshot(data: PetWidgetData(id: UUID(), name: "Bailey", photoData: nil,
-                        lastFedDate: now.addingTimeInterval(-32400), isFasting: false, scheduleTimes: [], thresholdHours: 12))
+                        lastFedDate: now.addingTimeInterval(-32400), isFasting: false, scheduleTimes: [], thresholdHours: 12, hasMedicationDue: false))
         ], isPro: readIsPro())
     }
 
