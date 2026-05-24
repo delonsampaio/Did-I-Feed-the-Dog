@@ -19,7 +19,7 @@ struct LargeWidgetView: View {
                 } else {
                     ForEach(Array(entry.pets.prefix(Self.maxRows).enumerated()), id: \.offset) { index, pet in
                         if index > 0 { divider }
-                        petRow(pet, badgeTextWidth: maxBadgeTextWidth, statusTextWidth: maxStatusTextWidth)
+                        petRow(pet, badgeTextWidth: maxBadgeTextWidth)
                     }
                 }
                 Spacer(minLength: 0)
@@ -60,7 +60,7 @@ struct LargeWidgetView: View {
         .padding(.bottom, 10)
     }
 
-    private func petRow(_ pet: PetSnapshot, badgeTextWidth: CGFloat, statusTextWidth: CGFloat) -> some View {
+    private func petRow(_ pet: PetSnapshot, badgeTextWidth: CGFloat) -> some View {
         Link(destination: WidgetDeepLink.url(for: pet.id)) {
             HStack(spacing: 10) {
                 PetAvatarView(pet: pet)
@@ -73,8 +73,7 @@ struct LargeWidgetView: View {
                     Text(pet.statusText)
                         .font((pet.isFasting || pet.isFeedingOverdue) ? .caption.bold() : .caption)
                         .foregroundStyle(pet.statusColor)
-                        .lineLimit(1)
-                        .frame(width: statusTextWidth, alignment: .leading)
+                        .fixedSize(horizontal: true, vertical: false)
                     lastFedBadge(pet: pet, textWidth: badgeTextWidth)
                 }
             }
@@ -137,19 +136,6 @@ struct LargeWidgetView: View {
         return ceil(widths.max() ?? 0)
     }
 
-    // Same idea for status text. Bold weight is used for Overdue/Fasting
-    // and regular for Fed, so each row is measured against its own actual
-    // font weight before we take the max — otherwise a bold "Fasting"
-    // would be undersized when measured with the regular font.
-    private static let statusFontRegular = UIFont.systemFont(ofSize: 12, weight: .regular)
-    private static let statusFontBold = UIFont.systemFont(ofSize: 12, weight: .bold)
-
-    private var maxStatusTextWidth: CGFloat {
-        let widths = entry.pets.prefix(Self.maxRows).map { pet -> CGFloat in
-            let font = (pet.isFasting || pet.isFeedingOverdue) ? Self.statusFontBold : Self.statusFontRegular
-            return (pet.statusText as NSString)
-                .size(withAttributes: [.font: font]).width
-        }
-        return ceil(widths.max() ?? 0)
-    }
+    // maxStatusTextWidth removed — status text now uses fixedSize instead of a
+    // measured frame, so "Overdue" can't be clipped at larger Dynamic Type sizes.
 }
