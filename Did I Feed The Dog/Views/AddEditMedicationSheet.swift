@@ -114,6 +114,9 @@ struct AddEditMedicationSheet: View {
                 guard useFixedTime else { return }
                 adjustReminderTimes()
             }
+            .onChange(of: useFixedTime) { _, newValue in
+                if newValue { adjustReminderTimes() }
+            }
             .confirmationDialog(
                 "Delete \(medication?.name ?? "Medication")?",
                 isPresented: $showDeleteConfirm,
