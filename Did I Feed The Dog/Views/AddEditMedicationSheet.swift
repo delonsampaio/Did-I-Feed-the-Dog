@@ -127,6 +127,7 @@ struct AddEditMedicationSheet: View {
                 Text("This will also remove all log history for this medication.")
             }
         }
+        .presentationSizing(.page)
         .presentationDetents([.medium, .large])
     }
 
