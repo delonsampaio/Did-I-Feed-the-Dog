@@ -67,7 +67,9 @@ final class Pet {
     /// Updates the denormalized fields after a feeding is logged.
     /// Called by FeedingLogService to keep the cached values in sync.
     func updateFeedingCache(timestamp: Date) {
-        lastFeedingDate = timestamp
+        if lastFeedingDate == nil || timestamp > lastFeedingDate! {
+            lastFeedingDate = timestamp
+        }
         let startOfDay = Calendar.current.startOfDay(for: .now)
         if timestamp >= startOfDay {
             todaysFeedingCount += 1
