@@ -17,7 +17,10 @@ struct PetSnapshot: Identifiable {
         self.photoData = data.photoData
         self.lastFedDate = data.lastFedDate
         self.isFasting = data.isFasting ?? false
-        self.hasMedicationDue = data.hasMedicationDue ?? false
+        // Already due at write time OR a scheduled transition has passed by this entry's date.
+        let alreadyDue = data.hasMedicationDue ?? false
+        let scheduledDue = data.nextMedicationDueDate.map { $0 <= date } ?? false
+        self.hasMedicationDue = alreadyDue || scheduledDue
         
         let isFasting = data.isFasting ?? false
         let scheduleTimes = data.scheduleTimes ?? []

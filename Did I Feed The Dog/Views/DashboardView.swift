@@ -44,6 +44,8 @@ struct DashboardView: View {
     @AppStorage("stockMode", store: .sharedGroup) private var stockMode: StockMode = .individual
     @AppStorage("sharedFoodStock", store: .sharedGroup) private var sharedFoodStock = 0
 
+    @Environment(\.scenePhase) private var scenePhase
+
     private var allDogsReminderTimes: [Int] {
         allDogsReminderTimesRaw.split(separator: ",").compactMap { Int($0) }
     }
@@ -227,11 +229,15 @@ struct DashboardView: View {
             WidgetDataWriter.write(from: modelContext)
             NotificationManager.shared.updateBadgeCount(pets: newPets)
             QuickActionManager.shared.update(with: newPets)
-            // Re-register pet vocabulary so Siri/Shortcuts pick up newly added,
-            // renamed, deleted, or iCloud-synced dogs without an app relaunch.
             DogFoodShortcuts.updateAppShortcutParameters()
-            // Refresh All-Dogs reminder body so it names the current roster.
             RemindersCoordinator.refresh(pets: newPets)
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else { return }
+            // Refresh widget data and badge when the app returns to foreground so
+            // medication due states (time-dependent) are re-evaluated immediately.
+            WidgetDataWriter.write(from: modelContext)
+            NotificationManager.shared.updateBadgeCount(pets: pets)
         }
         // Widget refresh + badge update on feeding changes is now driven from
         // FeedingLogService directly — no separate @Query needed (loading

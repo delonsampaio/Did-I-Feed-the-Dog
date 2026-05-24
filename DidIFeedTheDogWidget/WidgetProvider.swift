@@ -52,6 +52,9 @@ struct Provider: TimelineProvider {
             if let nextDate = PetSnapshot.nextOverdueDate(for: pet, after: now) {
                 futureDates.insert(nextDate)
             }
+            if let nextMedDate = pet.nextMedicationDueDate, nextMedDate > now {
+                futureDates.insert(nextMedDate)
+            }
         }
 
         let sortedFutureDates = futureDates.sorted().prefix(WidgetTuning.maxFutureEntries)

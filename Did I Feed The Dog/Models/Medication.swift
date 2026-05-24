@@ -62,6 +62,31 @@ final class Medication {
         lastGivenDate.map { $0.addingTimeInterval(TimeInterval(frequencyHours * 3600)) }
     }
 
+    /// The next moment when `isDue` will flip from false to true.
+    /// Nil when the medication is already due or has no computable future date.
+    var nextDueTransition: Date? {
+        guard !isDue else { return nil }
+        if reminderMinutes.isEmpty || frequencyHours > 24 {
+            return lastGivenDate?.addingTimeInterval(TimeInterval(frequencyHours * 3600))
+        }
+        // Fixed-time sub-daily/daily: first scheduled slot after lastGivenDate and after now
+        let cal = Calendar.current
+        let now = Date()
+        let base = lastGivenDate ?? .distantPast
+        for dayOffset in 0...2 {
+            guard let day = cal.date(byAdding: .day, value: dayOffset, to: now) else { continue }
+            var dayBase = cal.dateComponents([.year, .month, .day], from: day)
+            for minutes in reminderMinutes.sorted() {
+                dayBase.hour = minutes / 60
+                dayBase.minute = minutes % 60
+                dayBase.second = 0
+                guard let slot = cal.date(from: dayBase) else { continue }
+                if slot > base && slot > now { return slot }
+            }
+        }
+        return nil
+    }
+
     // Returns the next one-shot notification date for relative mode only.
     // Returns nil if using fixed-time mode (NotificationManager schedules those directly).
     func nextNotificationDate() -> Date? {

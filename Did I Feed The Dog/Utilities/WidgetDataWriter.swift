@@ -23,6 +23,7 @@ struct PetWidgetData: Codable {
     let scheduleTimes: [Int]
     let thresholdHours: Int
     let hasMedicationDue: Bool
+    let nextMedicationDueDate: Date?
 }
 
 enum WidgetDataWriter {
@@ -50,12 +51,14 @@ enum WidgetDataWriter {
 
             let times = modeRaw == "allDogs" ? allDogsTimes : (modeRaw == "perDog" ? pet.feedingScheduleTimes.sorted() : [])
 
-            let hasMedDue = (pet.medications ?? []).contains { $0.isDue }
+            let meds = pet.medications ?? []
+            let hasMedDue = meds.contains { $0.isDue }
+            let nextMedDate = meds.compactMap { $0.nextDueTransition }.min()
 
             return PetWidgetData(id: pet.id, name: pet.name ?? "Unknown",
                                  photoData: smallAvatarJPEG(from: pet.photoData), lastFedDate: lastDate,
                                  isFasting: pet.isFasting, scheduleTimes: times, thresholdHours: threshold,
-                                 hasMedicationDue: hasMedDue)
+                                 hasMedicationDue: hasMedDue, nextMedicationDueDate: nextMedDate)
         }
 
         guard let data = try? JSONEncoder().encode(snapshots) else {
