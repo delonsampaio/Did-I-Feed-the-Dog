@@ -299,6 +299,7 @@ private struct AvatarPickerSheet: View {
                 }
             }
         }
+        .presentationSizing(.page)
         .presentationDetents([.large])
     }
 
