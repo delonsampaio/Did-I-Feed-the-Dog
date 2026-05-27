@@ -74,6 +74,7 @@ final class EntitlementManager {
         defer { isLoading = false }
         do {
             try await AppStore.sync()
+            await grantProToExistingPurchasers()
             await checkCurrentEntitlements()
             if !isPro { purchaseError = "No previous purchase found." }
         } catch {
