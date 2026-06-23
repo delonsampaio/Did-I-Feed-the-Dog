@@ -159,6 +159,7 @@ final class SharedSyncEngine {
                 for (id, result) in retry {
                     if case .success(let saved) = result, let obj = objectByName[id.recordName] {
                         obj.setValue(CKRecordMapper.encodedSystemFields(of: saved), forKey: "ckSystemFields")
+                        obj.setValue(saved.recordID.zoneID.zoneName, forKey: "ckZoneName")
                     }
                 }
             }
