@@ -32,6 +32,73 @@ final class SharedDataModelTests: XCTestCase {
         XCTAssertNotNil(pet.attributesByName["ckDatabaseScope"])
     }
 
+    func testAllEntitiesHaveSyncBookkeepingFields() throws {
+        let model = SharedDataModel.makeModel()
+        let entityNames = ["SharedPet", "SharedFeedingEvent", "SharedMedication", "SharedMedicationLog"]
+        let syncAttrs = ["ckRecordName", "ckSystemFields", "ckZoneName", "ckDatabaseScope"]
+        for entityName in entityNames {
+            let entity = try XCTUnwrap(model.entitiesByName[entityName], "Entity \(entityName) not found")
+            for attr in syncAttrs {
+                XCTAssertNotNil(
+                    entity.attributesByName[attr],
+                    "Entity \(entityName) is missing sync attribute '\(attr)'"
+                )
+            }
+        }
+    }
+
+    func testDeletingPetCascadesToEventsAndMedications() throws {
+        let ctx = try makeInMemoryContext()
+
+        let pet = SharedPet(context: ctx)
+        pet.id = UUID()
+        pet.name = "Rex"
+
+        let event = SharedFeedingEvent(context: ctx)
+        event.timestamp = .now
+        event.notes = ""
+        event.pet = pet
+
+        let med = SharedMedication(context: ctx)
+        med.id = UUID()
+        med.name = "Heartgard"
+        med.pet = pet
+
+        try ctx.save()
+
+        ctx.delete(pet)
+        try ctx.save()
+
+        let eventCount = try ctx.count(for: NSFetchRequest<SharedFeedingEvent>(entityName: "SharedFeedingEvent"))
+        let medCount = try ctx.count(for: NSFetchRequest<SharedMedication>(entityName: "SharedMedication"))
+        XCTAssertEqual(eventCount, 0, "Cascading delete of pet should remove all feeding events")
+        XCTAssertEqual(medCount, 0, "Cascading delete of pet should remove all medications")
+    }
+
+    func testDeletingMedicationNullifiesLogs() throws {
+        let ctx = try makeInMemoryContext()
+
+        let med = SharedMedication(context: ctx)
+        med.id = UUID()
+        med.name = "Bravecto"
+
+        let log = SharedMedicationLog(context: ctx)
+        log.id = UUID()
+        log.timestamp = .now
+        log.loggedBy = "owner"
+        log.medicationName = "Bravecto"
+        log.medication = med
+
+        try ctx.save()
+
+        ctx.delete(med)
+        try ctx.save()
+
+        let logs = try ctx.fetch(NSFetchRequest<SharedMedicationLog>(entityName: "SharedMedicationLog"))
+        XCTAssertEqual(logs.count, 1, "Nullify delete rule should keep the log object")
+        XCTAssertNil(logs.first?.medication, "Log's medication relationship should be nil after nullify")
+    }
+
     func testInsertAndFetchPetWithChild() throws {
         let ctx = try makeInMemoryContext()
         let pet = SharedPet(context: ctx)
