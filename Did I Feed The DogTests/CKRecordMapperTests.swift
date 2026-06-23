@@ -105,4 +105,63 @@ final class CKRecordMapperTests: XCTestCase {
         CKRecordMapper.apply(records: [], deletions: [rid], into: c)
         XCTAssertEqual(try! c.fetch(NSFetchRequest<SharedPet>(entityName: "SharedPet")).count, 0)
     }
+
+    func testOptionalBoolNilIsNotEncoded() {
+        let c = ctx()
+        let pet = makePet(in: c)
+        let zone = CKRecordMapper.zoneID(forRoot: pet)
+
+        // nil didDeductStock → key must be absent from the CKRecord
+        let evNil = SharedFeedingEvent(context: c)
+        evNil.timestamp = .now; evNil.notes = ""; evNil.pet = pet
+        evNil.didDeductStock = nil
+        evNil.ckRecordName = UUID().uuidString
+        let recNil = CKRecord(recordType: "CD_SharedFeedingEvent",
+                              recordID: CKRecord.ID(recordName: evNil.ckRecordName!, zoneID: zone))
+        CKRecordMapper.applyFields(of: evNil, to: recNil)
+        XCTAssertNil(recNil["CD_didDeductStock"], "nil optional Bool must not be encoded (key should be absent)")
+
+        // true didDeductStock → key must be 1
+        let evTrue = SharedFeedingEvent(context: c)
+        evTrue.timestamp = .now; evTrue.notes = ""; evTrue.pet = pet
+        evTrue.didDeductStock = NSNumber(value: true)
+        evTrue.ckRecordName = UUID().uuidString
+        let recTrue = CKRecord(recordType: "CD_SharedFeedingEvent",
+                               recordID: CKRecord.ID(recordName: evTrue.ckRecordName!, zoneID: zone))
+        CKRecordMapper.applyFields(of: evTrue, to: recTrue)
+        XCTAssertEqual(recTrue["CD_didDeductStock"] as? Int, 1, "true optional Bool must encode as 1")
+    }
+
+    func testPhotoDataRoundTripsThroughCKAsset() {
+        let c = ctx()
+        let originalBytes = Data("woof".utf8)
+
+        // Build a SharedPet with photoData
+        let pet = SharedPet(context: c)
+        pet.id = UUID(); pet.name = "Pixel"
+        pet.photoData = originalBytes
+        pet.ckRecordName = pet.id.uuidString
+
+        // Encode via ckRecord(for:) — pet is its own zone root so zoneID resolves
+        guard let ckRec = CKRecordMapper.ckRecord(for: pet) else {
+            return XCTFail("ckRecord(for:) returned nil")
+        }
+
+        // The asset key must be present
+        XCTAssertNotNil(ckRec["CD_photoData_ckAsset"] as? CKAsset,
+                        "photoData must be written as a CKAsset")
+
+        // Stamp entity name and id so apply() can find/insert the record
+        ckRec["CD_entityName"] = "SharedPet"
+        ckRec["CD_id"] = pet.id.uuidString as CKRecordValue
+
+        // Decode into a fresh in-memory context
+        let c2 = SharedDataStack(inMemory: true).viewContext
+        CKRecordMapper.apply(records: [ckRec], deletions: [], into: c2)
+
+        let fetched = try! c2.fetch(NSFetchRequest<SharedPet>(entityName: "SharedPet"))
+        XCTAssertEqual(fetched.count, 1, "exactly one SharedPet should be upserted")
+        XCTAssertEqual(fetched.first?.photoData, originalBytes,
+                       "photoData must survive a CKAsset round-trip")
+    }
 }

@@ -65,7 +65,10 @@ enum CKRecordMapper {
             let v = object.value(forKey: name)
             switch attr.attributeType {
             case .booleanAttributeType:
-                out[key] = (((v as? Bool) == true) ? 1 : 0) as CKRecordValue
+                if let b = v as? Bool {
+                    out[key] = (b ? 1 : 0) as CKRecordValue
+                }
+                // nil → don't write CD_<key>, preserving the optional's nil on decode
             case .UUIDAttributeType:
                 if let u = v as? UUID { out[key] = u.uuidString as CKRecordValue }
             case .binaryDataAttributeType:
