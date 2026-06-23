@@ -52,9 +52,14 @@ struct DashboardView: View {
     }
 
     private var displayedDogs: [any DogDisplayable] {
-        let owned: [any DogDisplayable] = pets
-        let shared: [any DogDisplayable] = SharingFeatureFlag.isFoundationEnabled ? sharedDogStore.sharedPets : []
-        return (owned + shared).sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
+        // When there are no shared dogs to interleave (flag off, or on but none yet),
+        // return the owned pets in their original @Query(sort: \Pet.name) order so the
+        // dashboard renders byte-identically to before this feature. Only apply the
+        // merge sort when shared dogs are actually present and must be ordered among them.
+        let shared = SharingFeatureFlag.isFoundationEnabled ? sharedDogStore.sharedPets : []
+        guard !shared.isEmpty else { return pets }
+        let merged: [any DogDisplayable] = (pets as [any DogDisplayable]) + (shared as [any DogDisplayable])
+        return merged.sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
     }
 
     var body: some View {
