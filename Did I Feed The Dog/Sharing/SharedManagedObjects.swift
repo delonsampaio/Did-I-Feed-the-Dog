@@ -12,7 +12,7 @@ final class SharedPet: NSManagedObject {
     @NSManaged var isFasting: Bool
     @NSManaged var notificationsMuted: Bool
     @NSManaged var lastFeedingDate: Date?
-    @NSManaged var todaysFeedingCount: Int64
+    @NSManaged var todaysFeedingCountRaw: Int64
     // sync bookkeeping (unused in Phase 1)
     @NSManaged var ckRecordName: String?
     @NSManaged var ckSystemFields: Data?

@@ -37,17 +37,7 @@ final class Pet {
         self.todaysFeedingCount = 0
     }
 
-    var ageString: String {
-        guard let birthday else { return "" }
-        let components = Calendar.current.dateComponents([.year, .month], from: birthday, to: .now)
-        let years = components.year ?? 0
-        let months = components.month ?? 0
-        switch (years, months) {
-        case (0, _):  return "Puppy"
-        case (_, 0):  return "\(years) year\(years == 1 ? "" : "s")"
-        default:      return "\(years) year\(years == 1 ? "" : "s"), \(months) month\(months == 1 ? "" : "s")"
-        }
-    }
+    var ageString: String { dogAgeString(from: birthday) }
 
     var lastFeedingEvent: FeedingEvent? {
         (feedingEvents ?? []).max(by: { $0.timestamp < $1.timestamp })
