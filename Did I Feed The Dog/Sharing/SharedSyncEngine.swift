@@ -182,6 +182,80 @@ final class SharedSyncEngine {
         return nil
     }
 
-    // Pull is added in Task 4.
-    func fetchAllZones() async { /* implemented in Task 4 */ }
+    // MARK: pull
+    func fetchAllZones() async {
+        guard SharingFeatureFlag.isFoundationEnabled else { return }
+        guard !isSyncing else { pendingFetch = true; return }
+        isSyncing = true; defer { isSyncing = false }
+        repeat {
+            pendingFetch = false
+            do {
+                let dbChanges = try await privateDB.databaseChanges(since: tokens.loadDBToken())
+                tokens.saveDBToken(dbChanges.changeToken)
+                for deletion in dbChanges.deletions { purgeZone(deletion.zoneID) }
+                var anyApplied = false
+                for mod in dbChanges.modifications {
+                    let n = await fetchZone(mod.zoneID)
+                    anyApplied = anyApplied || (n > 0)
+                }
+                if anyApplied {
+                    NotificationCenter.default.post(name: .sharedRemoteChangeApplied, object: nil)
+                }
+            } catch {
+                Self.log.error("fetchAllZones failed: \(error.localizedDescription, privacy: .public)")
+            }
+        } while pendingFetch
+    }
+
+    private func fetchZone(_ zoneID: CKRecordZone.ID) async -> Int {
+        var since = tokens.loadZoneToken(zoneID.zoneName, scope: "private")
+        var checkpoint: CKServerChangeToken?
+        var more = false
+        var total = 0
+        repeat {
+            do {
+                let changes = try await privateDB.recordZoneChanges(inZoneWith: zoneID, since: since)
+                let records = changes.modificationResultsByID.values
+                    .compactMap { try? $0.get().record }
+                    .filter { $0.recordType != CKRecord.SystemType.share }
+                let deletions = changes.deletions.map(\.recordID)
+                if !records.isEmpty || !deletions.isEmpty {
+                    for id in deletions { SharedSyncEngine.pendingRemoteDeleteIDs.insert(id.recordName) }
+                    let bg = stack.newBackgroundContext()
+                    await bg.perform {
+                        SharedSyncEngine.applyingRemote = true
+                        CKRecordMapper.apply(records: records, deletions: deletions, into: bg)
+                        try? bg.save()
+                        SharedSyncEngine.applyingRemote = false
+                    }
+                    total += records.count + deletions.count
+                }
+                since = changes.changeToken
+                checkpoint = changes.changeToken
+                more = changes.moreComing
+            } catch let e as CKError where e.code == .zoneNotFound {
+                purgeZone(zoneID)
+                return total
+            } catch {
+                Self.log.error("fetchZone \(zoneID.zoneName, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
+                return total
+            }
+        } while more
+        if let checkpoint { tokens.saveZoneToken(checkpoint, zoneName: zoneID.zoneName, scope: "private") }
+        return total
+    }
+
+    private func purgeZone(_ zoneID: CKRecordZone.ID) {
+        let bg = stack.newBackgroundContext()
+        bg.perform {
+            SharedSyncEngine.applyingRemote = true
+            let req = NSFetchRequest<NSManagedObject>(entityName: "SharedPet")
+            req.predicate = NSPredicate(format: "ckZoneName == %@", zoneID.zoneName)
+            for pet in (try? bg.fetch(req)) ?? [] { bg.delete(pet) } // cascade removes children
+            try? bg.save()
+            SharedSyncEngine.applyingRemote = false
+        }
+        tokens.clearZoneTokens(zoneID.zoneName)
+        createdZones.remove(zoneID.zoneName)
+    }
 }
