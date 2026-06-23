@@ -36,6 +36,12 @@ final class SharedDataStack {
         }
         description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+        // Load synchronously (the default) so the completion handler runs on this
+        // init thread before init returns. This keeps `loadError` valid to read
+        // immediately after construction and means the @Observable mutation below
+        // never happens off the main thread — do NOT switch to async loading or
+        // dispatch the assignment, which would defer loadError past init.
+        description.shouldAddStoreAsynchronously = false
         container.persistentStoreDescriptions = [description]
 
         container.loadPersistentStores { [weak self] _, error in
