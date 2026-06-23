@@ -29,6 +29,7 @@ struct Did_I_Feed_The_Dog_App: App {
     @UIApplicationDelegateAdaptor(QuickActionAppDelegate.self) var appDelegate
     @State private var deepLinkPetId: UUID? = nil
     private let entitlements = EntitlementManager.shared
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         // Migrate existing users: populate denormalized fields on first launch after update
@@ -43,7 +44,23 @@ struct Did_I_Feed_The_Dog_App: App {
                     deepLinkPetId = parseDeepLink(url)
                 }
                 .environment(entitlements)
-                .task { await entitlements.initialize() }
+                .task {
+                    await entitlements.initialize()
+                    if SharingFeatureFlag.isFoundationEnabled { SharedSyncEngine.shared.start() }
+                }
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .active, SharingFeatureFlag.isFoundationEnabled {
+                        Task { await SharedSyncEngine.shared.fetchAllZones() }
+                    }
+                }
+                .task(id: scenePhase) {
+                    guard scenePhase == .active, SharingFeatureFlag.isFoundationEnabled else { return }
+                    while !Task.isCancelled {
+                        try? await Task.sleep(for: .seconds(20))
+                        if Task.isCancelled { break }
+                        await SharedSyncEngine.shared.fetchAllZones()
+                    }
+                }
         }
         .modelContainer(sharedModelContainer)
     }

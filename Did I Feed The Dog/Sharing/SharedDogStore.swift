@@ -16,6 +16,7 @@ final class SharedDogStore {
         // read once in deinit (nonisolated). @unchecked Sendable documents
         // that we own the thread-safety contract.
         nonisolated(unsafe) var token: NSObjectProtocol?
+        nonisolated(unsafe) var remoteToken: NSObjectProtocol?
     }
     private let observerBox = ObserverBox()
     private(set) var sharedPets: [SharedPet] = []
@@ -45,10 +46,16 @@ final class SharedDogStore {
         ) { [weak self] _ in
             MainActor.assumeIsolated { self?.refresh() }
         }
+        observerBox.remoteToken = NotificationCenter.default.addObserver(
+            forName: .sharedRemoteChangeApplied, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.refresh() }
+        }
     }
 
     deinit {
         if let token = observerBox.token { NotificationCenter.default.removeObserver(token) }
+        if let token = observerBox.remoteToken { NotificationCenter.default.removeObserver(token) }
     }
 
     #if DEBUG
