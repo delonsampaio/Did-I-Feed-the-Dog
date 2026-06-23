@@ -20,8 +20,13 @@ final class SharedDogStore {
     private let observerBox = ObserverBox()
     private(set) var sharedPets: [SharedPet] = []
 
-    init(stack: SharedDataStack) {
-        self.stack = stack
+    /// `stack` defaults to the shared singleton. Resolved inside the @MainActor
+    /// init body (not as a default-argument expression) because the MainActor-
+    /// isolated `SharedDataStack.shared` cannot be referenced from the nonisolated
+    /// context where default arguments are evaluated. Keeps `SharedDogStore()`
+    /// callable with no arguments.
+    init(stack: SharedDataStack? = nil) {
+        self.stack = stack ?? .shared
     }
 
     func refresh() {
