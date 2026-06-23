@@ -25,6 +25,7 @@ struct DashboardView: View {
         horizontalSizeClass == .regular ? 32 : 16
     }
 
+    @State private var sharedDogStore = SharedDogStore()
     @State private var syncMonitor = CloudKitSyncMonitor()
     @State private var showAddPet = false
     @State private var showSettings = false
@@ -50,6 +51,12 @@ struct DashboardView: View {
         allDogsReminderTimesRaw.split(separator: ",").compactMap { Int($0) }
     }
 
+    private var displayedDogs: [any DogDisplayable] {
+        let owned: [any DogDisplayable] = pets
+        let shared: [any DogDisplayable] = SharingFeatureFlag.isFoundationEnabled ? sharedDogStore.sharedPets : []
+        return (owned + shared).sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -68,10 +75,14 @@ struct DashboardView: View {
                         .padding(.horizontal, 4)
                     }
                     LazyVGrid(columns: columns, spacing: 16) {
-                        ForEach(pets) { pet in
-                            PetCard(pet: pet, undoVersion: undoVersion, onFed: { _, undo in
-                                triggerToast(message: "Meal logged", undo: undo)
-                            })
+                        ForEach(displayedDogs, id: \.id) { dog in
+                            if let pet = dog as? Pet {
+                                PetCard(pet: pet, undoVersion: undoVersion, onFed: { _, undo in
+                                    triggerToast(message: "Meal logged", undo: undo)
+                                })
+                            } else {
+                                SharedPetCard(dog: dog)
+                            }
                         }
                     }
                 }
@@ -196,6 +207,11 @@ struct DashboardView: View {
             .animation(reduceMotion ? nil : .spring(duration: 0.3), value: showUndoToast)
             .onChange(of: toastId) { _, _ in
                 UIAccessibility.post(notification: .announcement, argument: "\(toastMessage). Undo available.")
+            }
+            .task {
+                if SharingFeatureFlag.isFoundationEnabled {
+                    sharedDogStore.startObserving()
+                }
             }
         }
         .onChange(of: deepLinkPetId) { _, newId in

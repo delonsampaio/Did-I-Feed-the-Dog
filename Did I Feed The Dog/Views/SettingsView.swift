@@ -54,6 +54,17 @@ struct SettingsView: View {
             if isTestingEnvironment {
                 debugSection
             }
+            #if DEBUG
+            Section("Sharing Foundation (DEBUG)") {
+                Toggle("Render shared dogs", isOn: Binding(
+                    get: { UserDefaults.sharedGroup.bool(forKey: "sharingFoundationEnabled") },
+                    set: { UserDefaults.sharedGroup.set($0, forKey: "sharingFoundationEnabled") }
+                ))
+                Button("Insert sample shared dog") {
+                    SharedDogStore().insertSampleDog(named: "Sample Shared Dog")
+                }
+            }
+            #endif
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
