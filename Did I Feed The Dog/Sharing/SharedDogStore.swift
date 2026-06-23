@@ -8,12 +8,19 @@ import Foundation
 final class SharedDogStore {
 
     private let stack: SharedDataStack
-    // nonisolated(unsafe): written only from startObserving() (always on main),
-    // read only from deinit (single-owner teardown). Safe — no concurrent access.
-    nonisolated(unsafe) private var observer: NSObjectProtocol?
+    // Holds the NotificationCenter observer token. Boxed so deinit (nonisolated)
+    // can read it without crossing main-actor isolation; access is single-writer
+    // (startObserving, on main) / single-reader (deinit), so @unchecked is safe.
+    private final class ObserverBox: @unchecked Sendable {
+        // nonisolated(unsafe): written once on main actor (startObserving),
+        // read once in deinit (nonisolated). @unchecked Sendable documents
+        // that we own the thread-safety contract.
+        nonisolated(unsafe) var token: NSObjectProtocol?
+    }
+    private let observerBox = ObserverBox()
     private(set) var sharedPets: [SharedPet] = []
 
-    init(stack: SharedDataStack = .shared) {
+    init(stack: SharedDataStack) {
         self.stack = stack
     }
 
@@ -26,8 +33,8 @@ final class SharedDogStore {
 
     func startObserving() {
         refresh()
-        observer = NotificationCenter.default.addObserver(
-            forName: .NSManagedObjectContextObjectsDidChange,
+        observerBox.token = NotificationCenter.default.addObserver(
+            forName: .NSManagedObjectContextDidSave,
             object: stack.viewContext,
             queue: .main
         ) { [weak self] _ in
@@ -36,7 +43,7 @@ final class SharedDogStore {
     }
 
     deinit {
-        if let observer { NotificationCenter.default.removeObserver(observer) }
+        if let token = observerBox.token { NotificationCenter.default.removeObserver(token) }
     }
 
     #if DEBUG
