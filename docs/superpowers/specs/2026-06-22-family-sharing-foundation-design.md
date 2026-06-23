@@ -1,6 +1,6 @@
 # Family Sharing — Phase 1: Foundation (Backlog #57)
 
-> Status: Design / awaiting review
+> Status: Phase 1 implemented (2026-06-22) — foundation merged behind `sharingFoundationEnabled` flag (default off)
 > Date: 2026-06-22
 > Backlog item: #57 — Family sharing / multi-user (per-dog, near-real-time, Pro-gated, read-write)
 
