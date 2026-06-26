@@ -112,16 +112,19 @@ struct OnboardingView: View {
     private var addDogStep: some View {
         VStack(spacing: 28) {
             VStack(spacing: 8) {
-                Text("Add Your Dog")
+                Text(existingPets.isEmpty ? "Add Your Dog" : "Welcome Back")
                     .font(.title.bold())
 
-                Text("Just a name to get started — you can add\na photo and more details in Settings later.")
+                Text(existingPets.isEmpty
+                     ? "Just a name to get started — you can add\na photo and more details in Settings later."
+                     : "Your dogs are already here. Just add your name\nso the family knows who logged each meal.")
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
 
             ScrollView {
+                if existingPets.isEmpty {
                 VStack(spacing: 10) {
                     ForEach($dogNames) { $dog in
                         HStack(spacing: 10) {
@@ -158,6 +161,7 @@ struct OnboardingView: View {
                 }
                 .padding(.horizontal, 4)
                 .padding(.bottom, 8)
+                }
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Your name (optional)")
@@ -297,13 +301,7 @@ struct OnboardingView: View {
             if step != .welcome && step != .done {
                 Button("Back") {
                     stepAnimate {
-                        // Mirror the forward skip: if dogs already exist we skipped addDog on the
-                        // way in, so skip it on the way back too.
-                        if step == .sync && !existingPets.isEmpty {
-                            step = .welcome
-                        } else if let prev = OnboardingStep(rawValue: step.rawValue - 1) {
-                            step = prev
-                        }
+                        if let prev = OnboardingStep(rawValue: step.rawValue - 1) { step = prev }
                     }
                 }
                 .font(.subheadline)
@@ -341,7 +339,8 @@ struct OnboardingView: View {
 
     private var canAdvance: Bool {
         if step == .addDog {
-            return dogNames.contains { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
+            let hasTyped = dogNames.contains { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
+            return OnboardingLogic.canLeaveAddDogStep(hasExistingDogs: !existingPets.isEmpty, hasTypedDogName: hasTyped)
         }
         return true
     }
@@ -365,8 +364,10 @@ struct OnboardingView: View {
             Task { await NotificationManager.shared.requestAuthorization() }
             dismiss()
         case .welcome:
-            // Skip Add Dog if iCloud already synced dogs back (e.g. reinstall).
-            stepAnimate { step = existingPets.isEmpty ? .addDog : .sync }
+            // Always go to the add-dog step. When dogs already exist it adapts to a
+            // name-only step (see addDogStep), so returning users confirm their name
+            // instead of being asked to re-add dogs.
+            stepAnimate { step = .addDog }
         default:
             stepAnimate {
                 if let next = OnboardingStep(rawValue: step.rawValue + 1) { step = next }
@@ -376,15 +377,14 @@ struct OnboardingView: View {
 
     private func saveDog() {
         let existingCount = (try? modelContext.fetchCount(FetchDescriptor<Pet>())) ?? 0
-        var seen = Set<String>()
-        var created = 0
-        for trimmed in validDogNames {
-            let key = trimmed.lowercased()
-            guard seen.insert(key).inserted else { continue }
-            // Free tier is limited to 1 dog total across all sources (including iCloud-synced dogs).
-            if !entitlements.isPro && existingCount + created >= 1 { break }
-            modelContext.insert(Pet(name: trimmed))
-            created += 1
+        // Returning users (existingCount > 0) add nothing — they already have their dogs.
+        // New users get their typed dogs, deduped and free-tier-capped. See OnboardingLogic.
+        let names = OnboardingLogic.dogNamesToInsert(
+            typed: dogNames.map { $0.name },
+            existingDogCount: existingCount,
+            isPro: entitlements.isPro)
+        for name in names {
+            modelContext.insert(Pet(name: name))
         }
     }
 
