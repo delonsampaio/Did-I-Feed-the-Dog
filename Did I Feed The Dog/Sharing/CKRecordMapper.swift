@@ -7,10 +7,10 @@ import os
 /// convention, so the data stays schema-compatible. Pure (no CloudKit I/O); all I/O lives in
 /// SharedSyncEngine.
 enum CKRecordMapper {
-    private static let log = Logger(subsystem: "com.delon.DidIFeedTheDog", category: "CKRecordMapper")
+    nonisolated private static let log = Logger(subsystem: "com.delon.DidIFeedTheDog", category: "CKRecordMapper")
 
     /// Local-only attributes that must never round-trip to CloudKit.
-    private static let skipped: Set<String> = ["ckRecordName", "ckSystemFields", "ckZoneName", "ckDatabaseScope"]
+    nonisolated private static let skipped: Set<String> = ["ckRecordName", "ckSystemFields", "ckZoneName", "ckDatabaseScope"]
 
     // MARK: system fields
     nonisolated static func encodedSystemFields(of record: CKRecord) -> Data {

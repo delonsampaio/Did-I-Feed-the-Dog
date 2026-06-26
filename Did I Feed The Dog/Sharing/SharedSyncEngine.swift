@@ -13,7 +13,7 @@ extension Notification.Name {
 final class SharedSyncEngine {
     static let shared = SharedSyncEngine()
 
-    private static let log = Logger(subsystem: "com.delon.DidIFeedTheDog", category: "SharedSyncEngine")
+    nonisolated private static let log = Logger(subsystem: "com.delon.DidIFeedTheDog", category: "SharedSyncEngine")
     private static let containerID = "iCloud.com.delon.DidIFeedTheDog.sharedsync"
 
     private let container = CKContainer(identifier: SharedSyncEngine.containerID)
@@ -52,7 +52,7 @@ final class SharedSyncEngine {
                 guard let n = $0.value(forKey: "ckRecordName") as? String else { return nil }
                 return (n, $0.objectID)
             }
-            let deletedRecordIDs: [CKRecord.ID] = deletedObjs.compactMap(CKRecordMapper.recordID(forDeleted:))
+            let deletedRecordIDs: [CKRecord.ID] = deletedObjs.compactMap { CKRecordMapper.recordID(forDeleted: $0) }
 
             var pending = SharedSyncEngine.pendingRemoteDeleteIDs
             let decision = SharedSyncEngine.pushDecision(
@@ -72,7 +72,7 @@ final class SharedSyncEngine {
 
     /// Pure decision used by the observer (and unit tests): suppress all while applyingRemote;
     /// consume-and-skip deletions that echo a remote delete we just applied.
-    static func pushDecision(insertedUpdatedRecordNames: [String],
+    nonisolated static func pushDecision(insertedUpdatedRecordNames: [String],
                              deletedRecordNames: [String],
                              applyingRemote: Bool,
                              pendingRemoteDeleteIDs: inout Set<String>) -> (saveNames: [String], deleteNames: [String]) {
