@@ -190,8 +190,8 @@ final class SharedSyncEngine {
         repeat {
             pendingFetch = false
             do {
-                let dbChanges = try await privateDB.databaseChanges(since: tokens.loadDBToken())
-                tokens.saveDBToken(dbChanges.changeToken)
+                let dbChanges = try await privateDB.databaseChanges(since: tokens.loadDBToken(scope: "private"))
+                tokens.saveDBToken(dbChanges.changeToken, scope: "private")
                 for deletion in dbChanges.deletions { purgeZone(deletion.zoneID) }
                 var anyApplied = false
                 for mod in dbChanges.modifications {

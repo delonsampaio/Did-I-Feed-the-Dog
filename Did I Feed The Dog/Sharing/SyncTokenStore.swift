@@ -8,14 +8,14 @@ import os
 /// (the caller's responsibility: only pass the final checkpoint here).
 struct SyncTokenStore {
     private static let log = Logger(subsystem: "com.delon.DidIFeedTheDog", category: "SyncTokenStore")
-    private static let dbKey = "sharedSyncDBToken.private"
 
     private let defaults: UserDefaults
     init(defaults: UserDefaults = .standard) { self.defaults = defaults }
 
-    // MARK: DB token
-    func loadDBToken() -> CKServerChangeToken? { unarchive(defaults.data(forKey: Self.dbKey)) }
-    func saveDBToken(_ token: CKServerChangeToken) { archiveAndStore(token, key: Self.dbKey) }
+    // MARK: DB token (per database scope: "private" | "shared")
+    private func dbKey(_ scope: String) -> String { "sharedSyncDBToken.\(scope)" }
+    func loadDBToken(scope: String) -> CKServerChangeToken? { unarchive(defaults.data(forKey: dbKey(scope))) }
+    func saveDBToken(_ token: CKServerChangeToken, scope: String) { archiveAndStore(token, key: dbKey(scope)) }
 
     // MARK: zone tokens
     private func zoneKey(_ zoneName: String, _ scope: String) -> String { "zoneToken.\(zoneName).\(scope)" }

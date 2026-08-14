@@ -16,7 +16,7 @@ final class SyncTokenStoreTests: XCTestCase {
 
     func testLoadReturnsNilWhenAbsent() {
         let store = SyncTokenStore(defaults: freshDefaults())
-        XCTAssertNil(store.loadDBToken())
+        XCTAssertNil(store.loadDBToken(scope: "private"))
         XCTAssertNil(store.loadZoneToken("Zone-abc", scope: "private"))
     }
 
@@ -44,6 +44,6 @@ final class SyncTokenStoreTests: XCTestCase {
         let d = freshDefaults()
         let store = SyncTokenStore(defaults: d)
         d.set(Data([0xFF, 0x00]), forKey: "sharedSyncDBToken.private")
-        XCTAssertNil(store.loadDBToken())
+        XCTAssertNil(store.loadDBToken(scope: "private"))
     }
 }
