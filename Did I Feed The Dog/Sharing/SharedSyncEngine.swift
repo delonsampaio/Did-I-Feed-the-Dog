@@ -208,32 +208,41 @@ final class SharedSyncEngine {
         isSyncing = true; defer { isSyncing = false }
         repeat {
             pendingFetch = false
-            do {
-                let dbChanges = try await privateDB.databaseChanges(since: tokens.loadDBToken(scope: "private"))
-                tokens.saveDBToken(dbChanges.changeToken, scope: "private")
-                for deletion in dbChanges.deletions { purgeZone(deletion.zoneID) }
-                var anyApplied = false
-                for mod in dbChanges.modifications {
-                    let n = await fetchZone(mod.zoneID)
-                    anyApplied = anyApplied || (n > 0)
-                }
-                if anyApplied {
-                    NotificationCenter.default.post(name: .sharedRemoteChangeApplied, object: nil)
-                }
-            } catch {
-                Self.log.error("fetchAllZones failed: \(error.localizedDescription, privacy: .public)")
+            var anyApplied = false
+            anyApplied = await fetchDatabase(privateDB, scope: "private") || anyApplied
+            anyApplied = await fetchDatabase(sharedDB, scope: "shared") || anyApplied
+            if anyApplied {
+                NotificationCenter.default.post(name: .sharedRemoteChangeApplied, object: nil)
             }
         } while pendingFetch
     }
 
-    private func fetchZone(_ zoneID: CKRecordZone.ID) async -> Int {
-        var since = tokens.loadZoneToken(zoneID.zoneName, scope: "private")
+    /// Fetch all changed zones for one database (owner=private / participant=shared).
+    private func fetchDatabase(_ db: CKDatabase, scope: String) async -> Bool {
+        do {
+            let dbChanges = try await db.databaseChanges(since: tokens.loadDBToken(scope: scope))
+            tokens.saveDBToken(dbChanges.changeToken, scope: scope)
+            for deletion in dbChanges.deletions { purgeZone(deletion.zoneID, scope: scope) }
+            var anyApplied = false
+            for mod in dbChanges.modifications {
+                let n = await fetchZone(mod.zoneID, in: db, scope: scope)
+                anyApplied = anyApplied || (n > 0)
+            }
+            return anyApplied
+        } catch {
+            Self.log.error("fetchDatabase(\(scope, privacy: .public)) failed: \(error.localizedDescription, privacy: .public)")
+            return false
+        }
+    }
+
+    private func fetchZone(_ zoneID: CKRecordZone.ID, in db: CKDatabase, scope: String) async -> Int {
+        var since = tokens.loadZoneToken(zoneID.zoneName, scope: scope)
         var checkpoint: CKServerChangeToken?
         var more = false
         var total = 0
         repeat {
             do {
-                let changes = try await privateDB.recordZoneChanges(inZoneWith: zoneID, since: since)
+                let changes = try await db.recordZoneChanges(inZoneWith: zoneID, since: since)
                 let records = changes.modificationResultsByID.values
                     .compactMap { try? $0.get().record }
                     .filter { $0.recordType != CKRecord.SystemType.share }
@@ -253,18 +262,18 @@ final class SharedSyncEngine {
                 checkpoint = changes.changeToken
                 more = changes.moreComing
             } catch let e as CKError where e.code == .zoneNotFound {
-                purgeZone(zoneID)
+                purgeZone(zoneID, scope: scope)
                 return total
             } catch {
                 Self.log.error("fetchZone \(zoneID.zoneName, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
                 return total
             }
         } while more
-        if let checkpoint { tokens.saveZoneToken(checkpoint, zoneName: zoneID.zoneName, scope: "private") }
+        if let checkpoint { tokens.saveZoneToken(checkpoint, zoneName: zoneID.zoneName, scope: scope) }
         return total
     }
 
-    private func purgeZone(_ zoneID: CKRecordZone.ID) {
+    private func purgeZone(_ zoneID: CKRecordZone.ID, scope: String) {
         let bg = stack.newBackgroundContext()
         bg.perform {
             SharedSyncEngine.applyingRemote = true
