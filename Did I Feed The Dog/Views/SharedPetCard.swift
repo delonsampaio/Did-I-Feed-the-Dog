@@ -37,7 +37,7 @@ struct SharedPetCard: View {
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
         #if DEBUG
         .contextMenu {
-            if let pet = dog as? SharedPet {
+            if SharingFeatureFlag.isFoundationEnabled, let pet = dog as? SharedPet {
                 Button("Share this dog") {
                     Task { shareToPresent = try? await ShareController.makeShare(forRoot: pet) }
                 }
