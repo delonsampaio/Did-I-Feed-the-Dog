@@ -118,13 +118,17 @@ final class SharedSyncEngine {
         let objects = saveObjectIDs.compactMap { try? ctx.existingObject(with: $0) }
             .sorted { CKRecordMapper.rank(for: $0) < CKRecordMapper.rank(for: $1) }
 
-        // Ensure a zone exists for every root pet involved (a pet directly, or the root
-        // ancestor of a child). ensureZone is idempotent (createdZones-guarded).
+        // Ensure a zone exists ONLY for brand-new root pets (no ckSystemFields yet). A pet
+        // that already has system fields already has its zone: owned zones exist, and a
+        // participant's shared zone is owned by someone else and must NOT be recreated in our
+        // private DB — doing so leaves a stray private zone whose change token later poisons
+        // database(forZone:)'s hasPrivateToken check and misroutes the participant's edits.
         var rootsEnsured: Set<NSManagedObjectID> = []
         for obj in objects {
-            if let root = rootPet(of: obj), !rootsEnsured.contains(root.objectID) {
+            guard let root = rootPet(of: obj), !rootsEnsured.contains(root.objectID) else { continue }
+            rootsEnsured.insert(root.objectID)
+            if root.value(forKey: "ckSystemFields") == nil {
                 await ensureZone(forRoot: root)
-                rootsEnsured.insert(root.objectID)
             }
         }
 
