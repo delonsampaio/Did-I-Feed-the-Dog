@@ -18,6 +18,7 @@ final class SharedSyncEngine {
 
     private let container = CKContainer(identifier: SharedSyncEngine.containerID)
     private var privateDB: CKDatabase { container.privateCloudDatabase }
+    private var sharedDB: CKDatabase { container.sharedCloudDatabase }
     private let stack = SharedDataStack.shared
     private let tokens = SyncTokenStore()
 
@@ -79,6 +80,24 @@ final class SharedSyncEngine {
         guard !applyingRemote else { return ([], []) }
         let deletes = deletedRecordNames.filter { pendingRemoteDeleteIDs.remove($0) == nil }
         return (insertedUpdatedRecordNames, deletes)
+    }
+
+    /// Pure routing decision: is this zone owned by the current user (→ privateCloudDatabase)
+    /// or shared with them (→ sharedCloudDatabase)? Owned if the owner is the current-user
+    /// sentinel, or the cached own record name, or a private-scope token already exists
+    /// (covers the owner's zone-creation seeding window before identity resolves).
+    nonisolated static func isOwnedZone(ownerName: String, myCloudKitID: String?, hasPrivateToken: Bool) -> Bool {
+        if ownerName == CKCurrentUserDefaultName { return true }
+        if let myCloudKitID, ownerName == myCloudKitID { return true }
+        return hasPrivateToken
+    }
+
+    private func database(forZone zoneID: CKRecordZone.ID) -> CKDatabase {
+        let hasPriv = tokens.loadZoneToken(zoneID.zoneName, scope: "private") != nil
+        let owned = Self.isOwnedZone(ownerName: zoneID.ownerName,
+                                     myCloudKitID: CloudKitIdentity.shared.cachedID,
+                                     hasPrivateToken: hasPriv)
+        return owned ? privateDB : sharedDB
     }
 
     // MARK: zones
