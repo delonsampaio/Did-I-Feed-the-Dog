@@ -298,6 +298,12 @@ final class SharedSyncEngine {
         return total
     }
 
+    /// Public entry for owner stop-sharing: purge the local copy of a zone by name.
+    func purgeLocalZone(named zoneName: String) {
+        let zoneID = CKRecordZone.ID(zoneName: zoneName, ownerName: CKCurrentUserDefaultName)
+        purgeZone(zoneID, scope: "private")
+    }
+
     private func purgeZone(_ zoneID: CKRecordZone.ID, scope: String) {
         let bg = stack.newBackgroundContext()
         bg.perform {
