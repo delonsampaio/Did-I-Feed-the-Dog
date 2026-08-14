@@ -146,14 +146,38 @@ final class SharedSyncEngine {
             }
         }
 
+        // Group by destination database (owner→private, participant→shared).
+        var saveByDB: [ObjectIdentifier: (db: CKDatabase, records: [CKRecord])] = [:]
+        for r in records {
+            let db = database(forZone: r.recordID.zoneID)
+            saveByDB[ObjectIdentifier(db), default: (db, [])].records.append(r)
+        }
+        var deleteByDB: [ObjectIdentifier: (db: CKDatabase, ids: [CKRecord.ID])] = [:]
+        for id in recordIDs {
+            let db = database(forZone: id.zoneID)
+            deleteByDB[ObjectIdentifier(db), default: (db, [])].ids.append(id)
+        }
+        let dbKeys = Set(saveByDB.keys).union(deleteByDB.keys)
+
+        for key in dbKeys {
+            let db = saveByDB[key]?.db ?? deleteByDB[key]!.db
+            let saves = saveByDB[key]?.records ?? []
+            let deletes = deleteByDB[key]?.ids ?? []
+            await pushGroup(saving: saves, deleting: deletes, to: db, objectByName: objectByName, ctx: ctx)
+        }
+
+        for url in tempAssetURLs { try? FileManager.default.removeItem(at: url) }
+    }
+
+    /// Upload one database's worth of records with LWW conflict handling + write-back.
+    private func pushGroup(saving records: [CKRecord], deleting recordIDs: [CKRecord.ID],
+                           to db: CKDatabase, objectByName: [String: NSManagedObject],
+                           ctx: NSManagedObjectContext) async {
+        guard !records.isEmpty || !recordIDs.isEmpty else { return }
         do {
-            let (saveResults, _) = try await privateDB.modifyRecords(
+            let (saveResults, _) = try await db.modifyRecords(
                 saving: records, deleting: recordIDs,
                 savePolicy: .ifServerRecordUnchanged, atomically: false)
-
-            // Clean up temp asset files regardless of per-record success/failure.
-            for url in tempAssetURLs { try? FileManager.default.removeItem(at: url) }
-
             var conflicts: [CKRecord] = []
             for (id, result) in saveResults {
                 switch result {
@@ -173,8 +197,8 @@ final class SharedSyncEngine {
                 }
             }
             if !conflicts.isEmpty {
-                let (retry, _) = try await privateDB.modifyRecords(saving: conflicts, deleting: [],
-                                                                   savePolicy: .ifServerRecordUnchanged, atomically: false)
+                let (retry, _) = try await db.modifyRecords(saving: conflicts, deleting: [],
+                                                            savePolicy: .ifServerRecordUnchanged, atomically: false)
                 for (id, result) in retry {
                     if case .success(let saved) = result, let obj = objectByName[id.recordName] {
                         obj.setValue(CKRecordMapper.encodedSystemFields(of: saved), forKey: "ckSystemFields")
@@ -182,13 +206,10 @@ final class SharedSyncEngine {
                     }
                 }
             }
-            // Persist written-back system fields, suppressed so we don't re-push.
             SharedSyncEngine.applyingRemote = true
             try? ctx.save()
             SharedSyncEngine.applyingRemote = false
         } catch {
-            // Clean up temp asset files on error path too.
-            for url in tempAssetURLs { try? FileManager.default.removeItem(at: url) }
             Self.log.error("push batch failed: \(error.localizedDescription, privacy: .public)")
         }
     }
