@@ -17,6 +17,13 @@ struct CloudSharingView: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: UICloudSharingController, context: Context) {}
 }
 
+// `.sheet(item:)` requires `Identifiable`. SDK-header grep confirmed CKShare/CKRecord
+// declare no such conformance (CKShare.h: `@interface CKShare : CKRecord <NSSecureCoding,
+// NSCopying>`), and a build attempt without this extension confirmed it at compile time
+// ("requires that 'CKShare' conform to 'Identifiable'"). A first attempt at
+// `extension CKShare: Identifiable { var id: String { ... } }` alone failed with an
+// ambiguous-witness error against the stdlib's `Identifiable where Self: AnyObject`
+// default (`id: ObjectIdentifier`); pinning `ID` explicitly resolves the ambiguity.
 extension CKShare: @retroactive Identifiable {
     public typealias ID = String
     public var id: String { recordID.recordName }

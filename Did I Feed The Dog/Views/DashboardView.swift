@@ -1,4 +1,5 @@
 import AppIntents
+import CloudKit
 import SwiftUI
 import SwiftData
 
@@ -41,6 +42,10 @@ struct DashboardView: View {
     @State private var stockOutPetsToRestock: [Pet] = []
     @State private var stockOutScopeIsShared = false
     @State private var undoVersion = 0
+    @State private var isSharing: Bool = false
+    @State private var shareToPresent: CKShare?
+    @State private var showShareError: Bool = false
+    @State private var shareErrorMessage: String = ""
 
     @AppStorage("stockMode", store: .sharedGroup) private var stockMode: StockMode = .individual
     @AppStorage("sharedFoodStock", store: .sharedGroup) private var sharedFoodStock = 0
@@ -58,7 +63,13 @@ struct DashboardView: View {
         // merge sort when shared dogs are actually present and must be ordered among them.
         let shared = SharingFeatureFlag.isFoundationEnabled ? sharedDogStore.sharedPets : []
         guard !shared.isEmpty else { return pets }
-        let merged: [any DogDisplayable] = (pets as [any DogDisplayable]) + (shared as [any DogDisplayable])
+        // A brief id collision is reachable during share/unshare transitions (an owned Pet
+        // and a stale/transient SharedPet sharing the same id) — the owned Pet always wins,
+        // since ForEach(displayedDogs, id: \.id) requires unique ids.
+        let ownedIds = Set(pets.map(\.id))
+        let dedupedShared = shared.filter { !ownedIds.contains($0.id) }
+        guard !dedupedShared.isEmpty else { return pets }
+        let merged: [any DogDisplayable] = (pets as [any DogDisplayable]) + (dedupedShared as [any DogDisplayable])
         return merged.sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
     }
 
@@ -84,6 +95,8 @@ struct DashboardView: View {
                             if let pet = dog as? Pet {
                                 PetCard(pet: pet, undoVersion: undoVersion, onFed: { _, undo in
                                     triggerToast(message: "Meal logged", undo: undo)
+                                }, onShareRequested: { pet in
+                                    Task { await startSharing(pet) }
                                 })
                             } else {
                                 SharedPetCard(dog: dog)
@@ -182,6 +195,14 @@ struct DashboardView: View {
             } message: {
                 Text("It looks like you're out of food — did you just open a new bag?")
             }
+            .sheet(item: $shareToPresent) { share in
+                CloudSharingView(share: share)
+            }
+            .alert("Couldn't share this dog", isPresented: $showShareError) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(shareErrorMessage)
+            }
             .overlay {
                 if pets.isEmpty {
                     ContentUnavailableView(
@@ -270,6 +291,23 @@ struct DashboardView: View {
         undoAction = undo
         toastId = UUID()
         showUndoToast = true
+    }
+
+    private func startSharing(_ pet: Pet) async {
+        guard !isSharing else { return }
+        isSharing = true
+        defer { isSharing = false }
+        do {
+            let sharedPet = try SharePreparationController.migrateToShared(pet: pet)
+            NotificationManager.shared.removeAllNotifications(for: pet)
+            modelContext.delete(pet)
+            let share = try await ShareController.makeShare(forRoot: sharedPet)
+            await SharedSyncEngine.shared.fetchAllZones()
+            shareToPresent = share
+        } catch {
+            shareErrorMessage = error.localizedDescription
+            showShareError = true
+        }
     }
 
     private func handleDeepLink(petId: UUID) {

@@ -457,12 +457,7 @@ struct SettingsView: View {
     private func deletePets(at offsets: IndexSet) {
         for index in offsets {
             let pet = pets[index]
-            NotificationManager.shared.removeBirthdayNotification(for: pet)
-            NotificationManager.shared.removeOverdueNotification(for: pet)
-            NotificationManager.shared.removePerDogReminders(for: pet)
-            UNUserNotificationCenter.current().removePendingNotificationRequests(
-                withIdentifiers: [NotificationManager.shared.lowStockIdentifier(for: pet)]
-            )
+            NotificationManager.shared.removeAllNotifications(for: pet)
             modelContext.delete(pet)
         }
         // Re-fetch survivors instead of filtering the (now-stale) @Query so the

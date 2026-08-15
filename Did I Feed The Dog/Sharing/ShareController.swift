@@ -36,12 +36,15 @@ enum ShareController {
     }
 
     /// Owner stops sharing: delete the zone (participants get zoneNotFound → purge) and clean up locally.
-    static func stopSharing(forRoot pet: SharedPet) async {
+    /// Throws if the CloudKit zone delete fails — callers must NOT purge local state on failure, since
+    /// the zone (and participant access) still exists server-side and there'd be nothing left to retry from.
+    static func stopSharing(forRoot pet: SharedPet) async throws {
         let zoneID = CKRecordMapper.zoneID(forRoot: pet)
         do {
             _ = try await privateDB.modifyRecordZones(saving: [], deleting: [zoneID])
         } catch {
             Self.log.error("stopSharing failed: \(error.localizedDescription, privacy: .public)")
+            throw error
         }
         await SharedSyncEngine.shared.purgeLocalZone(named: zoneID.zoneName)
     }

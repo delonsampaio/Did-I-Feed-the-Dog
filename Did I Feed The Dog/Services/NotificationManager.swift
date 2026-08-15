@@ -185,6 +185,18 @@ final class NotificationManager {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
     }
 
+    /// Removes every notification associated with a pet — used both when a pet is deleted
+    /// outright and when it's migrated into the shared store (Phase 5 sharing), so no
+    /// orphaned repeating notification remains for a pet that's gone from the owned store.
+    func removeAllNotifications(for pet: Pet) {
+        removeBirthdayNotification(for: pet)
+        removeOverdueNotification(for: pet)
+        removePerDogReminders(for: pet)
+        UNUserNotificationCenter.current().removePendingNotificationRequests(
+            withIdentifiers: [lowStockIdentifier(for: pet)]
+        )
+    }
+
     func suppressNextUpcomingReminder(reminderMode: ReminderMode, for pet: Pet, allDogsReminderTimes: [Int]) {
         let now = Calendar.current.dateComponents([.hour, .minute], from: .now)
         let currentMinutes = (now.hour ?? 0) * 60 + (now.minute ?? 0)

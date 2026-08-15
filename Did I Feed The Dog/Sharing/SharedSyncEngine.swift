@@ -321,6 +321,7 @@ final class SharedSyncEngine {
             for pet in (try? bg.fetch(req)) ?? [] { bg.delete(pet) } // cascade removes children
             try? bg.save()
             SharedSyncEngine.applyingRemote = false
+            NotificationCenter.default.post(name: .sharedRemoteChangeApplied, object: nil)
         }
         tokens.clearZoneTokens(zoneID.zoneName)
         createdZones.remove(zoneID.zoneName)

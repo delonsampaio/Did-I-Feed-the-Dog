@@ -99,7 +99,7 @@ struct SharedPetCard: View {
         defer { isBusy = false }
         do {
             _ = try SharePreparationController.migrateToOwned(sharedPet: pet, modelContext: modelContext)
-            await ShareController.stopSharing(forRoot: pet)
+            try await ShareController.stopSharing(forRoot: pet)
         } catch {
             shareErrorMessage = error.localizedDescription
             showShareError = true
