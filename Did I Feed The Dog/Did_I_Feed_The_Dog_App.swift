@@ -56,7 +56,7 @@ struct Did_I_Feed_The_Dog_App: App {
                 .task(id: scenePhase) {
                     guard scenePhase == .active, SharingFeatureFlag.isFoundationEnabled else { return }
                     while !Task.isCancelled {
-                        try? await Task.sleep(for: .seconds(20))
+                        try? await Task.sleep(for: .seconds(75))
                         if Task.isCancelled { break }
                         await SharedSyncEngine.shared.fetchAllZones()
                     }

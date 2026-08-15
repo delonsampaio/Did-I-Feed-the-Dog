@@ -35,6 +35,41 @@ class QuickActionAppDelegate: NSObject, UIApplicationDelegate {
         config.delegateClass = QuickActionSceneDelegate.self
         return config
     }
+
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        if SharingFeatureFlag.isFoundationEnabled {
+            application.registerForRemoteNotifications()
+        }
+        return true
+    }
+
+    func application(_ application: UIApplication,
+                     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        // CloudKit uses the APNs token server-side; nothing to forward. Log for diagnostics.
+        Logger(subsystem: "com.delon.DidIFeedTheDog", category: "SharedSyncPush")
+            .info("registered for remote notifications")
+    }
+
+    func application(_ application: UIApplication,
+                     didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        Logger(subsystem: "com.delon.DidIFeedTheDog", category: "SharedSyncPush")
+            .error("remote notification registration failed: \(error.localizedDescription, privacy: .public)")
+    }
+
+    func application(_ application: UIApplication,
+                     didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+                     fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        guard SharingFeatureFlag.isFoundationEnabled else { completionHandler(.noData); return }
+        let notification = CKNotification(fromRemoteNotificationDictionary: userInfo)
+        guard SharedSyncPushSubscriptions.isOurSharedSyncNotification(subscriptionID: notification?.subscriptionID) else {
+            completionHandler(.noData); return
+        }
+        Task { @MainActor in
+            await SharedSyncEngine.shared.fetchAllZones()
+            completionHandler(.newData)
+        }
+    }
 }
 
 class QuickActionSceneDelegate: UIResponder, UIWindowSceneDelegate {

@@ -37,6 +37,7 @@ final class SharedSyncEngine {
         guard SharingFeatureFlag.isFoundationEnabled else { return }
         if !startedObserving { attachPushObserver(); startedObserving = true }
         Task { await fetchAllZones() }
+        Task { await SharedSyncPushSubscriptions.shared.registerIfNeeded() }
     }
 
     // MARK: push observer (synchronous so it runs inside the save while the flag is set)
