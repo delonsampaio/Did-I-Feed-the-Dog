@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import CloudKit
 
 struct PetCard: View {
     @AppStorage("lowStockUIWarning", store: .sharedGroup) private var lowStockUIWarning = true
@@ -23,6 +24,11 @@ struct PetCard: View {
     @State private var showStockOutRestockSheet = false
     @State private var showMedicationSheet = false
     @State private var showFastingAlert = false
+    @State private var isSharing = false
+    @State private var showSharePaywall = false
+    @State private var shareToPresent: CKShare?
+    @State private var showShareError = false
+    @State private var shareErrorMessage = ""
 
     private var recentEvents: [FeedingEvent] {
         pet.recentFeedings(limit: 3)
@@ -142,6 +148,16 @@ struct PetCard: View {
             } label: {
                 Label("Edit Dog", systemImage: "pencil")
             }
+
+            Button {
+                if entitlements.isPro {
+                    Task { await startSharing() }
+                } else {
+                    showSharePaywall = true
+                }
+            } label: {
+                Label("Share this dog", systemImage: "person.2.badge.plus")
+            }
         }
         
         .sheet(isPresented: $showFeedSheet) {
@@ -208,6 +224,17 @@ struct PetCard: View {
         }
         .sheet(isPresented: $showPaywall) {
             PaywallSheet(source: "overdueCard")
+        }
+        .sheet(isPresented: $showSharePaywall) {
+            PaywallSheet(source: "shareThisDog")
+        }
+        .sheet(item: $shareToPresent) { share in
+            CloudSharingView(share: share)
+        }
+        .alert("Couldn't share this dog", isPresented: $showShareError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(shareErrorMessage)
         }
         .onAppear { checkOverdueTease() }
         .onChange(of: pet.isFeedingOverdue) { _, isOverdue in
@@ -477,6 +504,26 @@ struct PetCard: View {
               AppSettings.seenOverdueTeaseAt == nil else { return }
         AppSettings.seenOverdueTeaseAt = .now
         showOverdueTease = true
+    }
+
+    private func startSharing() async {
+        guard !isSharing else { return }
+        isSharing = true
+        defer { isSharing = false }
+        do {
+            let sharedPet = try SharePreparationController.migrateToShared(pet: pet)
+            modelContext.delete(pet)
+            let share = try await ShareController.makeShare(forRoot: sharedPet)
+            // Closes the seeding window: without this, isOwner(ofZoneNamed:) would report
+            // false for the owner's own zone until the next natural fetchAllZones() cycle
+            // (launch/foreground/poll), briefly hiding Share/Stop-sharing on the dog they
+            // just shared.
+            await SharedSyncEngine.shared.fetchAllZones()
+            shareToPresent = share
+        } catch {
+            shareErrorMessage = error.localizedDescription
+            showShareError = true
+        }
     }
 
     private func abbreviatedRelative(_ date: Date) -> String {

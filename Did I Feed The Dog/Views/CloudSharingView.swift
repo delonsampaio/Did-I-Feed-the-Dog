@@ -16,3 +16,8 @@ struct CloudSharingView: UIViewControllerRepresentable {
 
     func updateUIViewController(_ uiViewController: UICloudSharingController, context: Context) {}
 }
+
+extension CKShare: @retroactive Identifiable {
+    public typealias ID = String
+    public var id: String { recordID.recordName }
+}
