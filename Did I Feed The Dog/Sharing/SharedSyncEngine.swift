@@ -101,6 +101,13 @@ final class SharedSyncEngine {
         return owned ? privateDB : sharedDB
     }
 
+    /// UI-only convenience: true when the current user owns this zone. Mirrors the same
+    /// private-scope-token signal `database(forZone:)` already uses for push/pull routing —
+    /// does not duplicate the routing logic, just exposes its ownership half.
+    func isOwner(ofZoneNamed zoneName: String) -> Bool {
+        tokens.loadZoneToken(zoneName, scope: "private") != nil
+    }
+
     // MARK: zones
     func ensureZone(forRoot pet: SharedPet) async {
         let zoneID = CKRecordMapper.zoneID(forRoot: pet)
