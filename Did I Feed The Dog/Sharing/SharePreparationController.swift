@@ -80,8 +80,17 @@ enum SharePreparationController {
 
     /// Clones `sharedPet` back into a new owned `Pet` on `modelContext`, reusing `sharedPet.id`.
     /// Caller proceeds to `ShareController.stopSharing` only after this succeeds, so a failed
-    /// reverse migration never destroys the shared copy.
+    /// reverse migration never destroys the shared copy. Idempotent by id: if a Pet with
+    /// `sharedPet.id` already exists (a retry after `ShareController.stopSharing`'s CloudKit
+    /// zone-delete failed on a prior attempt — this function already committed the owned Pet
+    /// before that call runs), returns the existing Pet instead of inserting a duplicate.
     static func migrateToOwned(sharedPet: SharedPet, modelContext: ModelContext) throws -> Pet {
+        let sharedPetId = sharedPet.id
+        let existing = FetchDescriptor<Pet>(predicate: #Predicate { $0.id == sharedPetId })
+        if let alreadyMigrated = try? modelContext.fetch(existing).first {
+            return alreadyMigrated
+        }
+
         let pet = Pet(name: sharedPet.name)
         pet.id = sharedPet.id
         pet.birthday = sharedPet.birthday

@@ -214,4 +214,25 @@ final class SharePreparationControllerTests: XCTestCase {
         XCTAssertEqual(log.loggedBy, "Sam")
         XCTAssertEqual(log.medicationName, "Apoquel")
     }
+
+    func testMigrateToOwnedIsIdempotentOnRetry() throws {
+        let shared = try sharedContext()
+        let swiftData = try swiftDataContext()
+
+        let sharedPet = SharedPet(context: shared)
+        let originalId = UUID()
+        sharedPet.id = originalId
+        sharedPet.name = "Rex"
+        try shared.save()
+
+        let firstAttempt = try SharePreparationController.migrateToOwned(sharedPet: sharedPet, modelContext: swiftData)
+        // Simulates a retry after ShareController.stopSharing's CloudKit zone-delete failed:
+        // migrateToOwned runs again for the same SharedPet before the caller purges it.
+        let secondAttempt = try SharePreparationController.migrateToOwned(sharedPet: sharedPet, modelContext: swiftData)
+
+        XCTAssertEqual(firstAttempt.persistentModelID, secondAttempt.persistentModelID)
+        let allPets = try swiftData.fetch(FetchDescriptor<Pet>())
+        XCTAssertEqual(allPets.count, 1, "retrying migrateToOwned must not insert a second Pet with the same id")
+        XCTAssertEqual(allPets.first?.id, originalId)
+    }
 }
