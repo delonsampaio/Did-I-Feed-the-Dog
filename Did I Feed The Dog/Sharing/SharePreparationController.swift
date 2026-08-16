@@ -28,7 +28,6 @@ enum SharePreparationController {
         sharedPet.feedingScheduleTimesRaw = pet.feedingScheduleTimesRaw
         sharedPet.isFasting = pet.isFasting
         sharedPet.notificationsMuted = pet.notificationsMuted
-        sharedPet.lastFeedingDate = pet.lastFeedingDate
         sharedPet.todaysFeedingCountRaw = Int64(pet.todaysFeedingCount)
         sharedPet.ckRecordName = UUID().uuidString
 

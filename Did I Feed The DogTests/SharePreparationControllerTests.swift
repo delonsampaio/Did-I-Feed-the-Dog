@@ -82,7 +82,7 @@ final class SharePreparationControllerTests: XCTestCase {
         XCTAssertEqual(sharedPet.feedingScheduleTimesRaw, "480,1200")
         XCTAssertTrue(sharedPet.isFasting)
         XCTAssertTrue(sharedPet.notificationsMuted)
-        XCTAssertEqual(sharedPet.lastFeedingDate, Date(timeIntervalSince1970: 1000))
+        XCTAssertEqual(sharedPet.lastFeedingDate, Date(timeIntervalSince1970: 2000))
         XCTAssertEqual(sharedPet.todaysFeedingCountRaw, 2)
         XCTAssertNotNil(sharedPet.ckRecordName)
 
@@ -143,7 +143,6 @@ final class SharePreparationControllerTests: XCTestCase {
         sharedPet.feedingScheduleTimesRaw = "600"
         sharedPet.isFasting = false
         sharedPet.notificationsMuted = false
-        sharedPet.lastFeedingDate = Date(timeIntervalSince1970: 1500)
         sharedPet.todaysFeedingCountRaw = 3
 
         let sharedEvent = SharedFeedingEvent(context: shared)
@@ -184,7 +183,7 @@ final class SharePreparationControllerTests: XCTestCase {
         XCTAssertEqual(pet.feedingScheduleTimesRaw, "600")
         XCTAssertFalse(pet.isFasting)
         XCTAssertFalse(pet.notificationsMuted)
-        XCTAssertEqual(pet.lastFeedingDate, Date(timeIntervalSince1970: 1500))
+        XCTAssertEqual(pet.lastFeedingDate, Date(timeIntervalSince1970: 2500))
         XCTAssertEqual(pet.todaysFeedingCount, 3)
 
         let events = pet.feedingEvents ?? []

@@ -40,6 +40,21 @@ extension Pet: DogDisplayable {
 extension SharedPet: DogDisplayable {
     var displayName: String { name ?? "Dog" }
     var isShared: Bool { true }
-    var todaysFeedingCount: Int { Int(todaysFeedingCountRaw) }
     var ageString: String { dogAgeString(from: birthday) }
+
+    /// Derived from feedingEvents rather than a stored counter, so two devices logging
+    /// concurrently both count — see SharedFeedingLogService.
+    var todaysFeedingCount: Int {
+        let startOfDay = Calendar.current.startOfDay(for: .now)
+        let events = (feedingEvents as? Set<SharedFeedingEvent>) ?? []
+        return events.filter { $0.timestamp >= startOfDay }.count
+    }
+
+    /// Derived from feedingEvents rather than a stored field, for the same concurrent-write
+    /// reason as todaysFeedingCount. The Core Data model still declares a lastFeedingDate
+    /// attribute (harmless, unused by the app — see the Phase 6 spec).
+    var lastFeedingDate: Date? {
+        let events = (feedingEvents as? Set<SharedFeedingEvent>) ?? []
+        return events.map(\.timestamp).max()
+    }
 }

@@ -11,7 +11,6 @@ final class SharedPet: NSManagedObject {
     @NSManaged var feedingScheduleTimesRaw: String
     @NSManaged var isFasting: Bool
     @NSManaged var notificationsMuted: Bool
-    @NSManaged var lastFeedingDate: Date?
     @NSManaged var todaysFeedingCountRaw: Int64
     @NSManaged var foodStockBaselineDate: Date?
     // sync bookkeeping (unused in Phase 1)
