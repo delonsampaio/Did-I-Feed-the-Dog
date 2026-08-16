@@ -184,7 +184,10 @@ final class SharePreparationControllerTests: XCTestCase {
         XCTAssertFalse(pet.isFasting)
         XCTAssertFalse(pet.notificationsMuted)
         XCTAssertEqual(pet.lastFeedingDate, Date(timeIntervalSince1970: 2500))
-        XCTAssertEqual(pet.todaysFeedingCount, 3)
+        // The fixture's only event is timestamped in 1970, not "today" — todaysFeedingCount now
+        // derives from feedingEvents (Fix 2), so 0 is correct; the old todaysFeedingCountRaw=3
+        // fixture value is no longer read.
+        XCTAssertEqual(pet.todaysFeedingCount, 0)
 
         let events = pet.feedingEvents ?? []
         XCTAssertEqual(events.count, 1)

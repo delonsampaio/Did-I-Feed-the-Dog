@@ -70,10 +70,15 @@ struct SharedRestockSheet: View {
     }
 
     private func commitAndDismiss() {
+        guard let context = pet.managedObjectContext else {
+            saveErrorMessage = "Failed to save stock count: no context"
+            showSaveError = true
+            return
+        }
         pet.foodStockCount = Int64(newCount)
         pet.foodStockBaselineDate = .now
         do {
-            try pet.managedObjectContext?.save()
+            try context.save()
             dismiss()
         } catch {
             saveErrorMessage = "Failed to save stock count: \(error.localizedDescription)"

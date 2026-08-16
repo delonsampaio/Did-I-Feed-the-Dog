@@ -25,6 +25,7 @@ enum SharePreparationController {
         sharedPet.birthday = pet.birthday
         sharedPet.photoData = pet.photoData
         sharedPet.foodStockCount = Int64(pet.foodStockCount)
+        sharedPet.foodStockBaselineDate = .now
         sharedPet.feedingScheduleTimesRaw = pet.feedingScheduleTimesRaw
         sharedPet.isFasting = pet.isFasting
         sharedPet.notificationsMuted = pet.notificationsMuted
@@ -99,7 +100,7 @@ enum SharePreparationController {
         pet.isFasting = sharedPet.isFasting
         pet.notificationsMuted = sharedPet.notificationsMuted
         pet.lastFeedingDate = sharedPet.lastFeedingDate
-        pet.todaysFeedingCount = Int(sharedPet.todaysFeedingCountRaw)
+        pet.todaysFeedingCount = sharedPet.todaysFeedingCount
         modelContext.insert(pet)
 
         let sharedEvents = (sharedPet.feedingEvents as? Set<SharedFeedingEvent>) ?? []

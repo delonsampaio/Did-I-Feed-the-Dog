@@ -203,6 +203,11 @@ struct LogSharedFeedingSheet: View {
 
     private func logFeeding() {
         guard !isSubmitting else { return }
+        guard let context = pet.managedObjectContext else {
+            saveErrorMessage = "Failed to save meal: no context"
+            showSaveError = true
+            return
+        }
         isSubmitting = true
         UINotificationFeedbackGenerator().notificationOccurred(.success)
 
@@ -216,7 +221,7 @@ struct LogSharedFeedingSheet: View {
                 timestamp: showCustomTime ? logDate : .now,
                 notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
                 logger: LoggedBy.current,
-                in: pet.managedObjectContext ?? SharedDataStack.shared.viewContext
+                in: context
             )
             onLogged?(event)
             dismiss()
