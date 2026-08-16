@@ -3,8 +3,8 @@ import CoreData
 import SwiftData
 import SwiftUI
 
-/// Dashboard card for a dog shared with the user. Read-only for meal/medication logging
-/// (deferred to a later phase); owner-gated Share/Stop-sharing controls (Phase 5).
+/// Dashboard card for a dog shared with the user. Log Meal / Log Medication / Update Stock are
+/// available to any participant; Share/Stop-sharing stay owner-gated (Phase 5).
 struct SharedPetCard: View {
     @Environment(\.modelContext) private var modelContext
     let dog: any DogDisplayable
@@ -14,6 +14,9 @@ struct SharedPetCard: View {
     @State private var showStopSharingConfirm = false
     @State private var showShareError = false
     @State private var shareErrorMessage = ""
+    @State private var showLogFeeding = false
+    @State private var showLogMedication = false
+    @State private var showRestockSheet = false
 
     private var sharedPet: SharedPet? { dog as? SharedPet }
 
@@ -23,31 +26,73 @@ struct SharedPetCard: View {
         return SharedSyncEngine.shared.isOwner(ofZoneNamed: zoneName)
     }
 
+    private var medications: [SharedMedication] {
+        Array((sharedPet?.medications as? Set<SharedMedication>) ?? [])
+    }
+
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "pawprint.circle.fill")
-                .resizable().frame(width: 44, height: 44)
-                .foregroundStyle(.tint)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 4) {
-                    Text(dog.displayName).font(.headline)
-                    Image(systemName: "person.2.fill")
-                        .font(.caption2).foregroundStyle(.secondary)
-                        .accessibilityLabel("Shared dog")
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 12) {
+                Image(systemName: "pawprint.circle.fill")
+                    .resizable().frame(width: 44, height: 44)
+                    .foregroundStyle(.tint)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 4) {
+                        Text(dog.displayName).font(.headline)
+                        Image(systemName: "person.2.fill")
+                            .font(.caption2).foregroundStyle(.secondary)
+                            .accessibilityLabel("Shared dog")
+                    }
+                    if let last = dog.lastFeedingDate {
+                        Text("Last fed \(last.formatted(.relative(presentation: .named)))")
+                            .font(.subheadline).foregroundStyle(.secondary)
+                    } else {
+                        Text("No meals yet").font(.subheadline).foregroundStyle(.secondary)
+                    }
                 }
-                if let last = dog.lastFeedingDate {
-                    Text("Last fed \(last.formatted(.relative(presentation: .named)))")
-                        .font(.subheadline).foregroundStyle(.secondary)
-                } else {
-                    Text("No meals yet").font(.subheadline).foregroundStyle(.secondary)
+                Spacer()
+            }
+
+            if SharingFeatureFlag.isFoundationEnabled, sharedPet != nil {
+                HStack(spacing: 8) {
+                    Button {
+                        showLogFeeding = true
+                    } label: {
+                        Label("Log Meal", systemImage: "fork.knife")
+                            .font(.subheadline).fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(Color.green)
+                            .foregroundStyle(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    if !medications.isEmpty {
+                        Button {
+                            showLogMedication = true
+                        } label: {
+                            Label("Log Medication", systemImage: "pill")
+                                .font(.subheadline).fontWeight(.semibold)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                                .background(Color.purple)
+                                .foregroundStyle(.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+                    }
                 }
             }
-            Spacer()
         }
         .padding()
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
         .contextMenu {
+            if sharedPet != nil {
+                Button {
+                    showRestockSheet = true
+                } label: {
+                    Label("Update Food Stock", systemImage: "shippingbox")
+                }
+            }
             if let pet = sharedPet, isOwner {
                 Button {
                     Task { await manageSharing(for: pet) }
@@ -69,6 +114,21 @@ struct SharedPetCard: View {
         }
         .sheet(item: $shareToPresent) { share in
             CloudSharingView(share: share)
+        }
+        .sheet(isPresented: $showLogFeeding) {
+            if let pet = sharedPet {
+                LogSharedFeedingSheet(pet: pet)
+            }
+        }
+        .sheet(isPresented: $showLogMedication) {
+            if let pet = sharedPet {
+                LogSharedMedicationSheet(pet: pet, medications: medications)
+            }
+        }
+        .sheet(isPresented: $showRestockSheet) {
+            if let pet = sharedPet {
+                SharedRestockSheet(pet: pet)
+            }
         }
         .alert("Couldn't share this dog", isPresented: $showShareError) {
             Button("OK", role: .cancel) {}
