@@ -25,6 +25,7 @@ enum SharedDataModel {
             attr("notificationsMuted", .booleanAttributeType, defaultValue: false),
             attr("lastFeedingDate", .dateAttributeType, optional: true),
             attr("todaysFeedingCountRaw", .integer64AttributeType, defaultValue: 0),
+            attr("foodStockBaselineDate", .dateAttributeType, optional: true),
         ] + syncFields()
 
         event.properties = [

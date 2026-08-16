@@ -13,6 +13,7 @@ final class SharedPet: NSManagedObject {
     @NSManaged var notificationsMuted: Bool
     @NSManaged var lastFeedingDate: Date?
     @NSManaged var todaysFeedingCountRaw: Int64
+    @NSManaged var foodStockBaselineDate: Date?
     // sync bookkeeping (unused in Phase 1)
     @NSManaged var ckRecordName: String?
     @NSManaged var ckSystemFields: Data?
@@ -74,5 +75,19 @@ extension SharedMedication {
     var reminderMinutes: [Int] {
         get { reminderMinutesRaw.split(separator: ",").compactMap { Int($0) } }
         set { reminderMinutesRaw = newValue.map(String.init).joined(separator: ",") }
+    }
+}
+
+extension SharedPet {
+    /// Current stock, derived from the last manually-set baseline minus every feeding logged
+    /// since. Two devices logging concurrently each create a new SharedFeedingEvent rather than
+    /// mutating a shared counter, so CloudKit sync merges them with nothing to conflict on.
+    var effectiveFoodStockCount: Int {
+        let events = (feedingEvents as? Set<SharedFeedingEvent>) ?? []
+        let since = foodStockBaselineDate ?? .distantPast
+        let deducted = events
+            .filter { $0.timestamp > since }
+            .reduce(0) { $0 + ($1.portionsDeducted?.intValue ?? 0) }
+        return max(0, Int(foodStockCount) - deducted)
     }
 }
