@@ -204,7 +204,7 @@ struct DashboardView: View {
                 Text(shareErrorMessage)
             }
             .overlay {
-                if pets.isEmpty {
+                if displayedDogs.isEmpty {
                     ContentUnavailableView(
                         "No Dogs Yet",
                         systemImage: "pawprint.fill",
