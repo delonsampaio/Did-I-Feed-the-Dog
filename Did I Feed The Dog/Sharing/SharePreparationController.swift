@@ -17,8 +17,13 @@ enum SharePreparationController {
     /// the source `Pet` is never touched here.
     static func migrateToShared(
         pet: Pet,
-        sharedContext: NSManagedObjectContext = SharedDataStack.shared.viewContext
+        sharedContext: NSManagedObjectContext? = nil
     ) throws -> SharedPet {
+        // Resolved here rather than as a default-argument expression: default-argument
+        // expressions are evaluated in a nonisolated context, and the MainActor-isolated
+        // `SharedDataStack.shared` cannot be referenced from there. Same pattern as
+        // SharedDogStore.init's `stack` parameter.
+        let sharedContext = sharedContext ?? SharedDataStack.shared.viewContext
         let sharedPet = SharedPet(context: sharedContext)
         sharedPet.id = pet.id
         sharedPet.name = pet.name

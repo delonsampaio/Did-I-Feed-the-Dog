@@ -46,6 +46,6 @@ enum ShareController {
             Self.log.error("stopSharing failed: \(error.localizedDescription, privacy: .public)")
             throw error
         }
-        await SharedSyncEngine.shared.purgeLocalZone(named: zoneID.zoneName)
+        SharedSyncEngine.shared.purgeLocalZone(named: zoneID.zoneName)
     }
 }
