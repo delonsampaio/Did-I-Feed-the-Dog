@@ -76,7 +76,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../../Sandbox.storekit">
+         identifier = "Sandbox.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
