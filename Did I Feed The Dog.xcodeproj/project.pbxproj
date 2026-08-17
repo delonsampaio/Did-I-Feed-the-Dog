@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-
 		1489474D2FA04F470031F35C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1489474C2FA04F460031F35C /* WidgetKit.framework */; };
 		1489474F2FA04F470031F35C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1489474E2FA04F470031F35C /* SwiftUI.framework */; };
 		148947642FA04F480031F35C /* DidIFeedTheDogWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1489474A2FA04F460031F35C /* DidIFeedTheDogWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -52,7 +51,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-
 		148945832F9FC3210031F35C /* Did I Feed The Dog?.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Did I Feed The Dog?.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		148946892FA0252B0031F35C /* Did I Feed The DogTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Did I Feed The DogTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1489474A2FA04F460031F35C /* DidIFeedTheDogWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DidIFeedTheDogWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -144,7 +142,6 @@
 		1489457A2F9FC3200031F35C = {
 			isa = PBXGroup;
 			children = (
-
 				1489477D2FA053580031F35C /* Did-I-Feed-The-Dog--Info.plist */,
 				1489477B2FA0504C0031F35C /* DidIFeedTheDogWidgetExtension.entitlements */,
 				148945852F9FC3210031F35C /* Did I Feed The Dog */,
@@ -321,7 +318,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -336,7 +332,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
