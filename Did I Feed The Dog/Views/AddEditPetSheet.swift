@@ -251,7 +251,7 @@ struct AddEditPetSheet: View {
     }
 }
 
-private struct AvatarPickerSheet: View {
+struct AvatarPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var selectedAvatarName: String?
     @Binding var photoData: Data?

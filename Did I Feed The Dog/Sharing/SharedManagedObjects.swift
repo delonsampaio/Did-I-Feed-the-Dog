@@ -96,3 +96,20 @@ extension SharedPet {
         return max(0, Int(foodStockCount) - deducted)
     }
 }
+
+extension SharedMedication {
+    /// Mirrors Medication.frequencyLabel so SharedPetDetailView's medication row can display
+    /// this without a second copy of the switch statement.
+    var frequencyLabel: String {
+        switch frequencyHours {
+        case 8:   return "3 times daily"
+        case 12:  return "Twice daily"
+        case 24:  return "Daily"
+        case 48:  return "Every 2 days"
+        case 72:  return "Every 3 days"
+        case 168: return "Weekly"
+        case 720: return "Monthly"
+        default:  return "Every \(frequencyHours)h"
+        }
+    }
+}

@@ -514,7 +514,7 @@ struct PetDetailView: View {
 
 // MARK: - Filter sheet
 
-private struct MealFilterSheet: View {
+struct MealFilterSheet: View {
     @Binding var filterMealTypes: Set<String>
     @Binding var filterLoggedBy: Set<String>
     @Binding var filterStartDate: Date?
