@@ -122,3 +122,15 @@ extension SharedFeedingEvent: Identifiable {
 }
 
 extension SharedMedication: Identifiable {}
+
+// No explicit `SharedPet: Hashable` conformance is added here. `NSManagedObject` already
+// conforms to `Hashable` — inherited from `NSObject`'s bridging in Swift — so
+// `extension SharedPet: Hashable` is a compile error ("redundant conformance"), and overriding
+// the underlying `isEqual`/`hash` is explicitly illegal for `NSManagedObject` subclasses (Core
+// Data throws `NSInternalInconsistencyException`: "illegal override of NSManagedObject
+// -isEqual:" at `+[SharedPet entity]` resolution time, breaking the entity everywhere). The
+// inherited identity-based conformance is exactly what `NavigationLink(value:)` and
+// `navigationDestination(for: SharedPet.self)` need — SwiftUI only requires `Hashable` for
+// these APIs, and Core Data's row cache already guarantees the same `SharedPet` instance is
+// reused within one `NSManagedObjectContext` for a given `objectID`, which is the only context
+// this app ever compares two `SharedPet` references within.

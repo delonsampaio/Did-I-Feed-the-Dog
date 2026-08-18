@@ -158,6 +158,7 @@ struct DashboardView: View {
                 }
             }
             .navigationDestination(for: Pet.self) { pet in PetDetailView(pet: pet) }
+            .navigationDestination(for: SharedPet.self) { pet in SharedPetDetailView(pet: pet) }
             .sheet(isPresented: $showAddPet) { AddEditPetSheet() }
             .sheet(isPresented: $showSettings) {
                 NavigationStack { SettingsView() }

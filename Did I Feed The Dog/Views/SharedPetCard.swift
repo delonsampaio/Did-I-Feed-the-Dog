@@ -5,10 +5,10 @@ import SwiftUI
 
 /// Dashboard card for a dog shared with the user. Mirrors PetCard's layout (photo, Last Fed
 /// badge, Low Food Stock / due-medication banners, stats, recent history, fasting banner) so a
-/// dog looks the same before and after sharing. Log Meal / Log Medication / Update Stock are
-/// available to any participant regardless of their own Pro status — only the owner needed Pro to
-/// create the share in the first place, so these read/log views are intentionally ungated here,
-/// same as the rest of this card already was.
+/// dog looks the same before and after sharing. Logging, restocking, editing, the fasting
+/// toggle, and history navigation are all available to any participant regardless of their own
+/// Pro status — only the owner needed Pro to create the share in the first place. Only "Share
+/// this dog"/"Stop sharing" stay owner-gated.
 struct SharedPetCard: View {
     @AppStorage("lowStockUIWarning", store: .sharedGroup) private var lowStockUIWarning = true
     @AppStorage("lowStockThreshold", store: .sharedGroup) private var lowStockThreshold = 5
@@ -25,6 +25,7 @@ struct SharedPetCard: View {
     @State private var showLogFeeding = false
     @State private var showLogMedication = false
     @State private var showRestockSheet = false
+    @State private var showEditSheet = false
 
     private var sharedPet: SharedPet? { dog as? SharedPet }
 
@@ -86,7 +87,12 @@ struct SharedPetCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            headerRow
+            if let pet = sharedPet {
+                NavigationLink(value: pet) { headerRow }
+                    .buttonStyle(.plain)
+            } else {
+                headerRow
+            }
 
             if isLowStock || hasDueMedications {
                 VStack(spacing: 6) {
@@ -106,7 +112,12 @@ struct SharedPetCard: View {
             statsRow
 
             if !recentEvents.isEmpty {
-                miniHistory
+                if let pet = sharedPet {
+                    NavigationLink(value: pet) { miniHistory }
+                        .buttonStyle(.plain)
+                } else {
+                    miniHistory
+                }
             }
 
             if dog.isFasting {
@@ -133,7 +144,19 @@ struct SharedPetCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: .black.opacity(0.07), radius: 8, x: 0, y: 2)
         .contextMenu {
-            if sharedPet != nil {
+            if let pet = sharedPet {
+                Button {
+                    pet.isFasting.toggle()
+                    try? pet.managedObjectContext?.save()
+                } label: {
+                    Label(pet.isFasting ? "End Fasting" : "Start Fasting",
+                          systemImage: pet.isFasting ? "fork.knife" : "exclamationmark.octagon")
+                }
+                Button {
+                    showEditSheet = true
+                } label: {
+                    Label("Edit Dog", systemImage: "pencil")
+                }
                 Button {
                     showRestockSheet = true
                 } label: {
@@ -175,6 +198,11 @@ struct SharedPetCard: View {
         .sheet(isPresented: $showRestockSheet) {
             if let pet = sharedPet {
                 SharedRestockSheet(pet: pet)
+            }
+        }
+        .sheet(isPresented: $showEditSheet) {
+            if let pet = sharedPet {
+                EditSharedPetSheet(pet: pet)
             }
         }
         .alert("Couldn't share this dog", isPresented: $showShareError) {
