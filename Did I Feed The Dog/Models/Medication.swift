@@ -1,6 +1,42 @@
 import Foundation
 import SwiftData
 
+/// Single source of truth for medication due-ness, shared by `Medication.isDue`
+/// and `SharedMedication.isDue` so the two model layers can't drift.
+func medicationIsDue(frequencyHours: Int, reminderMinutes: [Int], lastGivenDate: Date?) -> Bool {
+    if !reminderMinutes.isEmpty {
+        // Multi-day frequencies (every 2 days, weekly, monthly) with a fixed time mean
+        // "fire at that time on the due date", not "fire at that time every day".
+        // Fall back to relative-mode logic so we don't show due the very next day.
+        if frequencyHours > 24 {
+            guard let last = lastGivenDate else { return true }
+            return Date() >= last.addingTimeInterval(TimeInterval(frequencyHours * 3600))
+        }
+
+        // Sub-daily / daily fixed-time mode: due if any scheduled time today or
+        // yesterday has passed since the last logged dose.
+        let cal = Calendar.current
+        let now = Date()
+        for dayOffset in [0, -1] {
+            guard let day = cal.date(byAdding: .day, value: dayOffset, to: now) else { continue }
+            let dayBase = cal.dateComponents([.year, .month, .day], from: day)
+            for minutes in reminderMinutes {
+                var comps = dayBase
+                comps.hour = minutes / 60
+                comps.minute = minutes % 60
+                comps.second = 0
+                guard let reminderDate = cal.date(from: comps), reminderDate <= now else { continue }
+                guard let last = lastGivenDate else { return true }
+                if reminderDate > last { return true }
+            }
+        }
+        return false
+    }
+    // Relative mode: due once frequencyHours have elapsed since the last dose.
+    guard let last = lastGivenDate else { return true }
+    return Date() >= last.addingTimeInterval(TimeInterval(frequencyHours * 3600))
+}
+
 @Model
 final class Medication {
     var id: UUID = UUID()
@@ -25,37 +61,7 @@ final class Medication {
     }
 
     var isDue: Bool {
-        if !reminderMinutes.isEmpty {
-            // Multi-day frequencies (every 2 days, weekly, monthly) with a fixed time mean
-            // "fire at that time on the due date", not "fire at that time every day".
-            // Fall back to relative-mode logic so we don't show due the very next day.
-            if frequencyHours > 24 {
-                guard let last = lastGivenDate else { return true }
-                return Date() >= last.addingTimeInterval(TimeInterval(frequencyHours * 3600))
-            }
-
-            // Sub-daily / daily fixed-time mode: due if any scheduled time today or
-            // yesterday has passed since the last logged dose.
-            let cal = Calendar.current
-            let now = Date()
-            for dayOffset in [0, -1] {
-                guard let day = cal.date(byAdding: .day, value: dayOffset, to: now) else { continue }
-                let dayBase = cal.dateComponents([.year, .month, .day], from: day)
-                for minutes in reminderMinutes {
-                    var comps = dayBase
-                    comps.hour = minutes / 60
-                    comps.minute = minutes % 60
-                    comps.second = 0
-                    guard let reminderDate = cal.date(from: comps), reminderDate <= now else { continue }
-                    guard let last = lastGivenDate else { return true }
-                    if reminderDate > last { return true }
-                }
-            }
-            return false
-        }
-        // Relative mode: due once frequencyHours have elapsed since the last dose.
-        guard let last = lastGivenDate else { return true }
-        return Date() >= last.addingTimeInterval(TimeInterval(frequencyHours * 3600))
+        medicationIsDue(frequencyHours: frequencyHours, reminderMinutes: reminderMinutes, lastGivenDate: lastGivenDate)
     }
 
     var nextDueDate: Date? {

@@ -25,6 +25,7 @@ protocol DogDisplayable {
     var notificationsMuted: Bool { get }
     var lastFeedingDate: Date? { get }
     var todaysFeedingCount: Int { get }
+    var feedingScheduleTimes: [Int] { get }
     var ageString: String { get }
     var isShared: Bool { get }
 }
@@ -41,6 +42,11 @@ extension SharedPet: DogDisplayable {
     var displayName: String { name ?? "Dog" }
     var isShared: Bool { true }
     var ageString: String { dogAgeString(from: birthday) }
+
+    /// Mirrors `Pet.feedingScheduleTimes`: [Int] backed by a comma-joined string.
+    var feedingScheduleTimes: [Int] {
+        feedingScheduleTimesRaw.split(separator: ",").compactMap { Int($0) }
+    }
 
     /// Derived from feedingEvents rather than a stored counter, so two devices logging
     /// concurrently both count — see SharedFeedingLogService.

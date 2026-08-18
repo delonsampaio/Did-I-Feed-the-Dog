@@ -75,6 +75,12 @@ extension SharedMedication {
         get { reminderMinutesRaw.split(separator: ",").compactMap { Int($0) } }
         set { reminderMinutesRaw = newValue.map(String.init).joined(separator: ",") }
     }
+
+    /// Mirrors `Medication.isDue` via the shared `medicationIsDue` rule, so a shared
+    /// dog's due-medication banner can never drift from the owned-dog one.
+    var isDue: Bool {
+        medicationIsDue(frequencyHours: Int(frequencyHours), reminderMinutes: reminderMinutes, lastGivenDate: lastGivenDate)
+    }
 }
 
 extension SharedPet {

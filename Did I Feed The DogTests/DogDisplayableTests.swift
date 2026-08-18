@@ -35,4 +35,38 @@ final class DogDisplayableTests: XCTestCase {
         XCTAssertEqual(pet.ageString, sp.ageString)
         XCTAssertEqual(pet.ageString, "2 years, 3 months")
     }
+
+    func testSharedPetFeedingScheduleTimesRoundTrip() throws {
+        let stack = SharedDataStack(inMemory: true)
+        let sp = SharedPet(context: stack.viewContext)
+        sp.id = UUID()
+        sp.feedingScheduleTimesRaw = "480,1200"
+        XCTAssertEqual(sp.feedingScheduleTimes, [480, 1200])
+    }
+
+    func testSharedPetFeedingScheduleTimesEmpty() throws {
+        let stack = SharedDataStack(inMemory: true)
+        let sp = SharedPet(context: stack.viewContext)
+        sp.id = UUID()
+        sp.feedingScheduleTimesRaw = ""
+        XCTAssertEqual(sp.feedingScheduleTimes, [])
+    }
+
+    /// Guards against drift: SharedPet must go overdue under the same rule as Pet, since
+    /// isFeedingOverdue now lives once on DogDisplayable rather than twice per model.
+    func testIsFeedingOverdueParityWhenNeverFed() throws {
+        let pet = Pet(name: "Max", birthday: .now)
+        let stack = SharedDataStack(inMemory: true)
+        let sp = SharedPet(context: stack.viewContext)
+        sp.id = UUID(); sp.name = "Max"
+        XCTAssertEqual(pet.isFeedingOverdue, sp.isFeedingOverdue)
+        XCTAssertTrue(sp.isFeedingOverdue)
+    }
+
+    func testSharedPetNotOverdueWhenFasting() throws {
+        let stack = SharedDataStack(inMemory: true)
+        let sp = SharedPet(context: stack.viewContext)
+        sp.id = UUID(); sp.isFasting = true
+        XCTAssertFalse(sp.isFeedingOverdue)
+    }
 }

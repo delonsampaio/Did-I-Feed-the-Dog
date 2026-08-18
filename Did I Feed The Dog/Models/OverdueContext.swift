@@ -19,8 +19,11 @@ struct OverdueContext {
 
 // Lives outside Pet.swift so the @Model macro doesn't pull these
 // main-app-only types into the widget extension target's compilation
-// of Pet.swift.
-extension Pet {
+// of Pet.swift. Extends DogDisplayable (not Pet directly) so SharedPet
+// gets the identical overdue rule for free — Pet callers are unaffected,
+// since protocol extension members dispatch the same way on conforming
+// concrete types.
+extension DogDisplayable {
     var isFeedingOverdue: Bool {
         isFeedingOverdue(using: .current)
     }
