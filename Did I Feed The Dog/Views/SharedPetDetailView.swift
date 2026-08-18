@@ -1,12 +1,21 @@
 import CoreData
 import SwiftUI
 
-/// Shared-dog equivalent of PetDetailView. This task ships the meals tab only — Task 4 in this
-/// same plan adds the segmented picker and the medications tab by replacing this file.
+/// Shared-dog equivalent of PetDetailView: meals tab (filter/sort/bulk-select/swipe edit-delete)
+/// and medications tab (add/edit/delete medications, dose-log history with delete). Deleting a
+/// stock-deducting feeding event needs no "restore portions" branch — effectiveFoodStockCount is
+/// derived from feedingEvents, so removing the event alone restores the count.
 struct SharedPetDetailView: View {
     let pet: SharedPet
 
+    @State private var selectedTab: HistoryTab = .meals
     @State private var editingEvent: SharedFeedingEvent?
+    @State private var showAddMedication = false
+    @State private var editingMedication: SharedMedication?
+    @State private var pendingDeleteMedId: UUID?
+    @State private var deleteTask: Task<Void, Never>?
+    @State private var showMedDeleteToast = false
+    @State private var medDeleteToastName = ""
     @State private var showFilters = false
     @State private var filterMealTypes: Set<String> = []
     @State private var filterLoggedBy: Set<String> = []
@@ -16,6 +25,10 @@ struct SharedPetDetailView: View {
     @State private var isSelecting = false
     @State private var selectedEventIDs: Set<NSManagedObjectID> = []
     @State private var showDeleteConfirmation = false
+
+    private enum HistoryTab { case meals, medications }
+
+    // MARK: - Feeding
 
     private var allEvents: [SharedFeedingEvent] {
         Array((pet.feedingEvents as? Set<SharedFeedingEvent>) ?? [])
@@ -57,6 +70,28 @@ struct SharedPetDetailView: View {
         return grouped.sorted { sortAscending ? $0.key < $1.key : $0.key > $1.key }.map { (date: $0.key, events: $0.value) }
     }
 
+    // MARK: - Medications & logs
+
+    private var medications: [SharedMedication] {
+        Array((pet.medications as? Set<SharedMedication>) ?? [])
+    }
+
+    private var allMedLogs: [(date: Date, logs: [SharedMedicationLog])] {
+        guard let context = pet.managedObjectContext else { return [] }
+        let petId = pet.id
+        let req = NSFetchRequest<SharedMedicationLog>(entityName: "SharedMedicationLog")
+        req.predicate = NSPredicate(format: "petId == %@", petId as CVarArg)
+        let logs = ((try? context.fetch(req)) ?? []).sorted { $0.timestamp > $1.timestamp }
+        let grouped = Dictionary(grouping: logs) {
+            Calendar.current.startOfDay(for: $0.timestamp)
+        }
+        return grouped
+            .sorted { $0.key > $1.key }
+            .map { (date: $0.key, logs: $0.value) }
+    }
+
+    // MARK: - Formatters
+
     private static let timeFormatter: DateFormatter = {
         let f = DateFormatter()
         f.timeStyle = .short
@@ -77,38 +112,68 @@ struct SharedPetDetailView: View {
         return f
     }()
 
+    // MARK: - Body
+
     var body: some View {
         List(selection: $selectedEventIDs) {
-            mealsContent
+            if selectedTab == .meals {
+                mealsContent
+            } else {
+                medicationsContent
+            }
         }
         .navigationTitle(pet.name ?? "Unknown")
         .navigationBarTitleDisplayMode(.inline)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            Picker("History", selection: $selectedTab) {
+                Text("Meals").tag(HistoryTab.meals)
+                Text("Medications").tag(HistoryTab.medications)
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+            .background(.bar)
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                if isSelecting {
-                    Button("Cancel") {
-                        isSelecting = false
-                        selectedEventIDs = []
+                if selectedTab == .meals {
+                    if isSelecting {
+                        Button("Cancel") {
+                            isSelecting = false
+                            selectedEventIDs = []
+                        }
+                    } else {
+                        Button("Select") {
+                            isSelecting = true
+                        }
+                        .disabled(allEvents.isEmpty)
                     }
                 } else {
-                    Button("Select") {
-                        isSelecting = true
+                    Button { showAddMedication = true } label: {
+                        Image(systemName: "plus")
                     }
-                    .disabled(allEvents.isEmpty)
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button { showFilters = true } label: {
-                    Image(systemName: activeFilterCount > 0
-                          ? "line.3.horizontal.decrease.circle.fill"
-                          : "line.3.horizontal.decrease.circle")
-                    .foregroundStyle(activeFilterCount > 0 ? Color.accentColor : .primary)
+                if selectedTab == .meals {
+                    Button { showFilters = true } label: {
+                        Image(systemName: activeFilterCount > 0
+                              ? "line.3.horizontal.decrease.circle.fill"
+                              : "line.3.horizontal.decrease.circle")
+                        .foregroundStyle(activeFilterCount > 0 ? Color.accentColor : .primary)
+                    }
+                    .accessibilityLabel(activeFilterCount > 0 ? "Filters active — \(activeFilterCount)" : "Filter meals")
                 }
-                .accessibilityLabel(activeFilterCount > 0 ? "Filters active — \(activeFilterCount)" : "Filter meals")
             }
         }
         .sheet(item: $editingEvent) { event in
             EditSharedEventSheet(event: event)
+        }
+        .sheet(isPresented: $showAddMedication) {
+            EditSharedMedicationSheet(pet: pet, medication: nil)
+        }
+        .sheet(item: $editingMedication) { med in
+            EditSharedMedicationSheet(pet: pet, medication: med)
         }
         .sheet(isPresented: $showFilters) {
             MealFilterSheet(
@@ -121,7 +186,7 @@ struct SharedPetDetailView: View {
                 availableLoggers: availableLoggers
             )
         }
-        .environment(\.editMode, .constant(isSelecting ? .active : .inactive))
+        .environment(\.editMode, .constant(selectedTab == .meals && isSelecting ? .active : .inactive))
         .safeAreaInset(edge: .bottom) {
             if isSelecting && !selectedEventIDs.isEmpty {
                 Button(role: .destructive) {
@@ -143,7 +208,32 @@ struct SharedPetDetailView: View {
         ) {
             Button("Delete", role: .destructive) { deleteSelectedEventIDs() }
         }
+        .overlay(alignment: .bottom) {
+            if showMedDeleteToast {
+                UndoToast(
+                    message: "Medication \"\(medDeleteToastName)\" will be deleted",
+                    tint: .purple,
+                    systemImage: "pill.fill"
+                ) {
+                    deleteTask?.cancel()
+                    pendingDeleteMedId = nil
+                    showMedDeleteToast = false
+                } onDismiss: {
+                    showMedDeleteToast = false
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 8)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.spring(duration: 0.3), value: showMedDeleteToast)
+        .onChange(of: selectedTab) { _, _ in
+            isSelecting = false
+            selectedEventIDs = []
+        }
     }
+
+    // MARK: - Meals tab
 
     @ViewBuilder
     private var mealsContent: some View {
@@ -201,6 +291,78 @@ struct SharedPetDetailView: View {
         }
     }
 
+    // MARK: - Medications tab
+
+    @ViewBuilder
+    private var medicationsContent: some View {
+        let visibleMedications = medications.filter { $0.id != pendingDeleteMedId }
+
+        Section("Medications") {
+            ForEach(visibleMedications, id: \.objectID) { med in
+                Button { editingMedication = med } label: {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(med.name)
+                                .foregroundStyle(.primary)
+                            Text(med.dose.isEmpty ? med.frequencyLabel : "\(med.dose) · \(med.frequencyLabel)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                .swipeActions(edge: .trailing) {
+                    Button(role: .destructive) {
+                        scheduleMedicationDelete(med)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
+            }
+            Button { showAddMedication = true } label: {
+                Label("Add Medication", systemImage: "plus.circle.fill")
+            }
+        }
+
+        ForEach(allMedLogs, id: \.date) { group in
+            Section(header: Text(sectionTitle(for: group.date))) {
+                ForEach(group.logs, id: \.objectID) { log in
+                    medLogRow(log)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) {
+                                deleteMedLog(log)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
+                }
+            }
+        }
+    }
+
+    private func scheduleMedicationDelete(_ med: SharedMedication) {
+        deleteTask?.cancel()
+        pendingDeleteMedId = med.id
+        medDeleteToastName = med.name
+        showMedDeleteToast = true
+        deleteTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(AppConstants.undoToastSeconds))
+            guard !Task.isCancelled else { return }
+            if let context = med.managedObjectContext {
+                for log in (med.logs as? Set<SharedMedicationLog>) ?? [] { log.medication = nil }
+                context.delete(med)
+                try? context.save()
+            }
+            pendingDeleteMedId = nil
+            showMedDeleteToast = false
+        }
+    }
+
+    // MARK: - Row views
+
     private func eventRow(_ event: SharedFeedingEvent) -> some View {
         HStack(spacing: 12) {
             Text(MealType.emoji(for: event.mealType ?? ""))
@@ -230,6 +392,46 @@ struct SharedPetDetailView: View {
         }
     }
 
+    private func medLogRow(_ log: SharedMedicationLog) -> some View {
+        HStack(spacing: 12) {
+            Text("💊")
+                .font(.title3)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 4) {
+                    Text(log.medication?.name ?? (log.medicationName.isEmpty ? "Medication" : log.medicationName))
+                        .font(.subheadline).fontWeight(.medium)
+                    if let dose = log.medication?.dose, !dose.isEmpty {
+                        Text("·")
+                            .foregroundStyle(.secondary)
+                        Text(dose)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                HStack(spacing: 4) {
+                    Text(Self.timeFormatter.string(from: log.timestamp))
+                    if !log.loggedBy.isEmpty {
+                        Text("·")
+                        Text("by \(log.loggedBy)")
+                    }
+                }
+                .font(.caption).foregroundStyle(.secondary)
+                if !log.notes.isEmpty {
+                    Text(log.notes)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .italic()
+                }
+            }
+            Spacer()
+            Text(Self.relativeFormatter.localizedString(for: log.timestamp, relativeTo: .now))
+                .font(.caption2).foregroundStyle(.tertiary)
+        }
+    }
+
+    // MARK: - Helpers
+
     private func sectionTitle(for date: Date) -> String {
         let calendar = Calendar.current
         if calendar.isDateInToday(date)     { return "Today" }
@@ -252,6 +454,17 @@ struct SharedPetDetailView: View {
         try? context.save()
         selectedEventIDs = []
         isSelecting = false
+    }
+
+    private func deleteMedLog(_ log: SharedMedicationLog) {
+        guard let context = pet.managedObjectContext else { return }
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        if let med = log.medication {
+            let remaining = ((med.logs as? Set<SharedMedicationLog>) ?? []).filter { $0.id != log.id }.sorted { $0.timestamp > $1.timestamp }
+            med.lastGivenDate = remaining.first?.timestamp
+        }
+        context.delete(log)
+        try? context.save()
     }
 }
 

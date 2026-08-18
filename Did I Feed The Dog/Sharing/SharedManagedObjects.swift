@@ -120,3 +120,5 @@ extension SharedFeedingEvent: Identifiable {
     /// SwiftUI's `.sheet(item:)`, which only needs identity, not a persisted business key.
     public var id: NSManagedObjectID { objectID }
 }
+
+extension SharedMedication: Identifiable {}
