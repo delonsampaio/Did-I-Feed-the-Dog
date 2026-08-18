@@ -337,12 +337,25 @@ struct SharedPetCard: View {
                     .buttonStyle(.plain)
                     .accessibilityHint("Double tap to edit food stock")
                 }
-                statCell(
-                    title: "Today's Meals",
-                    value: "\(dog.todaysFeedingCount)",
-                    unit: "meals",
-                    accent: .primary
-                )
+                if let pet = sharedPet {
+                    NavigationLink(value: pet) {
+                        statCell(
+                            title: "Today's Meals",
+                            value: "\(dog.todaysFeedingCount)",
+                            unit: "meals",
+                            accent: .primary
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityHint("Double tap to view meal history")
+                } else {
+                    statCell(
+                        title: "Today's Meals",
+                        value: "\(dog.todaysFeedingCount)",
+                        unit: "meals",
+                        accent: .primary
+                    )
+                }
             }
             if let info = nextMealInfo {
                 HStack(spacing: 6) {

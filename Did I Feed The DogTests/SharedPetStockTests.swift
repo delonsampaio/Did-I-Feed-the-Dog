@@ -74,4 +74,25 @@ final class SharedPetStockTests: XCTestCase {
         makeEvent(in: context, pet: pet, timestamp: Date(timeIntervalSince1970: 2000), portions: 5)
         XCTAssertEqual(pet.effectiveFoodStockCount, 0)
     }
+
+    func testDeletingEventRestoresEffectiveStockWithNoExplicitCall() throws {
+        let context = try ctx()
+        let pet = SharedPet(context: context)
+        pet.foodStockCount = 10
+        pet.foodStockBaselineDate = Date(timeIntervalSince1970: 1000)
+        let event = SharedFeedingEvent(context: context)
+        event.timestamp = Date(timeIntervalSince1970: 2000)
+        event.portionsDeducted = NSNumber(value: 3)
+        event.pet = pet
+        XCTAssertEqual(pet.effectiveFoodStockCount, 7)
+
+        context.delete(event)
+        context.processPendingChanges() // Core Data nullifies the inverse `pet.feedingEvents` relationship
+                                         // during change processing, not synchronously on delete(); this
+                                         // just flushes that bookkeeping so the assertion below observes
+                                         // it immediately instead of waiting for the next run-loop turn.
+                                         // It is NOT a domain-level "restore stock" call — no such call exists.
+
+        XCTAssertEqual(pet.effectiveFoodStockCount, 10, "deleting the event alone must restore the count — no explicit restore step exists for shared dogs")
+    }
 }

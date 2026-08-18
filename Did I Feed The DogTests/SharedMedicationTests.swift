@@ -59,4 +59,12 @@ final class SharedMedicationTests: XCTestCase {
         XCTAssertEqual(med.isDue, shared.isDue)
         XCTAssertTrue(shared.isDue)
     }
+
+    func testFrequencyLabelNamedCases() throws {
+        let m = SharedMedication(context: try ctx())
+        m.frequencyHours = 24
+        XCTAssertEqual(m.frequencyLabel, "Daily")
+        m.frequencyHours = 36
+        XCTAssertEqual(m.frequencyLabel, "Every 36h")
+    }
 }

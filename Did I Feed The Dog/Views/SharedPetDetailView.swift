@@ -115,121 +115,129 @@ struct SharedPetDetailView: View {
     // MARK: - Body
 
     var body: some View {
-        List(selection: $selectedEventIDs) {
-            if selectedTab == .meals {
-                mealsContent
-            } else {
-                medicationsContent
-            }
-        }
-        .navigationTitle(pet.name ?? "Unknown")
-        .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .top, spacing: 0) {
-            Picker("History", selection: $selectedTab) {
-                Text("Meals").tag(HistoryTab.meals)
-                Text("Medications").tag(HistoryTab.medications)
-            }
-            .pickerStyle(.segmented)
-            .padding(.horizontal)
-            .padding(.vertical, 8)
-            .background(.bar)
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                if selectedTab == .meals {
-                    if isSelecting {
-                        Button("Cancel") {
-                            isSelecting = false
-                            selectedEventIDs = []
-                        }
-                    } else {
-                        Button("Select") {
-                            isSelecting = true
-                        }
-                        .disabled(allEvents.isEmpty)
-                    }
-                } else {
-                    Button { showAddMedication = true } label: {
-                        Image(systemName: "plus")
-                    }
-                }
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                if selectedTab == .meals {
-                    Button { showFilters = true } label: {
-                        Image(systemName: activeFilterCount > 0
-                              ? "line.3.horizontal.decrease.circle.fill"
-                              : "line.3.horizontal.decrease.circle")
-                        .foregroundStyle(activeFilterCount > 0 ? Color.accentColor : .primary)
-                    }
-                    .accessibilityLabel(activeFilterCount > 0 ? "Filters active — \(activeFilterCount)" : "Filter meals")
-                }
-            }
-        }
-        .sheet(item: $editingEvent) { event in
-            EditSharedEventSheet(event: event)
-        }
-        .sheet(isPresented: $showAddMedication) {
-            EditSharedMedicationSheet(pet: pet, medication: nil)
-        }
-        .sheet(item: $editingMedication) { med in
-            EditSharedMedicationSheet(pet: pet, medication: med)
-        }
-        .sheet(isPresented: $showFilters) {
-            MealFilterSheet(
-                filterMealTypes: $filterMealTypes,
-                filterLoggedBy: $filterLoggedBy,
-                filterStartDate: $filterStartDate,
-                filterEndDate: $filterEndDate,
-                sortAscending: $sortAscending,
-                availableMealTypes: availableMealTypes,
-                availableLoggers: availableLoggers
+        if pet.isDeleted || pet.managedObjectContext == nil {
+            ContentUnavailableView(
+                "This Dog Is No Longer Shared",
+                systemImage: "person.2.slash",
+                description: Text("The owner may have stopped sharing this dog.")
             )
-        }
-        .environment(\.editMode, .constant(selectedTab == .meals && isSelecting ? .active : .inactive))
-        .safeAreaInset(edge: .bottom) {
-            if isSelecting && !selectedEventIDs.isEmpty {
-                Button(role: .destructive) {
-                    showDeleteConfirmation = true
-                } label: {
-                    Label("Delete \(selectedEventIDs.count) Meal\(selectedEventIDs.count == 1 ? "" : "s")", systemImage: "trash")
-                        .frame(maxWidth: .infinity)
+        } else {
+            List(selection: $selectedEventIDs) {
+                if selectedTab == .meals {
+                    mealsContent
+                } else {
+                    medicationsContent
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.red)
-                .padding()
+            }
+            .navigationTitle(pet.name ?? "Unknown")
+            .navigationBarTitleDisplayMode(.inline)
+            .safeAreaInset(edge: .top, spacing: 0) {
+                Picker("History", selection: $selectedTab) {
+                    Text("Meals").tag(HistoryTab.meals)
+                    Text("Medications").tag(HistoryTab.medications)
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
                 .background(.bar)
             }
-        }
-        .confirmationDialog(
-            "Delete \(selectedEventIDs.count) Meal\(selectedEventIDs.count == 1 ? "" : "s")?",
-            isPresented: $showDeleteConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Delete", role: .destructive) { deleteSelectedEventIDs() }
-        }
-        .overlay(alignment: .bottom) {
-            if showMedDeleteToast {
-                UndoToast(
-                    message: "Medication \"\(medDeleteToastName)\" will be deleted",
-                    tint: .purple,
-                    systemImage: "pill.fill"
-                ) {
-                    deleteTask?.cancel()
-                    pendingDeleteMedId = nil
-                    showMedDeleteToast = false
-                } onDismiss: {
-                    showMedDeleteToast = false
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    if selectedTab == .meals {
+                        if isSelecting {
+                            Button("Cancel") {
+                                isSelecting = false
+                                selectedEventIDs = []
+                            }
+                        } else {
+                            Button("Select") {
+                                isSelecting = true
+                            }
+                            .disabled(allEvents.isEmpty)
+                        }
+                    } else {
+                        Button { showAddMedication = true } label: {
+                            Image(systemName: "plus")
+                        }
+                    }
                 }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 8)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                ToolbarItem(placement: .topBarTrailing) {
+                    if selectedTab == .meals {
+                        Button { showFilters = true } label: {
+                            Image(systemName: activeFilterCount > 0
+                                  ? "line.3.horizontal.decrease.circle.fill"
+                                  : "line.3.horizontal.decrease.circle")
+                            .foregroundStyle(activeFilterCount > 0 ? Color.accentColor : .primary)
+                        }
+                        .accessibilityLabel(activeFilterCount > 0 ? "Filters active — \(activeFilterCount)" : "Filter meals")
+                    }
+                }
             }
-        }
-        .animation(.spring(duration: 0.3), value: showMedDeleteToast)
-        .onChange(of: selectedTab) { _, _ in
-            isSelecting = false
-            selectedEventIDs = []
+            .sheet(item: $editingEvent) { event in
+                EditSharedEventSheet(event: event)
+            }
+            .sheet(isPresented: $showAddMedication) {
+                EditSharedMedicationSheet(pet: pet, medication: nil)
+            }
+            .sheet(item: $editingMedication) { med in
+                EditSharedMedicationSheet(pet: pet, medication: med)
+            }
+            .sheet(isPresented: $showFilters) {
+                MealFilterSheet(
+                    filterMealTypes: $filterMealTypes,
+                    filterLoggedBy: $filterLoggedBy,
+                    filterStartDate: $filterStartDate,
+                    filterEndDate: $filterEndDate,
+                    sortAscending: $sortAscending,
+                    availableMealTypes: availableMealTypes,
+                    availableLoggers: availableLoggers
+                )
+            }
+            .environment(\.editMode, .constant(selectedTab == .meals && isSelecting ? .active : .inactive))
+            .safeAreaInset(edge: .bottom) {
+                if isSelecting && !selectedEventIDs.isEmpty {
+                    Button(role: .destructive) {
+                        showDeleteConfirmation = true
+                    } label: {
+                        Label("Delete \(selectedEventIDs.count) Meal\(selectedEventIDs.count == 1 ? "" : "s")", systemImage: "trash")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.red)
+                    .padding()
+                    .background(.bar)
+                }
+            }
+            .confirmationDialog(
+                "Delete \(selectedEventIDs.count) Meal\(selectedEventIDs.count == 1 ? "" : "s")?",
+                isPresented: $showDeleteConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Delete", role: .destructive) { deleteSelectedEventIDs() }
+            }
+            .overlay(alignment: .bottom) {
+                if showMedDeleteToast {
+                    UndoToast(
+                        message: "Medication \"\(medDeleteToastName)\" will be deleted",
+                        tint: .purple,
+                        systemImage: "pill.fill"
+                    ) {
+                        deleteTask?.cancel()
+                        pendingDeleteMedId = nil
+                        showMedDeleteToast = false
+                    } onDismiss: {
+                        showMedDeleteToast = false
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 8)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            .animation(.spring(duration: 0.3), value: showMedDeleteToast)
+            .onChange(of: selectedTab) { _, _ in
+                isSelecting = false
+                selectedEventIDs = []
+            }
         }
     }
 
