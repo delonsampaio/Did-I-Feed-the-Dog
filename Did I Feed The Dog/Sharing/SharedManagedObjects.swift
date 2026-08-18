@@ -113,3 +113,10 @@ extension SharedMedication {
         }
     }
 }
+
+extension SharedFeedingEvent: Identifiable {
+    /// SharedFeedingEvent has no stored `id` field (unlike SharedMedication/SharedMedicationLog,
+    /// which do) — objectID is stable for the object's lifetime in a context and is enough for
+    /// SwiftUI's `.sheet(item:)`, which only needs identity, not a persisted business key.
+    public var id: NSManagedObjectID { objectID }
+}
