@@ -32,6 +32,15 @@ final class SharedDogStore {
 
     func refresh() {
         guard stack.loadError == nil else { sharedPets = []; return }
+        // Merging a background context's save (SharedSyncEngine's remote-pull path, or its
+        // push write-back) updates already-resident objects' scalar attributes via
+        // automaticallyMergesChangesFromParent, but does NOT reliably invalidate an
+        // already-fired to-many relationship fault like feedingEvents/medications on an
+        // existing SharedPet — so a plain fetch can keep returning that pet's stale
+        // relationship snapshot even though new children exist in the store. Refreshing
+        // first forces every resident object's relationships back to faults so the fetch
+        // below re-reads them fresh.
+        stack.viewContext.refreshAllObjects()
         let req = NSFetchRequest<SharedPet>(entityName: "SharedPet")
         req.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
         sharedPets = (try? stack.viewContext.fetch(req)) ?? []
